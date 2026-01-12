@@ -44,17 +44,26 @@ export default function NewTournamentPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  // Form state
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    tournament_format: 'single_elimination' as TournamentFormat,
-    match_format: 'bo3' as MatchFormat,
-    max_participants: 32,
-    visibility: 'public' as Visibility,
-    entry_start_at: '',
-    entry_deadline: '',
-    start_at: '',
+  // Helper to format date for datetime-local input
+  const formatDateTimeLocal = (date: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  }
+
+  // Form state with current date as default for start_at
+  const [formData, setFormData] = useState(() => {
+    const now = new Date()
+    return {
+      title: '',
+      description: '',
+      tournament_format: 'single_elimination' as TournamentFormat,
+      match_format: 'bo3' as MatchFormat,
+      max_participants: 32,
+      visibility: 'public' as Visibility,
+      entry_start_at: '',
+      entry_deadline: '',
+      start_at: formatDateTimeLocal(now),
+    }
   })
 
   const updateFormData = (field: string, value: string | number) => {
