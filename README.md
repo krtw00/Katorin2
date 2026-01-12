@@ -1,36 +1,258 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Katorin2 - トーナメント運営システム
 
-## Getting Started
+遊戯王マスターデュエルのオンライントーナメント運営を効率化するためのWebアプリケーション
 
-First, run the development server:
+## 技術スタック
+
+- **フレームワーク**: Next.js 16 (App Router)
+- **言語**: TypeScript
+- **UIライブラリ**: shadcn/ui
+- **スタイリング**: Tailwind CSS v4
+- **バックエンド**: Supabase (PostgreSQL + Authentication + Realtime)
+- **ホスティング**: Vercel
+- **パッケージマネージャー**: pnpm
+
+## MVPで実装された機能
+
+### Phase 1: 基本機能
+
+1. **認証システム**
+   - メールアドレス＋パスワードでの登録/ログイン
+   - プロフィール管理
+
+2. **大会作成**
+   - シングルエリミネーション形式
+   - 基本的な大会情報の設定
+   - 公開設定（公開/限定公開/非公開）
+
+3. **エントリー機能**
+   - 大会への参加登録
+   - マスターデュエルIDの入力（任意）
+
+4. **トーナメント進行管理**
+   - ブラケット自動生成
+   - 試合結果入力（主催者のみ）
+   - 勝者の次回戦自動進出
+
+5. **リアルタイム表示**
+   - トーナメント表のリアルタイム更新
+   - Supabase Realtimeによる自動同期
+
+## セットアップ手順
+
+### 1. 環境構築
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 依存パッケージのインストール
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Supabaseのセットアップ
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+詳細は `supabase/README.md` を参照してください。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**概要:**
+1. [Supabase Dashboard](https://app.supabase.com/) で新規プロジェクトを作成
+2. SQL Editorで `supabase/migrations/001_mvp_schema.sql` を実行
+3. API設定から接続情報を取得
+4. `.env.local` ファイルを作成して環境変数を設定
 
-## Learn More
+```bash
+# .env.local の作成
+cp .env.example .env.local
 
-To learn more about Next.js, take a look at the following resources:
+# .env.local を編集してSupabaseの接続情報を設定
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. 開発サーバーの起動
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm dev
+```
 
-## Deploy on Vercel
+ブラウザで http://localhost:3000 にアクセス
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## テスト手順
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. 認証機能のテスト
+
+1. http://localhost:3000/auth/register にアクセス
+2. 新規ユーザーを2〜3名登録（テスト用に複数アカウント作成推奨）
+3. ログイン/ログアウトが正常に動作することを確認
+
+### 2. 大会作成のテスト
+
+1. ログイン後、「大会を作成」ボタンをクリック
+2. 大会情報を入力:
+   - 大会名: 「テスト大会」
+   - トーナメント形式: シングルエリミネーション
+   - 対戦形式: bo3
+   - 最大参加者数: 8人
+   - 公開設定: 公開
+3. 「大会を作成」をクリック
+4. 大会詳細ページにリダイレクトされることを確認
+
+### 3. エントリー機能のテスト
+
+1. 大会詳細ページで「エントリーする」をクリック
+2. マスターデュエルID（任意）を入力
+3. エントリー完了後、大会詳細ページに戻ることを確認
+4. 参加者一覧に自分の名前が表示されることを確認
+5. 別のアカウントでログインして、同じ大会にエントリー（2〜4名推奨）
+
+### 4. ブラケット生成のテスト
+
+1. 大会主催者アカウントでログイン
+2. 大会詳細ページから「管理」をクリック
+3. 「ブラケットを生成」をクリック
+4. トーナメント表が生成されることを確認
+5. 「トーナメント表を見る」から表示を確認
+
+### 5. 試合結果入力のテスト
+
+1. 大会管理ページで試合結果を入力:
+   - プレイヤー1のスコア: 2
+   - プレイヤー2のスコア: 1
+   - 「結果を登録」をクリック
+2. トーナメント表ページで結果が反映されることを確認
+3. 勝者が次のラウンドに自動で進出することを確認
+
+### 6. リアルタイム更新のテスト
+
+1. 2つのブラウザウィンドウを開く
+2. 両方でトーナメント表ページを表示
+3. 一方で試合結果を入力
+4. もう一方で自動的に結果が反映されることを確認
+
+### 7. マイページのテスト
+
+1. ログイン後、ヘッダーの「マイページ」をクリック
+2. プロフィール情報が表示されることを確認
+3. 「参加中の大会」タブに参加した大会が表示されることを確認
+4. 「主催している大会」タブに作成した大会が表示されることを確認
+
+## ディレクトリ構成
+
+```
+src/
+├── app/                       # Next.js App Router
+│   ├── (auth)/               # 認証関連ページ
+│   │   ├── login/
+│   │   └── register/
+│   ├── (main)/               # メインアプリケーション
+│   │   ├── tournaments/      # 大会関連ページ
+│   │   │   ├── [id]/
+│   │   │   │   ├── bracket/  # トーナメント表
+│   │   │   │   ├── entry/    # エントリーページ
+│   │   │   │   └── manage/   # 管理ページ
+│   │   │   └── new/          # 大会作成
+│   │   └── my/               # マイページ
+│   ├── auth/callback/        # 認証コールバック
+│   └── mock/                 # UIモック（開発用）
+├── components/               # UIコンポーネント
+│   ├── ui/                   # shadcn/ui コンポーネント
+│   ├── layout/               # レイアウトコンポーネント
+│   └── tournament/           # 大会関連コンポーネント
+├── lib/                      # ユーティリティ
+│   ├── supabase/             # Supabaseクライアント
+│   └── tournament/           # トーナメント関連ロジック
+├── hooks/                    # カスタムフック
+│   ├── useAuth.ts            # 認証フック
+│   └── useRealtimeMatches.ts # リアルタイム更新フック
+└── types/                    # 型定義
+    ├── database.ts           # データベース型
+    └── tournament.ts         # アプリケーション型
+```
+
+## データベース構成
+
+MVPで使用しているテーブル:
+
+- `profiles` - ユーザープロフィール
+- `tournaments` - 大会情報
+- `participants` - 参加者
+- `matches` - 試合記録
+- `notifications` - 通知（Phase 2で完全実装）
+
+詳細は `doc/database-design.md` を参照してください。
+
+## Phase 2で実装予定の機能
+
+- ダブルエリミネーション・スイスドロー
+- チーム戦
+- シリーズ/リーグ機能
+- デッキ登録
+- 統計・メタゲーム分析
+- SNS共有機能
+- Discord連携
+- チェックイン機能
+- 参加者による結果報告
+
+## トラブルシューティング
+
+### "relation does not exist" エラー
+
+Supabaseのマイグレーションが実行されていません。`supabase/README.md` を参照してマイグレーションを実行してください。
+
+### ログインできない
+
+1. Supabaseプロジェクトが正しく設定されているか確認
+2. `.env.local` の環境変数が正しいか確認
+3. Supabase Dashboard でメール認証が有効になっているか確認
+
+### リアルタイム更新が動作しない
+
+1. SupabaseプロジェクトでRealtimeが有効になっているか確認
+2. マイグレーションで `ALTER PUBLICATION` が実行されているか確認
+3. ブラウザのコンソールでエラーを確認
+
+### ブラケット生成に失敗する
+
+1. 参加者が2名以上いることを確認
+2. 大会のステータスが「recruiting」であることを確認
+3. ブラウザのコンソールでエラーメッセージを確認
+
+## 開発
+
+### コードの整形
+
+```bash
+pnpm format
+```
+
+### リント
+
+```bash
+pnpm lint
+```
+
+### ビルド
+
+```bash
+pnpm build
+```
+
+## デプロイ
+
+Vercelへのデプロイ:
+
+```bash
+# Vercel CLIのインストール
+npm install -g vercel
+
+# デプロイ
+vercel
+
+# 環境変数の設定（Vercel Dashboard または CLI）
+vercel env add NEXT_PUBLIC_SUPABASE_URL
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+vercel env add SUPABASE_SERVICE_ROLE_KEY
+```
+
+## ライセンス
+
+MIT
+
+## 作成者
+
+Developed with Claude Code
