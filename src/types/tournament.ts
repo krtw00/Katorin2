@@ -3,6 +3,8 @@ import { Database } from './database'
 // Helper types from database
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type Tournament = Database['public']['Tables']['tournaments']['Row']
+export type TournamentStatus = Database['public']['Enums']['tournament_status']
+export type TournamentFormat = Database['public']['Enums']['tournament_format']
 export type Participant = Database['public']['Tables']['participants']['Row']
 export type Match = Database['public']['Tables']['matches']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
