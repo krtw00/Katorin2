@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Tournament } from '@/types/tournament'
+import { Tournament, CustomField } from '@/types/tournament'
 import Link from 'next/link'
 
 type Props = {
@@ -23,9 +23,12 @@ type Props = {
 
 export default function TournamentEntryPage({ params }: Props) {
   const [tournament, setTournament] = useState<Tournament | null>(null)
+  const [customFields, setCustomFields] = useState<CustomField[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [customData, setCustomData] = useState<Record<string, string>>({})
   const { user, profile } = useAuth()
   const router = useRouter()
   const supabase = createClient()
@@ -43,12 +46,28 @@ export default function TournamentEntryPage({ params }: Props) {
         setError('大会が見つかりませんでした')
       } else {
         setTournament(data)
+        // Parse custom_fields from tournament
+        const fields = (data.custom_fields as CustomField[]) || []
+        setCustomFields(fields)
+        // Initialize custom data with empty values
+        const initialData: Record<string, string> = {}
+        fields.forEach((f) => {
+          initialData[f.key] = ''
+        })
+        setCustomData(initialData)
       }
       setLoading(false)
     }
 
     loadTournament()
   }, [params])
+
+  // Set display name from profile when loaded
+  useEffect(() => {
+    if (profile?.display_name) {
+      setDisplayName(profile.display_name)
+    }
+  }, [profile])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -61,8 +80,18 @@ export default function TournamentEntryPage({ params }: Props) {
         return
       }
 
-      const formData = new FormData(e.currentTarget)
-      const masterDuelId = formData.get('master_duel_id') as string
+      if (!displayName.trim()) {
+        setError('表示名を入力してください')
+        return
+      }
+
+      // Validate required custom fields
+      for (const field of customFields) {
+        if (field.required && !customData[field.key]?.trim()) {
+          setError(`${field.label}を入力してください`)
+          return
+        }
+      }
 
       // Check if already entered
       const { data: existing } = await supabase
@@ -94,7 +123,8 @@ export default function TournamentEntryPage({ params }: Props) {
         .insert({
           tournament_id: tournament.id,
           user_id: user.id,
-          master_duel_id: masterDuelId || null,
+          display_name: displayName.trim(),
+          custom_data: customData,
         })
 
       if (insertError) {
@@ -145,7 +175,7 @@ export default function TournamentEntryPage({ params }: Props) {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Link href="/auth/login" className="w-full">
+            <Link href="/login" className="w-full">
               <Button className="w-full">ログイン</Button>
             </Link>
           </CardFooter>
@@ -170,29 +200,41 @@ export default function TournamentEntryPage({ params }: Props) {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">表示名</label>
-              <Input value={profile?.display_name || ''} disabled />
+              <label htmlFor="display_name" className="text-sm font-medium">
+                表示名 <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="display_name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="大会で表示される名前"
+                disabled={submitting}
+                maxLength={50}
+              />
               <p className="text-xs text-muted-foreground">
-                プロフィールの表示名が使用されます
+                この大会で使用する表示名を入力してください
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="master_duel_id" className="text-sm font-medium">
-                マスターデュエルID（任意）
-              </label>
-              <Input
-                id="master_duel_id"
-                name="master_duel_id"
-                placeholder="例: 123-456-789"
-                disabled={submitting}
-                maxLength={20}
-                defaultValue={profile?.master_duel_id || ''}
-              />
-              <p className="text-xs text-muted-foreground">
-                ゲーム内で対戦相手を探すために使用されます
-              </p>
-            </div>
+            {customFields.map((field) => (
+              <div key={field.key} className="space-y-2">
+                <label htmlFor={field.key} className="text-sm font-medium">
+                  {field.label}
+                  {field.required && (
+                    <span className="text-destructive"> *</span>
+                  )}
+                </label>
+                <Input
+                  id={field.key}
+                  value={customData[field.key] || ''}
+                  onChange={(e) =>
+                    setCustomData({ ...customData, [field.key]: e.target.value })
+                  }
+                  placeholder={field.placeholder}
+                  disabled={submitting}
+                />
+              </div>
+            ))}
           </CardContent>
           <CardFooter className="flex gap-2">
             <Button
