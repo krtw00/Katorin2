@@ -33,6 +33,8 @@ export type EntryType = 'individual' | 'team'
 
 export type ResultReportMode = 'organizer_only' | 'participant'
 
+export type EntryLimitBehavior = 'first_come' | 'waitlist'
+
 export type MatchStatus = 'pending' | 'in_progress' | 'completed' | 'bye'
 
 export type NotificationType =
@@ -90,6 +92,7 @@ export interface Database {
           tournament_format: TournamentFormat
           match_format: MatchFormat
           max_participants: number
+          entry_limit_behavior: EntryLimitBehavior
           entry_start_at: string | null
           entry_deadline: string | null
           result_report_mode: ResultReportMode
@@ -111,6 +114,7 @@ export interface Database {
           tournament_format?: TournamentFormat
           match_format?: MatchFormat
           max_participants?: number
+          entry_limit_behavior?: EntryLimitBehavior
           entry_start_at?: string | null
           entry_deadline?: string | null
           result_report_mode?: ResultReportMode
@@ -132,6 +136,7 @@ export interface Database {
           tournament_format?: TournamentFormat
           match_format?: MatchFormat
           max_participants?: number
+          entry_limit_behavior?: EntryLimitBehavior
           entry_start_at?: string | null
           entry_deadline?: string | null
           result_report_mode?: ResultReportMode
@@ -275,6 +280,7 @@ export interface Database {
       visibility: Visibility
       entry_type: EntryType
       result_report_mode: ResultReportMode
+      entry_limit_behavior: EntryLimitBehavior
       match_status: MatchStatus
       notification_type: NotificationType
     }
