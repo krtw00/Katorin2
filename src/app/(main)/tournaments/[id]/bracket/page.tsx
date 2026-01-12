@@ -50,6 +50,10 @@ export default async function TournamentBracketPage({ params }: Props) {
     console.error('Error fetching matches:', matchesError)
   }
 
+  // Check if current user is the organizer
+  const { data: { user } } = await supabase.auth.getUser()
+  const isOrganizer = user?.id === tournament.organizer_id
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -80,6 +84,7 @@ export default async function TournamentBracketPage({ params }: Props) {
           <RealtimeBracket
             tournamentId={id}
             initialMatches={(matches as MatchWithPlayers[]) || []}
+            isOrganizer={isOrganizer}
           />
         </CardContent>
       </Card>

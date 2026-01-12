@@ -3,10 +3,22 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { matchStatusLabels, MatchWithPlayers } from '@/types/tournament'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 type Props = {
   tournamentId: string
   initialMatches: MatchWithPlayers[]
+  isOrganizer?: boolean
 }
 
 type MatchPosition = {
@@ -22,14 +34,19 @@ type MatchPosition = {
 
 function MatchCard({
   match,
-  onPositionChange
+  onPositionChange,
+  onClick,
+  isClickable,
 }: {
   match: MatchWithPlayers
   onPositionChange: (id: string, rect: DOMRect) => void
+  onClick?: () => void
+  isClickable?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const isCompleted = match.status === 'completed'
   const isInProgress = match.status === 'in_progress'
+  const canPlay = match.player1_id && match.player2_id
 
   useEffect(() => {
     if (ref.current) {
@@ -83,13 +100,17 @@ function MatchCard({
     </div>
   )
 
+  const showClickIndicator = isClickable && canPlay && !isCompleted
+
   return (
     <div
       ref={ref}
+      onClick={showClickIndicator ? onClick : undefined}
       className={`
         border rounded-md bg-card shadow-sm overflow-hidden
         ${isInProgress ? 'ring-2 ring-primary' : ''}
         ${isCompleted ? 'border-muted' : 'border-border'}
+        ${showClickIndicator ? 'cursor-pointer hover:border-primary hover:shadow-md transition-all' : ''}
       `}
       style={{ width: '160px' }}
     >
@@ -112,11 +133,144 @@ function MatchCard({
           ${isCompleted ? 'bg-muted text-muted-foreground' : ''}
           ${isInProgress ? 'bg-primary text-primary-foreground' : ''}
           ${!isCompleted && !isInProgress ? 'bg-muted/50 text-muted-foreground' : ''}
+          ${showClickIndicator ? 'bg-primary/10 text-primary' : ''}
         `}
       >
-        {matchStatusLabels[match.status]}
+        {showClickIndicator ? 'クリックして結果入力' : matchStatusLabels[match.status]}
       </div>
     </div>
+  )
+}
+
+function ScoreInputModal({
+  match,
+  open,
+  onClose,
+  onSubmit,
+}: {
+  match: MatchWithPlayers | null
+  open: boolean
+  onClose: () => void
+  onSubmit: (matchId: string, p1Score: number, p2Score: number, winnerId: string) => Promise<void>
+}) {
+  const [player1Score, setPlayer1Score] = useState(0)
+  const [player2Score, setPlayer2Score] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  // Reset scores when match changes
+  useEffect(() => {
+    if (match) {
+      setPlayer1Score(match.player1_score ?? 0)
+      setPlayer2Score(match.player2_score ?? 0)
+      setError('')
+    }
+  }, [match])
+
+  if (!match) return null
+
+  const handleSubmit = async () => {
+    if (player1Score === player2Score) {
+      setError('同点は設定できません。勝敗を決めてください。')
+      return
+    }
+
+    if (!match.player1_id || !match.player2_id) {
+      setError('両プレイヤーが確定していません')
+      return
+    }
+
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const winnerId = player1Score > player2Score ? match.player1_id : match.player2_id
+      await onSubmit(match.id, player1Score, player2Score, winnerId)
+      onClose()
+    } catch (err: any) {
+      setError(err.message || '結果の保存に失敗しました')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>試合結果を入力</DialogTitle>
+          <DialogDescription>
+            R{match.round}-{match.match_number}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {error && (
+            <div className="bg-destructive/15 text-destructive px-3 py-2 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Player 1 */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium">
+                {match.player1?.display_name || 'Player 1'}
+              </label>
+            </div>
+            <Input
+              type="number"
+              min="0"
+              max="99"
+              value={player1Score}
+              onChange={(e) => setPlayer1Score(parseInt(e.target.value) || 0)}
+              className="w-20 text-center text-lg font-bold"
+              disabled={submitting}
+            />
+          </div>
+
+          <div className="text-center text-muted-foreground text-sm">vs</div>
+
+          {/* Player 2 */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium">
+                {match.player2?.display_name || 'Player 2'}
+              </label>
+            </div>
+            <Input
+              type="number"
+              min="0"
+              max="99"
+              value={player2Score}
+              onChange={(e) => setPlayer2Score(parseInt(e.target.value) || 0)}
+              className="w-20 text-center text-lg font-bold"
+              disabled={submitting}
+            />
+          </div>
+
+          {/* Winner preview */}
+          {player1Score !== player2Score && (
+            <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+              <span className="text-sm text-green-700 dark:text-green-300">
+                勝者: {player1Score > player2Score
+                  ? match.player1?.display_name
+                  : match.player2?.display_name}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            キャンセル
+          </Button>
+          <Button onClick={handleSubmit} disabled={submitting || player1Score === player2Score}>
+            {submitting ? '保存中...' : '結果を確定'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -158,11 +312,13 @@ function ConnectorLines({
   return <>{lines}</>
 }
 
-export function RealtimeBracket({ tournamentId, initialMatches }: Props) {
+export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = false }: Props) {
   const matches = useRealtimeMatches(tournamentId, initialMatches)
   const containerRef = useRef<HTMLDivElement>(null)
   const [positions, setPositions] = useState<Map<string, MatchPosition>>(new Map())
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  const [selectedMatch, setSelectedMatch] = useState<MatchWithPlayers | null>(null)
+  const supabase = createClient()
 
   // Group matches by round
   const matchesByRound = new Map<number, MatchWithPlayers[]>()
@@ -202,6 +358,40 @@ export function RealtimeBracket({ tournamentId, initialMatches }: Props) {
       return newMap
     })
   }, [matches])
+
+  const handleUpdateResult = async (
+    matchId: string,
+    player1Score: number,
+    player2Score: number,
+    winnerId: string
+  ) => {
+    // Update the match
+    const { error: updateError } = await supabase
+      .from('matches')
+      .update({
+        player1_score: player1Score,
+        player2_score: player2Score,
+        winner_id: winnerId,
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', matchId)
+
+    if (updateError) throw updateError
+
+    // Advance winner to next match if applicable
+    const currentMatch = matches.find(m => m.id === matchId)
+    if (currentMatch?.next_match_id) {
+      const nextMatch = matches.find(m => m.id === currentMatch.next_match_id)
+      if (nextMatch) {
+        const updateField = currentMatch.next_match_slot === 1 ? 'player1_id' : 'player2_id'
+        await supabase
+          .from('matches')
+          .update({ [updateField]: winnerId })
+          .eq('id', currentMatch.next_match_id)
+      }
+    }
+  }
 
   useEffect(() => {
     if (containerRef.current) {
@@ -258,7 +448,7 @@ export function RealtimeBracket({ tournamentId, initialMatches }: Props) {
 
         {/* Bracket content */}
         <div className="flex gap-20">
-          {rounds.map((round, roundIndex) => {
+          {rounds.map((round) => {
             const roundMatches = matchesByRound.get(round) || []
             const matchCount = roundMatches.length
             const totalHeight = Math.pow(2, rounds.length - 1) * (CARD_HEIGHT + 16)
@@ -286,6 +476,8 @@ export function RealtimeBracket({ tournamentId, initialMatches }: Props) {
                       key={match.id}
                       match={match}
                       onPositionChange={handlePositionChange}
+                      onClick={() => setSelectedMatch(match)}
+                      isClickable={isOrganizer}
                     />
                   ))}
                 </div>
@@ -356,8 +548,21 @@ export function RealtimeBracket({ tournamentId, initialMatches }: Props) {
             <div className="w-4 h-4 rounded bg-muted" />
             <span>終了</span>
           </div>
+          {isOrganizer && (
+            <div className="flex items-center gap-2 ml-auto text-primary">
+              <span>※ 試合カードをクリックして結果入力</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Score Input Modal */}
+      <ScoreInputModal
+        match={selectedMatch}
+        open={!!selectedMatch}
+        onClose={() => setSelectedMatch(null)}
+        onSubmit={handleUpdateResult}
+      />
     </div>
   )
 }
