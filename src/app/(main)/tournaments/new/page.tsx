@@ -50,7 +50,7 @@ export default function NewTournamentPage() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
   }
 
-  // Form state with current date as default for start_at
+  // Form state with current date as default
   const [formData, setFormData] = useState(() => {
     const now = new Date()
     return {
@@ -60,7 +60,7 @@ export default function NewTournamentPage() {
       match_format: 'bo3' as MatchFormat,
       max_participants: 32,
       visibility: 'public' as Visibility,
-      entry_start_at: '',
+      entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
       start_at: formatDateTimeLocal(now),
     }
@@ -700,7 +700,7 @@ export default function NewTournamentPage() {
                   <span>📅</span> 日程
                 </h2>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="start_at" className="text-sm font-medium">
                       開催日時
@@ -711,20 +711,11 @@ export default function NewTournamentPage() {
                       value={formData.start_at}
                       onChange={(e) => updateFormData('start_at', e.target.value)}
                       disabled={loading}
+                      className="max-w-xs"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="entry_start_at" className="text-sm font-medium">
-                      エントリー開始
-                    </label>
-                    <Input
-                      id="entry_start_at"
-                      type="datetime-local"
-                      value={formData.entry_start_at}
-                      onChange={(e) => updateFormData('entry_start_at', e.target.value)}
-                      disabled={loading}
-                    />
+                    <p className="text-xs text-muted-foreground">
+                      トーナメントを開始する日時
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -737,7 +728,11 @@ export default function NewTournamentPage() {
                       value={formData.entry_deadline}
                       onChange={(e) => updateFormData('entry_deadline', e.target.value)}
                       disabled={loading}
+                      className="max-w-xs"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      この日時までエントリーを受け付けます
+                    </p>
                   </div>
                 </div>
               </section>
