@@ -224,15 +224,71 @@ export default function TournamentEntryPage({ params }: Props) {
                     <span className="text-destructive"> *</span>
                   )}
                 </label>
-                <Input
-                  id={field.key}
-                  value={customData[field.key] || ''}
-                  onChange={(e) =>
-                    setCustomData({ ...customData, [field.key]: e.target.value })
-                  }
-                  placeholder={field.placeholder}
-                  disabled={submitting}
-                />
+
+                {/* Text input */}
+                {(!field.inputType || field.inputType === 'text') && (
+                  <Input
+                    id={field.key}
+                    value={customData[field.key] || ''}
+                    onChange={(e) =>
+                      setCustomData({ ...customData, [field.key]: e.target.value })
+                    }
+                    placeholder={field.placeholder}
+                    disabled={submitting}
+                  />
+                )}
+
+                {/* Checkbox input */}
+                {field.inputType === 'checkbox' && field.options && (
+                  <div className="space-y-2">
+                    {field.options.map((option, optIndex) => (
+                      <label
+                        key={optIndex}
+                        className="flex items-center gap-2 text-sm cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(customData[field.key] || '').split(',').includes(option)}
+                          onChange={(e) => {
+                            const current = (customData[field.key] || '').split(',').filter(Boolean)
+                            const updated = e.target.checked
+                              ? [...current, option]
+                              : current.filter((v) => v !== option)
+                            setCustomData({ ...customData, [field.key]: updated.join(',') })
+                          }}
+                          disabled={submitting}
+                          className="rounded"
+                        />
+                        {option}
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* Image upload */}
+                {field.inputType === 'image' && (
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          // For now, just store the file name
+                          // TODO: Implement actual image upload to storage
+                          setCustomData({ ...customData, [field.key]: file.name })
+                        }
+                      }}
+                      disabled={submitting}
+                      className="text-sm"
+                    />
+                    {customData[field.key] && (
+                      <p className="text-xs text-muted-foreground">
+                        選択: {customData[field.key]}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>

@@ -11,11 +11,18 @@ import {
   Visibility,
 } from '@/types/database'
 
+type InputType = 'text' | 'checkbox' | 'image'
+type EditDeadline = 'entry_closed' | 'entry_period' | 'bracket_published' | 'event_end'
+
 type CustomField = {
   key: string
   label: string
+  inputType: InputType
   required: boolean
+  hidden: boolean
+  editDeadline: EditDeadline
   placeholder: string
+  options?: string[] // For checkbox type
 }
 
 type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
@@ -57,7 +64,16 @@ export default function NewTournamentPage() {
   const addCustomField = () => {
     setCustomFields([
       ...customFields,
-      { key: `field_${Date.now()}`, label: '', required: false, placeholder: '' },
+      {
+        key: `field_${Date.now()}`,
+        label: '',
+        inputType: 'text',
+        required: false,
+        hidden: false,
+        editDeadline: 'bracket_published',
+        placeholder: '',
+        options: [],
+      },
     ])
   }
 
@@ -386,67 +402,200 @@ export default function NewTournamentPage() {
                   </div>
 
                   {customFields.length > 0 && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {customFields.map((field, index) => (
                         <div
                           key={field.key}
-                          className="border rounded-md p-4 space-y-3 bg-muted/30"
+                          className="border rounded-lg overflow-hidden bg-background"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              項目 {index + 1}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeCustomField(index)}
-                              disabled={loading}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            >
-                              ×
-                            </Button>
-                          </div>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">
-                                項目名
-                              </label>
-                              <Input
-                                value={field.label}
-                                onChange={(e) =>
-                                  updateCustomField(index, { label: e.target.value })
-                                }
-                                placeholder="例: マスターデュエルID"
-                                disabled={loading}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-xs text-muted-foreground">
-                                プレースホルダー
-                              </label>
-                              <Input
-                                value={field.placeholder}
-                                onChange={(e) =>
-                                  updateCustomField(index, { placeholder: e.target.value })
-                                }
-                                placeholder="例: 123-456-789"
-                                disabled={loading}
-                              />
-                            </div>
-                          </div>
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={field.required}
+                          {/* Header */}
+                          <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b">
+                            <Input
+                              value={field.label}
                               onChange={(e) =>
-                                updateCustomField(index, { required: e.target.checked })
+                                updateCustomField(index, { label: e.target.value })
                               }
+                              placeholder="項目名を入力"
                               disabled={loading}
-                              className="rounded"
+                              className="border-0 bg-transparent p-0 h-auto text-sm font-medium focus-visible:ring-0"
                             />
-                            必須項目にする
-                          </label>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newFields = [...customFields]
+                                  newFields.splice(index + 1, 0, { ...field, key: `field_${Date.now()}` })
+                                  setCustomFields(newFields)
+                                }}
+                                disabled={loading}
+                                className="h-8 w-8 p-0 text-muted-foreground"
+                                title="コピー"
+                              >
+                                📋
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCustomField(index)}
+                                disabled={loading}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                title="削除"
+                              >
+                                🗑️
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="p-4 space-y-4">
+                            {/* Input Type */}
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium text-muted-foreground">
+                                入力方式
+                              </label>
+                              <div className="flex flex-wrap gap-2">
+                                {[
+                                  { value: 'text', label: '記述式', icon: '≡' },
+                                  { value: 'checkbox', label: 'チェックボックス', icon: '✓' },
+                                  { value: 'image', label: '画像アップロード', icon: '🖼️' },
+                                ].map((option) => (
+                                  <label
+                                    key={option.value}
+                                    className={`
+                                      flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer text-sm
+                                      transition-colors
+                                      ${field.inputType === option.value
+                                        ? 'border-primary bg-primary/10 text-primary'
+                                        : 'hover:bg-muted/50'
+                                      }
+                                    `}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={`inputType-${index}`}
+                                      value={option.value}
+                                      checked={field.inputType === option.value}
+                                      onChange={(e) =>
+                                        updateCustomField(index, { inputType: e.target.value as InputType })
+                                      }
+                                      disabled={loading}
+                                      className="sr-only"
+                                    />
+                                    <span>{option.icon}</span>
+                                    {option.label}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Placeholder (only for text type) */}
+                            {field.inputType === 'text' && (
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">
+                                  プレースホルダー
+                                </label>
+                                <Input
+                                  value={field.placeholder}
+                                  onChange={(e) =>
+                                    updateCustomField(index, { placeholder: e.target.value })
+                                  }
+                                  placeholder="例: 123-456-789"
+                                  disabled={loading}
+                                />
+                              </div>
+                            )}
+
+                            {/* Checkbox options */}
+                            {field.inputType === 'checkbox' && (
+                              <div className="space-y-2">
+                                <label className="text-xs font-medium text-muted-foreground">
+                                  選択肢（改行で区切る）
+                                </label>
+                                <textarea
+                                  value={field.options?.join('\n') || ''}
+                                  onChange={(e) =>
+                                    updateCustomField(index, {
+                                      options: e.target.value.split('\n').filter(Boolean),
+                                    })
+                                  }
+                                  placeholder="選択肢1&#10;選択肢2&#10;選択肢3"
+                                  disabled={loading}
+                                  className="w-full px-3 py-2 border rounded-md text-sm min-h-[80px] resize-y"
+                                />
+                              </div>
+                            )}
+
+                            {/* Advanced Settings */}
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium text-muted-foreground">
+                                詳細設定
+                              </label>
+                              <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={!field.required}
+                                    onChange={(e) =>
+                                      updateCustomField(index, { required: !e.target.checked })
+                                    }
+                                    disabled={loading}
+                                    className="rounded"
+                                  />
+                                  任意回答
+                                </label>
+                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={field.hidden}
+                                    onChange={(e) =>
+                                      updateCustomField(index, { hidden: e.target.checked })
+                                    }
+                                    disabled={loading}
+                                    className="rounded"
+                                  />
+                                  回答を非公開
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Edit Deadline */}
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium text-muted-foreground">
+                                変更期限
+                              </label>
+                              <p className="text-xs text-muted-foreground">
+                                参加者が回答を変更できる期限です
+                              </p>
+                              <div className="space-y-1">
+                                {[
+                                  { value: 'entry_closed', label: 'エントリー後変更不可' },
+                                  { value: 'entry_period', label: 'エントリー期間終了まで' },
+                                  { value: 'bracket_published', label: 'トーナメント表公開まで' },
+                                  { value: 'event_end', label: 'イベント終了まで' },
+                                ].map((option) => (
+                                  <label
+                                    key={option.value}
+                                    className="flex items-center gap-2 text-sm cursor-pointer py-1"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={`editDeadline-${index}`}
+                                      value={option.value}
+                                      checked={field.editDeadline === option.value}
+                                      onChange={(e) =>
+                                        updateCustomField(index, { editDeadline: e.target.value as EditDeadline })
+                                      }
+                                      disabled={loading}
+                                      className="text-primary"
+                                    />
+                                    {option.label}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>

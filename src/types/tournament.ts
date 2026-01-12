@@ -69,11 +69,18 @@ export const matchFormatLabels: Record<Database['public']['Enums']['match_format
 }
 
 // Custom field definition for tournament entry
+export type InputType = 'text' | 'checkbox' | 'image'
+export type EditDeadline = 'entry_closed' | 'entry_period' | 'bracket_published' | 'event_end'
+
 export type CustomField = {
   key: string
   label: string
+  inputType: InputType
   required: boolean
+  hidden: boolean
+  editDeadline: EditDeadline
   placeholder: string
+  options?: string[] // For checkbox type
 }
 
 // Form types
