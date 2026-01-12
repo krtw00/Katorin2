@@ -41,6 +41,8 @@ export default function TournamentManagePage({ params }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -203,6 +205,31 @@ export default function TournamentManagePage({ params }: Props) {
     }
   }
 
+  const handleDeleteTournament = async () => {
+    if (!tournament) return
+
+    setDeleting(true)
+    setError('')
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('tournaments')
+        .delete()
+        .eq('id', tournament.id)
+
+      if (deleteError) {
+        setError(deleteError.message)
+        setDeleting(false)
+        return
+      }
+
+      router.push('/tournaments')
+    } catch (err) {
+      setError('削除に失敗しました')
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -295,6 +322,50 @@ export default function TournamentManagePage({ params }: Props) {
               matches={matches}
               onUpdateResult={handleUpdateMatchResult}
             />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Danger Zone - Only for draft tournaments */}
+      {tournament?.status === 'draft' && (
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">危険な操作</CardTitle>
+            <CardDescription>
+              これらの操作は取り消すことができません
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showDeleteConfirm ? (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                大会を削除
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  本当に「{tournament.title}」を削除しますか？この操作は取り消せません。
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                  >
+                    キャンセル
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteTournament}
+                    disabled={deleting}
+                  >
+                    {deleting ? '削除中...' : '削除する'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

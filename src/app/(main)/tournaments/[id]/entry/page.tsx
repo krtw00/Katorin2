@@ -36,11 +36,11 @@ export default function TournamentEntryPage({ params }: Props) {
   useEffect(() => {
     const loadTournament = async () => {
       const { id } = await params
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('tournaments')
         .select('*')
         .eq('id', id)
-        .single()
+        .single()) as { data: Tournament | null; error: any }
 
       if (error || !data) {
         setError('大会が見つかりませんでした')

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { TournamentCard } from '@/components/tournament/TournamentCard'
-import { TournamentWithOrganizer } from '@/types/tournament'
+import { TournamentWithOrganizer, Profile } from '@/types/tournament'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default async function MyPage() {
@@ -25,14 +25,14 @@ export default async function MyPage() {
   }
 
   // Get profile
-  const { data: profile } = await supabase
+  const { data: profile } = (await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single()) as { data: Profile | null }
 
   // Get tournaments organized by user
-  const { data: organizedTournaments } = await supabase
+  const { data: organizedTournaments } = (await supabase
     .from('tournaments')
     .select(
       `
@@ -41,7 +41,7 @@ export default async function MyPage() {
     `
     )
     .eq('organizer_id', user.id)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false })) as { data: TournamentWithOrganizer[] | null }
 
   // Get tournaments user is participating in
   const { data: participations } = await supabase
@@ -66,10 +66,10 @@ export default async function MyPage() {
     ...participatingTournaments.map((t: any) => t.id),
   ]
 
-  const { data: participantCounts } = await supabase
+  const { data: participantCounts } = (await supabase
     .from('participants')
     .select('tournament_id')
-    .in('tournament_id', allTournamentIds)
+    .in('tournament_id', allTournamentIds)) as { data: { tournament_id: string }[] | null }
 
   const countMap = new Map<string, number>()
   participantCounts?.forEach((p) => {
