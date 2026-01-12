@@ -702,36 +702,28 @@ export default function NewTournamentPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="start_at" className="text-sm font-medium">
-                      開催日時
-                    </label>
-                    <Input
-                      id="start_at"
-                      type="datetime-local"
-                      value={formData.start_at}
-                      onChange={(e) => updateFormData('start_at', e.target.value)}
-                      disabled={loading}
-                      className="max-w-xs"
-                    />
+                    <label className="text-sm font-medium">エントリー期間</label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Input
+                        id="entry_start_at"
+                        type="datetime-local"
+                        value={formData.entry_start_at}
+                        onChange={(e) => updateFormData('entry_start_at', e.target.value)}
+                        disabled={loading}
+                        className="w-auto"
+                      />
+                      <span className="text-muted-foreground">〜</span>
+                      <Input
+                        id="entry_deadline"
+                        type="datetime-local"
+                        value={formData.entry_deadline}
+                        onChange={(e) => updateFormData('entry_deadline', e.target.value)}
+                        disabled={loading}
+                        className="w-auto"
+                      />
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      トーナメントを開始する日時
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="entry_deadline" className="text-sm font-medium">
-                      エントリー締切
-                    </label>
-                    <Input
-                      id="entry_deadline"
-                      type="datetime-local"
-                      value={formData.entry_deadline}
-                      onChange={(e) => updateFormData('entry_deadline', e.target.value)}
-                      disabled={loading}
-                      className="max-w-xs"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      この日時までエントリーを受け付けます
+                      この期間中にエントリーを受け付けます
                     </p>
                   </div>
                 </div>
