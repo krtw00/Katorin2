@@ -59,6 +59,7 @@ export default function NewTournamentPage() {
       tournament_format: 'single_elimination' as TournamentFormat,
       match_format: 'bo3' as MatchFormat,
       max_participants: 32,
+      entry_limit_behavior: 'first_come' as 'first_come' | 'waitlist',
       visibility: 'public' as Visibility,
       entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
@@ -145,6 +146,7 @@ export default function NewTournamentPage() {
         tournament_format: formData.tournament_format,
         match_format: formData.match_format,
         max_participants: formData.max_participants,
+        entry_limit_behavior: formData.entry_limit_behavior,
         visibility: formData.visibility,
         entry_start_at: formData.entry_start_at
           ? new Date(formData.entry_start_at).toISOString()
@@ -388,6 +390,43 @@ export default function NewTournamentPage() {
                     className="w-32"
                   />
                   <p className="text-xs text-muted-foreground">4〜128人</p>
+                </div>
+
+                {/* Entry Limit Behavior */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">定員超過時の対応</label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'first_come', label: '先着順', desc: '定員に達したら自動的に受付終了' },
+                      { value: 'waitlist', label: 'キャンセル待ち', desc: '定員超過分はキャンセル待ちリストに追加' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`
+                          flex items-start gap-3 p-3 rounded-md border cursor-pointer
+                          transition-colors
+                          ${formData.entry_limit_behavior === option.value
+                            ? 'border-primary bg-primary/5'
+                            : 'hover:bg-muted/50'
+                          }
+                        `}
+                      >
+                        <input
+                          type="radio"
+                          name="entry_limit_behavior"
+                          value={option.value}
+                          checked={formData.entry_limit_behavior === option.value}
+                          onChange={(e) => updateFormData('entry_limit_behavior', e.target.value)}
+                          disabled={loading}
+                          className="mt-1"
+                        />
+                        <div>
+                          <div className="font-medium text-sm">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Custom Entry Fields */}
