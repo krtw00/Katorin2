@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { matchStatusLabels, MatchWithPlayers } from '@/types/tournament'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
 
@@ -96,14 +96,14 @@ function MatchCard({
       <PlayerRow
         player={match.player1}
         playerId={match.player1_id}
-        score={match.player1_score}
+        score={match.player1_score ?? 0}
         isWinner={match.winner_id === match.player1_id && !!match.winner_id}
       />
       <div className="border-t" />
       <PlayerRow
         player={match.player2}
         playerId={match.player2_id}
-        score={match.player2_score}
+        score={match.player2_score ?? 0}
         isWinner={match.winner_id === match.player2_id && !!match.winner_id}
       />
       <div
@@ -127,7 +127,7 @@ function ConnectorLines({
   positions: Map<string, MatchPosition>
   matches: MatchWithPlayers[]
 }) {
-  const lines: JSX.Element[] = []
+  const lines: React.ReactElement[] = []
 
   matches.forEach((match) => {
     if (!match.next_match_id) return

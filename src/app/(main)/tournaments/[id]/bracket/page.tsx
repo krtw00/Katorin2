@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { MatchWithPlayers } from '@/types/tournament'
+import { MatchWithPlayers, Tournament } from '@/types/tournament'
 import { RealtimeBracket } from '@/components/tournament/RealtimeBracket'
 
 type Props = {
@@ -21,11 +21,11 @@ export default async function TournamentBracketPage({ params }: Props) {
   const supabase = await createClient()
 
   // Fetch tournament
-  const { data: tournament, error: tournamentError } = await supabase
+  const { data: tournament, error: tournamentError } = (await supabase
     .from('tournaments')
     .select('*')
     .eq('id', id)
-    .single()
+    .single()) as { data: Tournament | null; error: any }
 
   if (tournamentError || !tournament) {
     notFound()
