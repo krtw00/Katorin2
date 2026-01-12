@@ -107,6 +107,7 @@ export default async function TournamentDetailPage({ params }: Props) {
             tournament={tournament}
             participants={(participants as ParticipantWithUser[]) || []}
             matches={(matches as MatchWithPlayers[]) || []}
+            isOrganizer={isOrganizer}
           />
         </CardContent>
         <CardFooter className="flex gap-2 flex-wrap border-t pt-6">

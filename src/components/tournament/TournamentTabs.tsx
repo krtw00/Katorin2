@@ -20,6 +20,7 @@ type Props = {
   participants: ParticipantWithUser[]
   matches: MatchWithPlayers[]
   defaultTab?: string
+  isOrganizer?: boolean
 }
 
 export function TournamentTabs({
@@ -27,6 +28,7 @@ export function TournamentTabs({
   participants,
   matches,
   defaultTab = 'overview',
+  isOrganizer = false,
 }: Props) {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
@@ -124,6 +126,7 @@ export function TournamentTabs({
           <RealtimeBracket
             tournamentId={tournament.id}
             initialMatches={matches}
+            isOrganizer={isOrganizer}
           />
         ) : (
           <div className="text-center py-12 text-muted-foreground">

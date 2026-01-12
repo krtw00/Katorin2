@@ -47,6 +47,7 @@ function MatchCard({
   const isCompleted = match.status === 'completed'
   const isInProgress = match.status === 'in_progress'
   const canPlay = match.player1_id && match.player2_id
+  const showClickIndicator = isClickable && canPlay && !isCompleted
 
   useEffect(() => {
     if (ref.current) {
@@ -99,8 +100,6 @@ function MatchCard({
       </span>
     </div>
   )
-
-  const showClickIndicator = isClickable && canPlay && !isCompleted
 
   return (
     <div
