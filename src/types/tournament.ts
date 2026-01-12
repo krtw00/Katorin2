@@ -68,6 +68,14 @@ export const matchFormatLabels: Record<Database['public']['Enums']['match_format
   bo5: 'マッチ戦（3本先取）',
 }
 
+// Custom field definition for tournament entry
+export type CustomField = {
+  key: string
+  label: string
+  required: boolean
+  placeholder: string
+}
+
 // Form types
 export type TournamentFormData = {
   title: string
@@ -79,10 +87,12 @@ export type TournamentFormData = {
   entry_start_at: string | null
   entry_deadline: string | null
   start_at: string | null
+  custom_fields?: CustomField[]
 }
 
 export type EntryFormData = {
-  master_duel_id: string
+  display_name: string
+  custom_data: Record<string, string>
 }
 
 export type MatchResultFormData = {

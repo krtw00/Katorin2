@@ -19,11 +19,44 @@ import {
   Visibility,
 } from '@/types/database'
 
+type CustomField = {
+  key: string
+  label: string
+  required: boolean
+  placeholder: string
+}
+
 export default function NewTournamentPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [customFields, setCustomFields] = useState<CustomField[]>([])
   const router = useRouter()
   const supabase = createClient()
+
+  const addCustomField = () => {
+    setCustomFields([
+      ...customFields,
+      { key: `field_${Date.now()}`, label: '', required: false, placeholder: '' },
+    ])
+  }
+
+  const updateCustomField = (index: number, field: Partial<CustomField>) => {
+    const updated = [...customFields]
+    updated[index] = { ...updated[index], ...field }
+    // keyをlabelから自動生成（英数字とアンダースコアのみ）
+    if (field.label !== undefined) {
+      updated[index].key = field.label
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '') || `field_${index}`
+    }
+    setCustomFields(updated)
+  }
+
+  const removeCustomField = (index: number) => {
+    setCustomFields(customFields.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -43,6 +76,9 @@ export default function NewTournamentPage() {
         return
       }
 
+      // Filter out custom fields with empty labels
+      const validCustomFields = customFields.filter((f) => f.label.trim() !== '')
+
       const tournamentData = {
         title: formData.get('title') as string,
         description: formData.get('description') as string,
@@ -61,6 +97,7 @@ export default function NewTournamentPage() {
           : null,
         organizer_id: user.id,
         status: 'draft' as const,
+        custom_fields: validCustomFields,
       }
 
       const { data, error: insertError } = await supabase
@@ -263,6 +300,98 @@ export default function NewTournamentPage() {
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            {/* Custom Entry Fields */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">エントリー時の入力項目</h3>
+                  <p className="text-xs text-muted-foreground">
+                    参加者にエントリー時に入力してもらう項目を設定できます
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addCustomField}
+                  disabled={loading}
+                >
+                  + 項目を追加
+                </Button>
+              </div>
+
+              {customFields.length > 0 && (
+                <div className="space-y-3">
+                  {customFields.map((field, index) => (
+                    <div
+                      key={field.key}
+                      className="border rounded-md p-3 space-y-3 bg-muted/30"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          項目 {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeCustomField(index)}
+                          disabled={loading}
+                          className="h-8 w-8 p-0 text-destructive"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">
+                            項目名
+                          </label>
+                          <Input
+                            value={field.label}
+                            onChange={(e) =>
+                              updateCustomField(index, { label: e.target.value })
+                            }
+                            placeholder="例: マスターデュエルID"
+                            disabled={loading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">
+                            プレースホルダー
+                          </label>
+                          <Input
+                            value={field.placeholder}
+                            onChange={(e) =>
+                              updateCustomField(index, {
+                                placeholder: e.target.value,
+                              })
+                            }
+                            placeholder="例: 123-456-789"
+                            disabled={loading}
+                          />
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={field.required}
+                          onChange={(e) =>
+                            updateCustomField(index, {
+                              required: e.target.checked,
+                            })
+                          }
+                          disabled={loading}
+                          className="rounded"
+                        />
+                        必須項目にする
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">

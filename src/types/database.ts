@@ -95,6 +95,7 @@ export interface Database {
           result_report_mode: ResultReportMode
           start_at: string | null
           current_round: number
+          custom_fields: Json
           created_at: string
           updated_at: string
         }
@@ -115,6 +116,7 @@ export interface Database {
           result_report_mode?: ResultReportMode
           start_at?: string | null
           current_round?: number
+          custom_fields?: Json
           created_at?: string
           updated_at?: string
         }
@@ -135,6 +137,7 @@ export interface Database {
           result_report_mode?: ResultReportMode
           start_at?: string | null
           current_round?: number
+          custom_fields?: Json
           created_at?: string
           updated_at?: string
         }
@@ -146,6 +149,8 @@ export interface Database {
           user_id: string
           entry_number: number
           master_duel_id: string | null
+          display_name: string | null
+          custom_data: Json
           seed: number | null
           final_placement: number | null
           created_at: string
@@ -156,6 +161,8 @@ export interface Database {
           user_id: string
           entry_number?: number
           master_duel_id?: string | null
+          display_name?: string | null
+          custom_data?: Json
           seed?: number | null
           final_placement?: number | null
           created_at?: string
@@ -166,6 +173,8 @@ export interface Database {
           user_id?: string
           entry_number?: number
           master_duel_id?: string | null
+          display_name?: string | null
+          custom_data?: Json
           seed?: number | null
           final_placement?: number | null
           created_at?: string

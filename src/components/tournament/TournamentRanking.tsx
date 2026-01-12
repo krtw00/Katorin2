@@ -210,18 +210,13 @@ export function TournamentRanking({ participants, matches, tournamentStatus }: P
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>
-                      {item.participant.user.display_name.substring(0, 2)}
+                      {(item.participant.display_name || item.participant.user.display_name).substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium">
-                      {item.participant.user.display_name}
+                      {item.participant.display_name || item.participant.user.display_name}
                     </div>
-                    {item.participant.master_duel_id && (
-                      <div className="text-xs text-muted-foreground">
-                        ID: {item.participant.master_duel_id}
-                      </div>
-                    )}
                   </div>
                 </div>
               </TableCell>
