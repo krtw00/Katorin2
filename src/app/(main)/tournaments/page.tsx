@@ -14,13 +14,12 @@ import {
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
 
-type FilterStatus = 'all' | 'recruiting' | 'in_progress' | 'completed'
+type FilterStatus = 'all' | 'recruiting' | 'in_progress'
 
 const filterOptions: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'すべて' },
   { value: 'recruiting', label: '募集中' },
   { value: 'in_progress', label: '開催中' },
-  { value: 'completed', label: '終了' },
 ]
 
 export default async function TournamentsPage({
@@ -51,9 +50,12 @@ export default async function TournamentsPage({
     tournamentsQuery = tournamentsQuery.ilike('title', `%${query}%`)
   }
 
-  // Apply status filter
+  // Apply status filter - exclude completed/cancelled/draft from public list
   if (statusFilter !== 'all') {
     tournamentsQuery = tournamentsQuery.eq('status', statusFilter)
+  } else {
+    // Show only recruiting and in_progress for "all"
+    tournamentsQuery = tournamentsQuery.in('status', ['recruiting', 'in_progress'])
   }
 
   const { data: tournaments, error: tournamentsError } =
@@ -86,14 +88,10 @@ export default async function TournamentsPage({
     const groups: Record<string, TournamentWithOrganizer[]> = {
       recruiting: [],
       in_progress: [],
-      completed: [],
-      other: [],
     }
     list.forEach((t) => {
       if (t.status === 'recruiting') groups.recruiting.push(t)
       else if (t.status === 'in_progress') groups.in_progress.push(t)
-      else if (t.status === 'completed') groups.completed.push(t)
-      else groups.other.push(t)
     })
     return groups
   }
@@ -179,22 +177,6 @@ export default async function TournamentsPage({
                     count={grouped.in_progress.length}
                   >
                     {grouped.in_progress.map((tournament) => (
-                      <TournamentListItem
-                        key={tournament.id}
-                        tournament={tournament}
-                        participantCount={countMap.get(tournament.id) || 0}
-                        showOrganizer
-                      />
-                    ))}
-                  </TournamentListSection>
-                )}
-
-                {grouped.completed.length > 0 && (
-                  <TournamentListSection
-                    title="終了"
-                    count={grouped.completed.length}
-                  >
-                    {grouped.completed.map((tournament) => (
                       <TournamentListItem
                         key={tournament.id}
                         tournament={tournament}
