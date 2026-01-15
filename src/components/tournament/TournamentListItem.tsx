@@ -11,6 +11,7 @@ type Props = {
   participantCount?: number
   showOrganizer?: boolean
   showManageLink?: boolean
+  placement?: number | null
 }
 
 const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -22,11 +23,19 @@ const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondar
   cancelled: { dot: '🔴', variant: 'destructive' },
 }
 
+const placementLabel = (placement: number) => {
+  if (placement === 1) return '🥇 優勝'
+  if (placement === 2) return '🥈 準優勝'
+  if (placement === 3) return '🥉 3位'
+  return `${placement}位`
+}
+
 export function TournamentListItem({
   tournament,
   participantCount = 0,
   showOrganizer = false,
   showManageLink = false,
+  placement,
 }: Props) {
   const config = statusConfig[tournament.status]
   const href = showManageLink
@@ -58,6 +67,9 @@ export function TournamentListItem({
           </span>
           {showOrganizer && (
             <span>主催: {tournament.organizer.display_name}</span>
+          )}
+          {placement && (
+            <span className="text-primary font-medium">{placementLabel(placement)}</span>
           )}
           {tournament.status === 'in_progress' && tournament.current_round && (
             <span className="text-primary">R{tournament.current_round}進行中</span>

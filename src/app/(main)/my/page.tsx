@@ -7,8 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import Link from 'next/link'
 import { TournamentWithOrganizer, Profile, TournamentStatus } from '@/types/tournament'
 import { ActionCard, NoActionsCard, ActionType } from '@/components/tournament/ActionCard'
 import {
@@ -169,6 +171,11 @@ export default async function MyPage() {
               <h1 className="font-bold text-lg">{profile?.display_name}</h1>
               <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
+            <Link href="/my/edit">
+              <Button variant="outline" size="sm">
+                編集
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -250,6 +257,16 @@ export default async function MyPage() {
                       ))}
                     </TournamentListSection>
                   )}
+
+                  {/* Link to full list */}
+                  <div className="text-center py-2">
+                    <Link
+                      href="/my/joined"
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      すべての参加大会を見る →
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="py-8 text-center">
@@ -303,7 +320,7 @@ export default async function MyPage() {
                   )}
 
                   {/* Completed tournaments */}
-                  {participatingByStatus.completed.length > 0 && (
+                  {organizedByStatus.completed.length > 0 && (
                     <TournamentListSection
                       title="終了"
                       count={organizedByStatus.completed.length}
@@ -318,6 +335,16 @@ export default async function MyPage() {
                       ))}
                     </TournamentListSection>
                   )}
+
+                  {/* Link to full list */}
+                  <div className="text-center py-2">
+                    <Link
+                      href="/my/hosted"
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      すべての主催大会を見る →
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="py-8 text-center">
