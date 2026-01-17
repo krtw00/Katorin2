@@ -34,7 +34,7 @@ export interface SupabaseArrayResponse<T> {
  * ```
  */
 export async function safeSupabaseSingle<T>(
-  query: Promise<{ data: unknown; error: PostgrestError | null }>
+  query: PromiseLike<{ data: unknown; error: PostgrestError | null }>
 ): Promise<T> {
   const { data, error } = await query
 
@@ -65,7 +65,7 @@ export async function safeSupabaseSingle<T>(
  * ```
  */
 export async function safeSupabaseArray<T>(
-  query: Promise<{ data: unknown; error: PostgrestError | null }>
+  query: PromiseLike<{ data: unknown; error: PostgrestError | null }>
 ): Promise<T[]> {
   const { data, error } = await query
 
@@ -91,7 +91,7 @@ export async function safeSupabaseArray<T>(
  * ```
  */
 export async function safeSupabaseMutation<T>(
-  query: Promise<{ data: unknown; error: PostgrestError | null }>
+  query: PromiseLike<{ data: unknown; error: PostgrestError | null }>
 ): Promise<T> {
   const { data, error } = await query
 
@@ -119,7 +119,7 @@ export async function safeSupabaseMutation<T>(
  * ```
  */
 export async function withErrorHandling<T>(
-  fn: () => Promise<T>
+  fn: () => PromiseLike<T>
 ): Promise<T> {
   try {
     return await fn()
@@ -143,7 +143,7 @@ export async function withErrorHandling<T>(
  * ```
  */
 export async function safeSupabaseOptional<T>(
-  query: Promise<{ data: unknown; error: PostgrestError | null }>
+  query: PromiseLike<{ data: unknown; error: PostgrestError | null }>
 ): Promise<T | null> {
   try {
     return await safeSupabaseSingle<T>(query)
