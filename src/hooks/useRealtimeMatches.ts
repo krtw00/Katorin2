@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { MatchWithPlayers } from '@/types/tournament'
@@ -11,7 +11,7 @@ export function useRealtimeMatches(
   initialMatches: MatchWithPlayers[]
 ) {
   const [matches, setMatches] = useState<MatchWithPlayers[]>(initialMatches)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let channel: RealtimeChannel
@@ -63,7 +63,7 @@ export function useRealtimeMatches(
         supabase.removeChannel(channel)
       }
     }
-  }, [tournamentId])
+  }, [tournamentId, supabase])
 
   return matches
 }
@@ -73,7 +73,7 @@ export function useRealtimeParticipants(
   initialCount: number
 ) {
   const [participantCount, setParticipantCount] = useState(initialCount)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let channel: RealtimeChannel
@@ -112,7 +112,7 @@ export function useRealtimeParticipants(
         supabase.removeChannel(channel)
       }
     }
-  }, [tournamentId])
+  }, [tournamentId, supabase])
 
   return participantCount
 }
