@@ -52,7 +52,7 @@ export function SeriesRankingTable({ rankings, pointSystem, showDetails = false 
             <TableCell className="text-center font-medium">
               {getRankDisplay(ranking.rank)}
             </TableCell>
-            <TableCell className="font-medium">{ranking.name}</TableCell>
+            <TableCell className="font-medium">{ranking.name || '不明'}</TableCell>
             <TableCell className="text-right font-bold text-primary">
               {ranking.total_points}pt
             </TableCell>
