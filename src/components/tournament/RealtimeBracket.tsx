@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { matchStatusLabels, MatchWithPlayers } from '@/types/tournament'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
 import { createClient } from '@/lib/supabase/client'
+import { handleError } from '@/lib/errors/handleError'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -186,8 +187,9 @@ function ScoreInputModal({
       const winnerId = player1Score > player2Score ? match.player1_id : match.player2_id
       await onSubmit(match.id, player1Score, player2Score, winnerId)
       onClose()
-    } catch (err: any) {
-      setError(err.message || '結果の保存に失敗しました')
+    } catch (err) {
+      const error = handleError(err)
+      setError(error.message)
     } finally {
       setSubmitting(false)
     }
@@ -319,24 +321,34 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
   const [selectedMatch, setSelectedMatch] = useState<MatchWithPlayers | null>(null)
   const supabase = createClient()
 
-  // Group matches by round
-  const matchesByRound = new Map<number, MatchWithPlayers[]>()
-  matches.forEach((match) => {
-    if (!matchesByRound.has(match.round)) {
-      matchesByRound.set(match.round, [])
+  // Group matches by round (memoized)
+  const matchesByRound = useMemo(() => {
+    const map = new Map<number, MatchWithPlayers[]>()
+    matches.forEach((match) => {
+      if (!map.has(match.round)) {
+        map.set(match.round, [])
+      }
+      map.get(match.round)?.push(match)
+    })
+    return map
+  }, [matches])
+
+  // Calculate rounds and maxRound (memoized)
+  const { rounds, maxRound } = useMemo(() => {
+    const roundsArray = Array.from(matchesByRound.keys()).sort((a, b) => a - b)
+    return {
+      rounds: roundsArray,
+      maxRound: Math.max(...roundsArray, 0),
     }
-    matchesByRound.get(match.round)?.push(match)
-  })
+  }, [matchesByRound])
 
-  const rounds = Array.from(matchesByRound.keys()).sort((a, b) => a - b)
-  const maxRound = Math.max(...rounds, 0)
-
-  const getRoundLabel = (round: number) => {
+  // Get round label (memoized callback)
+  const getRoundLabel = useCallback((round: number) => {
     if (round === maxRound) return '決勝'
     if (round === maxRound - 1 && maxRound >= 2) return '準決勝'
     if (round === maxRound - 2 && maxRound >= 3) return '準々決勝'
     return `${round}回戦`
-  }
+  }, [maxRound])
 
   const handlePositionChange = useCallback((id: string, rect: DOMRect) => {
     setPositions(prev => {
@@ -358,7 +370,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
     })
   }, [matches])
 
-  const handleUpdateResult = async (
+  const handleUpdateResult = useCallback(async (
     matchId: string,
     player1Score: number,
     player2Score: number,
@@ -376,7 +388,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
       })
       .eq('id', matchId)
 
-    if (updateError) throw updateError
+    if (updateError) throw handleError(updateError)
 
     // Advance winner to next match if applicable
     const currentMatch = matches.find(m => m.id === matchId)
@@ -384,13 +396,15 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
       const nextMatch = matches.find(m => m.id === currentMatch.next_match_id)
       if (nextMatch) {
         const updateField = currentMatch.next_match_slot === 1 ? 'player1_id' : 'player2_id'
-        await supabase
+        const { error } = await supabase
           .from('matches')
           .update({ [updateField]: winnerId })
           .eq('id', currentMatch.next_match_id)
+
+        if (error) throw handleError(error)
       }
     }
-  }
+  }, [supabase, matches])
 
   useEffect(() => {
     if (containerRef.current) {

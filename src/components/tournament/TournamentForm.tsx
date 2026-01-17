@@ -11,6 +11,7 @@ import {
   Visibility,
 } from '@/types/database'
 import { Tournament, CustomField, InputType, EditDeadline } from '@/types/tournament'
+import { parseCustomFields } from '@/lib/types/guards'
 
 type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
 
@@ -31,9 +32,13 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [activeSection, setActiveSection] = useState<Section>('overview')
-  const [customFields, setCustomFields] = useState<CustomField[]>(
-    (initialData?.custom_fields as CustomField[]) || []
-  )
+  const [customFields, setCustomFields] = useState<CustomField[]>(() => {
+    try {
+      return parseCustomFields(initialData?.custom_fields)
+    } catch {
+      return []
+    }
+  })
   const [coverPreview, setCoverPreview] = useState<string | null>(
     initialData?.cover_image_url || null
   )
