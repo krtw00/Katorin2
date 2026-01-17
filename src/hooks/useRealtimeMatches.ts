@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { MatchWithPlayers } from '@/types/tournament'
+import { parseMatchesWithPlayers } from '@/lib/types/guards'
 
 export function useRealtimeMatches(
   tournamentId: string,
@@ -44,7 +45,11 @@ export function useRealtimeMatches(
               .order('match_number', { ascending: true })
 
             if (updatedMatches) {
-              setMatches(updatedMatches as any)
+              try {
+                setMatches(parseMatchesWithPlayers(updatedMatches))
+              } catch (error) {
+                console.error('Failed to parse updated matches:', error)
+              }
             }
           }
         )
