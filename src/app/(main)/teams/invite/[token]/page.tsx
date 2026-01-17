@@ -21,11 +21,20 @@ export default function TeamInvitePage() {
   const [success, setSuccess] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [alreadyMember, setAlreadyMember] = useState(false)
+  const [token, setToken] = useState<string>('')
 
   useEffect(() => {
     const fetchInvite = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
+
+      const inviteToken = params.token as string
+      if (!inviteToken) {
+        setError('招待トークンが見つかりません')
+        setLoading(false)
+        return
+      }
+      setToken(inviteToken)
 
       // 招待情報を取得
       const { data: inviteData, error: inviteError } = await supabase
@@ -34,7 +43,7 @@ export default function TeamInvitePage() {
           *,
           team:teams(*)
         `)
-        .eq('invite_token', params.token)
+        .eq('invite_token', inviteToken)
         .single()
 
       if (inviteError || !inviteData) {
@@ -72,7 +81,7 @@ export default function TeamInvitePage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      router.push(`/login?redirect=/teams/invite/${params.token}`)
+      router.push(`/login?redirect=/teams/invite/${token}`)
       return
     }
 
@@ -226,7 +235,7 @@ export default function TeamInvitePage() {
                   <p className="text-sm text-muted-foreground text-center">
                     チームに参加するにはログインが必要です
                   </p>
-                  <Link href={`/login?redirect=/teams/invite/${params.token}`}>
+                  <Link href={`/login?redirect=/teams/invite/${token}`}>
                     <Button className="w-full">ログインして参加</Button>
                   </Link>
                 </div>
