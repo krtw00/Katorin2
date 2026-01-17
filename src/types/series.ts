@@ -85,7 +85,7 @@ export type SeriesRanking = {
   series_id: string
   user_id: string | null
   team_id: string | null
-  name: string
+  name: string | null
   total_points: number
   tournaments_played: number
   total_wins: number

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SeriesForm } from '@/components/series/SeriesForm'
-import { Series } from '@/types/series'
+import { Series, PointConfig } from '@/types/series'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -48,7 +48,10 @@ export default function EditSeriesPage({ params }: Props) {
         return
       }
 
-      setSeries(seriesData)
+      setSeries({
+        ...seriesData,
+        point_config: seriesData.point_config as PointConfig,
+      })
       setLoading(false)
     }
 
