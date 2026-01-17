@@ -89,6 +89,16 @@ export function useAuth() {
     return { error }
   }
 
+  const signInWithOAuth = async (provider: 'google' | 'discord') => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+    return { data, error }
+  }
+
   return {
     user,
     profile,
@@ -97,5 +107,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    signInWithOAuth,
   }
 }
