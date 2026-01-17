@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { MatchWithPlayers } from '@/types/tournament'
+import { parseMatchesWithPlayers } from '@/lib/types/guards'
 
 export function useRealtimeMatches(
   tournamentId: string,
   initialMatches: MatchWithPlayers[]
 ) {
   const [matches, setMatches] = useState<MatchWithPlayers[]>(initialMatches)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let channel: RealtimeChannel
@@ -44,7 +45,11 @@ export function useRealtimeMatches(
               .order('match_number', { ascending: true })
 
             if (updatedMatches) {
-              setMatches(updatedMatches as any)
+              try {
+                setMatches(parseMatchesWithPlayers(updatedMatches))
+              } catch (error) {
+                console.error('Failed to parse updated matches:', error)
+              }
             }
           }
         )
@@ -58,7 +63,7 @@ export function useRealtimeMatches(
         supabase.removeChannel(channel)
       }
     }
-  }, [tournamentId])
+  }, [tournamentId, supabase])
 
   return matches
 }
@@ -68,7 +73,7 @@ export function useRealtimeParticipants(
   initialCount: number
 ) {
   const [participantCount, setParticipantCount] = useState(initialCount)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let channel: RealtimeChannel
@@ -107,7 +112,7 @@ export function useRealtimeParticipants(
         supabase.removeChannel(channel)
       }
     }
-  }, [tournamentId])
+  }, [tournamentId, supabase])
 
   return participantCount
 }
