@@ -27,6 +27,13 @@ export default function TeamInvitePage() {
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
 
+      const token = params.token as string
+      if (!token) {
+        setError('トークンが見つかりません')
+        setLoading(false)
+        return
+      }
+
       // 招待情報を取得
       const { data: inviteData, error: inviteError } = await supabase
         .from('team_invites')
@@ -34,7 +41,7 @@ export default function TeamInvitePage() {
           *,
           team:teams(*)
         `)
-        .eq('invite_token', params.token)
+        .eq('invite_token', token)
         .single()
 
       if (inviteError || !inviteData) {
