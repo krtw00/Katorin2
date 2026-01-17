@@ -48,7 +48,17 @@ export default function EditSeriesPage({ params }: Props) {
         return
       }
 
-      setSeries(seriesData)
+      // Validate and convert point_config
+      if (!seriesData.point_config) {
+        setError('ポイント設定が不正です')
+        setLoading(false)
+        return
+      }
+
+      setSeries({
+        ...seriesData,
+        point_config: seriesData.point_config as Series['point_config']
+      })
       setLoading(false)
     }
 
