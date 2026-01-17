@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Tournament, CustomField } from '@/types/tournament'
 import { TournamentFormData } from './useTournamentFormState'
 import { handleError } from '@/lib/errors/handleError'
 import { createUnauthorizedError } from '@/lib/errors/handleError'
-import { safeSupabaseSingle, safeSupabaseMutation } from '@/lib/supabase/types'
+import { safeSupabaseMutation } from '@/lib/supabase/types'
 
 export interface SubmitOptions {
   mode: 'create' | 'edit'
@@ -51,7 +51,7 @@ export function useTournamentSubmit() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   /**
    * トーナメントを作成
