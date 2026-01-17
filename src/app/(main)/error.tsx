@@ -81,14 +81,14 @@ export default function Error({
                   </pre>
                 </div>
               )}
-              {isTournamentError && error.details && (
+              {isTournamentError && error.details ? (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">詳細:</p>
                   <pre className="text-xs bg-background p-2 rounded overflow-auto">
                     {JSON.stringify(error.details, null, 2)}
                   </pre>
                 </div>
-              )}
+              ) : null}
             </div>
           </details>
         )}
