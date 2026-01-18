@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent, useRef } from 'react'
+import { useState, FormEvent, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,11 @@ import {
   TournamentFormat,
   MatchFormat,
   Visibility,
+  Tables,
 } from '@/types/database'
 import { Tournament, CustomField, InputType, EditDeadline } from '@/types/tournament'
+
+type Series = Tables<'series'>
 
 type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
 
@@ -37,6 +40,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
   const [coverPreview, setCoverPreview] = useState<string | null>(
     initialData?.cover_image_url || null
   )
+  const [series, setSeries] = useState<Series[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -60,6 +64,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         max_participants: initialData.max_participants,
         entry_limit_behavior: initialData.entry_limit_behavior,
         visibility: initialData.visibility,
+        series_id: initialData.series_id || '',
         entry_start_at: formatDateTimeLocal(initialData.entry_start_at),
         entry_deadline: formatDateTimeLocal(initialData.entry_deadline),
         start_at: formatDateTimeLocal(initialData.start_at),
@@ -74,6 +79,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       max_participants: 32,
       entry_limit_behavior: 'first_come' as 'first_come' | 'waitlist',
       visibility: 'public' as Visibility,
+      series_id: '',
       entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
       start_at: formatDateTimeLocal(now),
@@ -83,6 +89,27 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
   const updateFormData = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
+
+  // Fetch user's series
+  useEffect(() => {
+    const fetchSeries = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from('series')
+        .select('*')
+        .eq('organizer_id', user.id)
+        .in('status', ['draft', 'active'])
+        .order('created_at', { ascending: false })
+
+      if (data) {
+        setSeries(data)
+      }
+    }
+
+    fetchSeries()
+  }, [supabase])
 
   const addCustomField = () => {
     setCustomFields([
@@ -161,6 +188,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         max_participants: formData.max_participants,
         entry_limit_behavior: formData.entry_limit_behavior,
         visibility: formData.visibility,
+        series_id: formData.series_id || null,
         entry_start_at: formData.entry_start_at
           ? new Date(formData.entry_start_at).toISOString()
           : null,
@@ -376,6 +404,32 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     disabled={loading}
                   />
                 </div>
+
+                {/* Series Selection */}
+                {series.length > 0 && (
+                  <div className="space-y-2">
+                    <label htmlFor="series_id" className="text-sm font-medium">
+                      シリーズ
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      この大会をシリーズに紐付けることができます
+                    </p>
+                    <select
+                      id="series_id"
+                      value={formData.series_id}
+                      onChange={(e) => updateFormData('series_id', e.target.value)}
+                      disabled={loading}
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="">シリーズに紐付けない</option>
+                      {series.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Visibility */}
                 <div className="space-y-2">
