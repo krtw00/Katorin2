@@ -124,6 +124,9 @@ export default async function TournamentDetailPage({ params }: Props) {
               <Button variant="outline">ログインしてエントリー</Button>
             </Link>
           )}
+          <Link href={`/tournaments/${tournament.id}/participants`}>
+            <Button variant="outline">参加者一覧を見る</Button>
+          </Link>
           {isOrganizer && (
             <Link href={`/tournaments/${tournament.id}/manage`}>
               <Button variant="outline">管理画面</Button>
