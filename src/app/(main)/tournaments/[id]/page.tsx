@@ -26,12 +26,13 @@ export default async function TournamentDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch tournament with organizer
+  // Fetch tournament with organizer and series
   const { data: tournament, error } = await supabase
     .from('tournaments')
     .select(`
       *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
+      organizer:profiles!tournaments_organizer_id_fkey(*),
+      series:series(*)
     `)
     .eq('id', id)
     .single()
@@ -92,6 +93,16 @@ export default async function TournamentDetailPage({ params }: Props) {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
+              {tournament.series && (
+                <div className="mb-2">
+                  <Link
+                    href={`/series/${tournament.series.id}`}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                  >
+                    🏆 {tournament.series.name}
+                  </Link>
+                </div>
+              )}
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
               <CardDescription className="mt-1">
                 {(participants?.length || 0)}名参加
