@@ -100,6 +100,16 @@ export default async function TournamentDetailPage({ params }: Props) {
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
+              {tournament.series && (
+                <div className="mb-2">
+                  <Link
+                    href={`/series/${tournament.series.id}`}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                  >
+                    🏆 {tournament.series.name}
+                  </Link>
+                </div>
+              )}
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
               <CardDescription className="mt-1">
                 {(participants?.length || 0)} / {tournament.max_participants}人

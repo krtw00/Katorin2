@@ -51,6 +51,12 @@ export default function TeamMembersPage() {
   const [creatingInvite, setCreatingInvite] = useState(false)
 
   const fetchData = async () => {
+    if (!params.id || typeof params.id !== 'string') {
+      setError('チームIDが無効です')
+      setLoading(false)
+      return
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login')
