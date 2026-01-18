@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export function Header() {
   const { user, profile, isAuthenticated, signOut } = useAuth()
@@ -40,6 +41,7 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           {isAuthenticated && profile ? (
             <>
               <Link href="/my">
