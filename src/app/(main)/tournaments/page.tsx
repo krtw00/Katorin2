@@ -14,22 +14,30 @@ import {
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
 
-type FilterStatus = 'all' | 'recruiting' | 'in_progress'
+type FilterStatus = 'all' | 'recruiting' | 'in_progress' | 'completed'
 
 const filterOptions: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'すべて' },
   { value: 'recruiting', label: '募集中' },
   { value: 'in_progress', label: '開催中' },
+  { value: 'completed', label: '終了' },
 ]
 
 export default async function TournamentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: FilterStatus }>
+  searchParams: Promise<{
+    q?: string
+    status?: FilterStatus
+    start_from?: string
+    start_to?: string
+  }>
 }) {
   const params = await searchParams
   const query = params.q || ''
   const statusFilter = params.status || 'all'
+  const startFrom = params.start_from || ''
+  const startTo = params.start_to || ''
 
   const supabase = await createClient()
 
@@ -56,6 +64,14 @@ export default async function TournamentsPage({
   } else {
     // Show only recruiting and in_progress for "all"
     tournamentsQuery = tournamentsQuery.in('status', ['recruiting', 'in_progress'])
+  }
+
+  // Apply date range filter
+  if (startFrom) {
+    tournamentsQuery = tournamentsQuery.gte('start_at', startFrom)
+  }
+  if (startTo) {
+    tournamentsQuery = tournamentsQuery.lte('start_at', startTo)
   }
 
   const { data: tournaments, error: tournamentsError } =
@@ -88,10 +104,12 @@ export default async function TournamentsPage({
     const groups: Record<string, TournamentWithOrganizer[]> = {
       recruiting: [],
       in_progress: [],
+      completed: [],
     }
     list.forEach((t) => {
       if (t.status === 'recruiting') groups.recruiting.push(t)
       else if (t.status === 'in_progress') groups.in_progress.push(t)
+      else if (t.status === 'completed') groups.completed.push(t)
     })
     return groups
   }
@@ -112,13 +130,30 @@ export default async function TournamentsPage({
 
       {/* Search & Filters */}
       <div className="space-y-4 mb-6">
-        <form action="/tournaments" method="get" className="flex gap-2">
+        <form action="/tournaments" method="get" className="flex flex-wrap gap-2">
           <Input
             name="q"
             placeholder="大会を検索..."
             defaultValue={query}
             className="max-w-sm"
           />
+          <div className="flex gap-2 items-center">
+            <Input
+              type="date"
+              name="start_from"
+              defaultValue={startFrom}
+              className="max-w-[150px]"
+              placeholder="開始日（From）"
+            />
+            <span className="text-muted-foreground">〜</span>
+            <Input
+              type="date"
+              name="start_to"
+              defaultValue={startTo}
+              className="max-w-[150px]"
+              placeholder="開始日（To）"
+            />
+          </div>
           {statusFilter !== 'all' && (
             <input type="hidden" name="status" value={statusFilter} />
           )}
@@ -135,6 +170,8 @@ export default async function TournamentsPage({
               href={`/tournaments?${new URLSearchParams({
                 ...(query ? { q: query } : {}),
                 ...(option.value !== 'all' ? { status: option.value } : {}),
+                ...(startFrom ? { start_from: startFrom } : {}),
+                ...(startTo ? { start_to: startTo } : {}),
               }).toString()}`}
             >
               <Badge
@@ -177,6 +214,22 @@ export default async function TournamentsPage({
                     count={grouped.in_progress.length}
                   >
                     {grouped.in_progress.map((tournament) => (
+                      <TournamentListItem
+                        key={tournament.id}
+                        tournament={tournament}
+                        participantCount={countMap.get(tournament.id) || 0}
+                        showOrganizer
+                      />
+                    ))}
+                  </TournamentListSection>
+                )}
+
+                {grouped.completed.length > 0 && (
+                  <TournamentListSection
+                    title="終了"
+                    count={grouped.completed.length}
+                  >
+                    {grouped.completed.map((tournament) => (
                       <TournamentListItem
                         key={tournament.id}
                         tournament={tournament}
