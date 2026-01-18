@@ -17,8 +17,11 @@ import {
 } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Profile } from '@/types/tournament'
+import { useTranslations } from 'next-intl'
 
 export default function ProfileEditPage() {
+  const t = useTranslations('mypage.edit')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -48,7 +51,7 @@ export default function ProfileEditPage() {
         .single()
 
       if (error) {
-        setError('プロフィールの読み込みに失敗しました')
+        setError(t('loadError'))
         setLoading(false)
         return
       }
@@ -69,7 +72,7 @@ export default function ProfileEditPage() {
     setSuccess(false)
 
     if (!displayName.trim()) {
-      setError('表示名は必須です')
+      setError(t('displayNameRequired'))
       return
     }
 
@@ -78,7 +81,7 @@ export default function ProfileEditPage() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        setError('ログインが必要です')
+        setError(t('loginRequired'))
         return
       }
 
@@ -92,7 +95,7 @@ export default function ProfileEditPage() {
         .eq('id', user.id)
 
       if (updateError) {
-        setError('更新に失敗しました: ' + updateError.message)
+        setError(t('updateError', { error: updateError.message }))
         return
       }
 
@@ -108,7 +111,7 @@ export default function ProfileEditPage() {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">読み込み中...</p>
+            <p className="text-muted-foreground">{t('loading')}</p>
           </CardContent>
         </Card>
       </div>
@@ -119,9 +122,9 @@ export default function ProfileEditPage() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>プロフィール編集</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
           <CardDescription>
-            プロフィール情報を更新します
+            {t('description')}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -134,31 +137,31 @@ export default function ProfileEditPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="text-sm text-muted-foreground">
-                アバター画像の変更は今後対応予定です
+                {t('avatarNotice')}
               </div>
             </div>
 
             {/* Display Name */}
             <div className="space-y-2">
               <Label htmlFor="displayName">
-                表示名 <span className="text-destructive">*</span>
+                {t('displayName')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="displayName"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="表示名を入力"
+                placeholder={t('displayNamePlaceholder')}
                 maxLength={50}
                 required
               />
               <p className="text-xs text-muted-foreground">
-                大会やランキングで表示される名前です
+                {t('displayNameHelp')}
               </p>
             </div>
 
             {/* Master Duel ID */}
             <div className="space-y-2">
-              <Label htmlFor="masterDuelId">マスターデュエルID</Label>
+              <Label htmlFor="masterDuelId">{t('masterDuelId')}</Label>
               <Input
                 id="masterDuelId"
                 value={masterDuelId}
@@ -167,18 +170,18 @@ export default function ProfileEditPage() {
                 maxLength={20}
               />
               <p className="text-xs text-muted-foreground">
-                対戦相手との連絡に使用します（任意）
+                {t('masterDuelIdHelp')}
               </p>
             </div>
 
             {/* Bio */}
             <div className="space-y-2">
-              <Label htmlFor="bio">自己紹介</Label>
+              <Label htmlFor="bio">{t('bio')}</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="自己紹介を入力（任意）"
+                placeholder={t('bioPlaceholder')}
                 rows={3}
               />
             </div>
@@ -191,7 +194,7 @@ export default function ProfileEditPage() {
             )}
             {success && (
               <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
-                保存しました。マイページに戻ります...
+                {t('saveSuccess')}
               </div>
             )}
           </CardContent>
@@ -202,10 +205,10 @@ export default function ProfileEditPage() {
               onClick={() => router.push('/my')}
               disabled={isPending}
             >
-              キャンセル
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? '保存中...' : '保存'}
+              {isPending ? t('saving') : tCommon('save')}
             </Button>
           </CardFooter>
         </form>

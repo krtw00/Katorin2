@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export function Header() {
+  const t = useTranslations('nav')
   const { user, profile, isAuthenticated, signOut } = useAuth()
   const router = useRouter()
 
@@ -28,14 +30,14 @@ export function Header() {
               href="/tournaments"
               className="text-sm font-medium hover:text-primary"
             >
-              大会一覧
+              {t('tournaments')}
             </Link>
             {isAuthenticated && (
               <Link
                 href="/my"
                 className="text-sm font-medium text-muted-foreground hover:text-primary"
               >
-                マイページ
+                {t('mypage')}
               </Link>
             )}
           </nav>
@@ -57,18 +59,18 @@ export function Header() {
                 </div>
               </Link>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
-                ログアウト
+                {t('logout')}
               </Button>
             </>
           ) : (
             <>
               <Link href="/login">
                 <Button variant="outline" size="sm">
-                  ログイン
+                  {t('login')}
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm">新規登録</Button>
+                <Button size="sm">{t('register')}</Button>
               </Link>
             </>
           )}

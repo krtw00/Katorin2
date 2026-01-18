@@ -18,6 +18,7 @@ import {
   RankingPointConfig,
   WinsPointConfig,
 } from '@/types/series'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   mode: 'create' | 'edit'
@@ -26,6 +27,8 @@ type Props = {
 }
 
 export function SeriesForm({ mode, initialData, onSuccess }: Props) {
+  const t = useTranslations('series.form')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const supabase = createClient()
 
@@ -76,13 +79,13 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setError('ログインが必要です')
+        setError(t('loginRequired'))
         return
       }
 
       // Validation
       if (!formData.name.trim()) {
-        setError('シリーズ名を入力してください')
+        setError(t('nameRequired'))
         return
       }
 
@@ -133,7 +136,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         }
       }
     } catch (err: any) {
-      setError(err.message || '保存に失敗しました')
+      setError(err.message || t('saveFailed'))
     } finally {
       setLoading(false)
     }
@@ -146,10 +149,10 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => router.back()}>
-              ← 戻る
+              {t('back')}
             </Button>
             <h1 className="text-lg font-bold">
-              {mode === 'create' ? 'シリーズを作成' : 'シリーズを編集'}
+              {mode === 'create' ? t('createTitle') : t('editTitle')}
             </h1>
           </div>
           <div className="flex gap-2">
@@ -158,13 +161,13 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               onClick={(e) => handleSubmit(e, true)}
               disabled={loading}
             >
-              下書き保存
+              {t('saveDraft')}
             </Button>
             <Button
               onClick={(e) => handleSubmit(e, false)}
               disabled={loading}
             >
-              {loading ? '保存中...' : mode === 'edit' ? '変更を保存' : 'シリーズを作成'}
+              {loading ? t('saving') : mode === 'edit' ? t('saveChanges') : t('createTitle')}
             </Button>
           </div>
         </div>
@@ -185,26 +188,26 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* Basic Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">基本情報</CardTitle>
+              <CardTitle className="text-lg">{t('basicInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">シリーズ名 *</Label>
+                <Label htmlFor="name">{t('nameLabel')}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => updateFormData('name', e.target.value)}
-                  placeholder="例: 2025年シーズンリーグ"
+                  placeholder={t('namePlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">説明</Label>
+                <Label htmlFor="description">{t('descriptionLabel')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => updateFormData('description', e.target.value)}
-                  placeholder="シリーズの説明を入力..."
+                  placeholder={t('descriptionPlaceholder')}
                   rows={4}
                 />
               </div>
@@ -214,7 +217,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* Entry Type */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">参加形式</CardTitle>
+              <CardTitle className="text-lg">{t('entryTypeLabel')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -227,7 +230,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                     onChange={() => updateFormData('entry_type', 'individual')}
                     className="w-4 h-4"
                   />
-                  <span>個人戦</span>
+                  <span>{useTranslations('series.entryType')('individual')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -238,7 +241,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                     onChange={() => updateFormData('entry_type', 'team')}
                     className="w-4 h-4"
                   />
-                  <span>チーム戦</span>
+                  <span>{useTranslations('series.entryType')('team')}</span>
                 </label>
               </div>
             </CardContent>
@@ -247,7 +250,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* Point System */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">ポイントシステム</CardTitle>
+              <CardTitle className="text-lg">{t('pointSystemLabel')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-4">
@@ -278,11 +281,11 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               {/* Point Config */}
               {formData.point_system === 'ranking' ? (
                 <div className="space-y-2">
-                  <Label>順位別ポイント</Label>
+                  <Label>{t('rankingPoints')}</Label>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {Object.entries(formData.point_config as RankingPointConfig).map(([rank, points]) => (
                       <div key={rank} className="flex items-center gap-2">
-                        <span className="w-16">{rank}位:</span>
+                        <span className="w-16">{rank}{t('rankLabel')}</span>
                         <Input
                           type="number"
                           value={points}
@@ -293,16 +296,16 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                           }}
                           className="w-20 h-8"
                         />
-                        <span>pt</span>
+                        <span>{useTranslations('series.detail')('points')}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label>勝利ポイント</Label>
+                  <Label>{t('winPoints')}</Label>
                   <div className="flex items-center gap-2">
-                    <span>1勝につき:</span>
+                    <span>{t('perWinLabel')}</span>
                     <Input
                       type="number"
                       value={(formData.point_config as WinsPointConfig).points_per_win}
@@ -314,7 +317,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                       }}
                       className="w-20 h-8"
                     />
-                    <span>pt</span>
+                    <span>{useTranslations('series.detail')('points')}</span>
                   </div>
                 </div>
               )}
@@ -324,12 +327,12 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* Period */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">開催期間</CardTitle>
+              <CardTitle className="text-lg">{t('periodLabel')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">開始日</Label>
+                  <Label htmlFor="start_date">{useTranslations('series.detail')('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -338,7 +341,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">終了日</Label>
+                  <Label htmlFor="end_date">{useTranslations('series.detail')('endDate')}</Label>
                   <Input
                     id="end_date"
                     type="date"

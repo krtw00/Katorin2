@@ -14,12 +14,14 @@ import {
 import { TournamentWithOrganizer } from '@/types/tournament'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
 import { SeriesRankingTable } from '@/components/series/SeriesRankingTable'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 export default async function SeriesDetailPage({ params }: Props) {
+  const t = await getTranslations('series')
   const { id } = await params
   const supabase = await createClient()
 
@@ -96,20 +98,20 @@ export default async function SeriesDetailPage({ params }: Props) {
               {seriesStatusLabels[series.status]}
             </Badge>
             <Badge variant="outline">
-              {series.entry_type === 'individual' ? '個人戦' : 'チーム戦'}
+              {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            主催: {series.organizer.display_name}
+            {t('detail.organizer')}: {series.organizer.display_name}
           </p>
         </div>
         {isOrganizer && (
           <div className="flex gap-2">
             <Link href={`/series/${id}/edit`}>
-              <Button variant="outline">編集</Button>
+              <Button variant="outline">{t('detail.edit')}</Button>
             </Link>
             <Link href={`/tournaments/new?series_id=${id}`}>
-              <Button>大会を追加</Button>
+              <Button>{t('detail.addTournament')}</Button>
             </Link>
           </div>
         )}
@@ -120,13 +122,13 @@ export default async function SeriesDetailPage({ params }: Props) {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{tournaments?.length || 0}</div>
-            <div className="text-sm text-muted-foreground">大会数</div>
+            <div className="text-sm text-muted-foreground">{t('detail.tournamentCount')}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{rankings?.length || 0}</div>
-            <div className="text-sm text-muted-foreground">参加者数</div>
+            <div className="text-sm text-muted-foreground">{t('detail.participantCount')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -134,9 +136,9 @@ export default async function SeriesDetailPage({ params }: Props) {
             <div className="text-sm font-medium">
               {series.start_date
                 ? new Date(series.start_date).toLocaleDateString('ja-JP')
-                : '未設定'}
+                : t('detail.notSet')}
             </div>
-            <div className="text-sm text-muted-foreground">開始日</div>
+            <div className="text-sm text-muted-foreground">{t('detail.startDate')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -144,9 +146,9 @@ export default async function SeriesDetailPage({ params }: Props) {
             <div className="text-sm font-medium">
               {series.end_date
                 ? new Date(series.end_date).toLocaleDateString('ja-JP')
-                : '未設定'}
+                : t('detail.notSet')}
             </div>
-            <div className="text-sm text-muted-foreground">終了日</div>
+            <div className="text-sm text-muted-foreground">{t('detail.endDate')}</div>
           </CardContent>
         </Card>
       </div>
@@ -154,9 +156,9 @@ export default async function SeriesDetailPage({ params }: Props) {
       {/* Tabs */}
       <Tabs defaultValue="overview">
         <TabsList className="mb-4">
-          <TabsTrigger value="overview">概要</TabsTrigger>
-          <TabsTrigger value="tournaments">大会一覧</TabsTrigger>
-          <TabsTrigger value="ranking">ランキング</TabsTrigger>
+          <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
+          <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
+          <TabsTrigger value="ranking">{t('detail.ranking')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -164,11 +166,11 @@ export default async function SeriesDetailPage({ params }: Props) {
             {/* Description */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">説明</CardTitle>
+                <CardTitle className="text-lg">{t('detail.description')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground whitespace-pre-wrap">
-                  {series.description || '説明なし'}
+                  {series.description || t('detail.noDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -176,7 +178,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             {/* Point System */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">ポイントシステム</CardTitle>
+                <CardTitle className="text-lg">{t('detail.pointSystem')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="font-medium mb-2">
@@ -187,15 +189,15 @@ export default async function SeriesDetailPage({ params }: Props) {
                     {Object.entries(series.point_config as Record<string, number>).map(
                       ([rank, points]) => (
                         <div key={rank} className="flex justify-between">
-                          <span>{rank}位</span>
-                          <span className="font-medium">{points}pt</span>
+                          <span>{rank}{t('detail.rank')}</span>
+                          <span className="font-medium">{points}{t('detail.points')}</span>
                         </div>
                       )
                     )}
                   </div>
                 ) : (
                   <p className="text-sm">
-                    1勝につき {(series.point_config as { points_per_win: number }).points_per_win}pt
+                    {t('detail.perWin')}{(series.point_config as { points_per_win: number }).points_per_win}{t('detail.points')}
                   </p>
                 )}
               </CardContent>
@@ -218,7 +220,7 @@ export default async function SeriesDetailPage({ params }: Props) {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  まだ大会がありません
+                  {t('detail.noTournaments')}
                 </p>
               )}
             </CardContent>
@@ -235,7 +237,7 @@ export default async function SeriesDetailPage({ params }: Props) {
               {rankings && rankings.length > 0 && (
                 <div className="mt-4 text-center">
                   <Link href={`/series/${id}/ranking`}>
-                    <Button variant="outline">すべて見る</Button>
+                    <Button variant="outline">{t('detail.viewAll')}</Button>
                   </Link>
                 </div>
               )}

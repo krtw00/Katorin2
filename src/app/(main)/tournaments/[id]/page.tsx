@@ -17,6 +17,7 @@ import {
   ParticipantWithUser,
 } from '@/types/tournament'
 import { TournamentTabs } from '@/components/tournament/TournamentTabs'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -24,6 +25,7 @@ type Props = {
 
 export default async function TournamentDetailPage({ params }: Props) {
   const { id } = await params
+  const t = await getTranslations('tournament.detail')
   const supabase = await createClient()
 
   // Fetch tournament with organizer and series
@@ -112,7 +114,7 @@ export default async function TournamentDetailPage({ params }: Props) {
               )}
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
               <CardDescription className="mt-1">
-                {(participants?.length || 0)} / {tournament.max_participants}人
+                {t('participants', { current: participants?.length || 0, max: tournament.max_participants })}
               </CardDescription>
               {tournament.series && (
                 <div className="mt-2">
@@ -120,7 +122,7 @@ export default async function TournamentDetailPage({ params }: Props) {
                     href={`/series/${tournament.series.id}`}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    シリーズ: {tournament.series.name}
+                    {t('series', { name: tournament.series.name })}
                   </Link>
                 </div>
               )}
@@ -130,7 +132,7 @@ export default async function TournamentDetailPage({ params }: Props) {
                     href={`/teams/${organizerTeam.id}`}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    主催チーム: {organizerTeam.name}
+                    {t('organizerTeam', { name: organizerTeam.name })}
                   </Link>
                 </div>
               )}
@@ -151,23 +153,23 @@ export default async function TournamentDetailPage({ params }: Props) {
         <CardFooter className="flex gap-2 flex-wrap border-t pt-6">
           {tournament.status === 'recruiting' && user && !hasEntered && (
             <Link href={`/tournaments/${tournament.id}/entry`}>
-              <Button>エントリーする</Button>
+              <Button>{t('entry')}</Button>
             </Link>
           )}
           {tournament.status === 'recruiting' && hasEntered && (
-            <Button disabled>エントリー済み</Button>
+            <Button disabled>{t('alreadyEntered')}</Button>
           )}
           {tournament.status === 'recruiting' && !user && (
             <Link href="/login">
-              <Button variant="outline">ログインしてエントリー</Button>
+              <Button variant="outline">{t('loginToEntry')}</Button>
             </Link>
           )}
           <Link href={`/tournaments/${tournament.id}/participants`}>
-            <Button variant="outline">参加者一覧を見る</Button>
+            <Button variant="outline">{t('viewParticipants')}</Button>
           </Link>
           {isOrganizer && (
             <Link href={`/tournaments/${tournament.id}/manage`}>
-              <Button variant="outline">管理画面</Button>
+              <Button variant="outline">{t('manage')}</Button>
             </Link>
           )}
         </CardFooter>

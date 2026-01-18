@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/card'
 
 export default function RegisterPage() {
+  const t = useTranslations('auth.register')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,17 +33,17 @@ export default function RegisterPage() {
 
     // Validation
     if (displayName.length < 2) {
-      setError('表示名は2文字以上で入力してください')
+      setError(t('validation.displayNameMin'))
       return
     }
 
     if (password.length < 6) {
-      setError('パスワードは6文字以上で入力してください')
+      setError(t('validation.passwordMin'))
       return
     }
 
     if (password !== confirmPassword) {
-      setError('パスワードが一致しません')
+      setError(t('validation.passwordMismatch'))
       return
     }
 
@@ -55,7 +57,7 @@ export default function RegisterPage() {
         router.push('/tournaments')
       }
     } catch (err) {
-      setError('登録に失敗しました')
+      setError(t('error'))
     } finally {
       setLoading(false)
     }
@@ -73,7 +75,7 @@ export default function RegisterPage() {
       }
       // OAuth redirects automatically, no need to handle success
     } catch (err) {
-      setError('登録に失敗しました')
+      setError(t('error'))
       setLoading(false)
     }
   }
@@ -82,10 +84,8 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">新規登録</CardTitle>
-          <CardDescription>
-            Katorinアカウントを作成してください
-          </CardDescription>
+          <CardTitle className="text-2xl">{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -96,12 +96,12 @@ export default function RegisterPage() {
             )}
             <div className="space-y-2">
               <label htmlFor="displayName" className="text-sm font-medium">
-                表示名
+                {t('displayName')}
               </label>
               <Input
                 id="displayName"
                 type="text"
-                placeholder="ユーザー名"
+                placeholder={t('displayNamePlaceholder')}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 required
@@ -112,12 +112,12 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                メールアドレス
+                {t('email')}
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="email@example.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -126,12 +126,12 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                パスワード
+                {t('password')}
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -139,17 +139,17 @@ export default function RegisterPage() {
                 minLength={6}
               />
               <p className="text-xs text-muted-foreground">
-                6文字以上で入力してください
+                {t('passwordHint')}
               </p>
             </div>
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-medium">
-                パスワード（確認）
+                {t('confirmPassword')}
               </label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -160,7 +160,7 @@ export default function RegisterPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? '登録中...' : '登録'}
+              {loading ? t('submitting') : t('submit')}
             </Button>
 
             <div className="relative">
@@ -169,7 +169,7 @@ export default function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  または
+                  {t('or')}
                 </span>
               </div>
             </div>
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Google
+                {t('google')}
               </Button>
               <Button
                 type="button"
@@ -210,17 +210,17 @@ export default function RegisterPage() {
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
                 </svg>
-                Discord
+                {t('discord')}
               </Button>
             </div>
 
             <p className="text-sm text-center text-muted-foreground">
-              既にアカウントをお持ちの方は
+              {t('hasAccount')}
               <Link
                 href="/login"
                 className="text-primary hover:underline ml-1"
               >
-                ログイン
+                {t('loginLink')}
               </Link>
             </p>
           </CardFooter>

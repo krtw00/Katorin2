@@ -48,9 +48,486 @@
     "ja": "日本語",
     "en": "English"
   },
-  "tournament": {},
-  "series": {},
-  "auth": {},
-  "mypage": {},
-  "team": {}
+  "tournament": {
+    "list": {
+      "title": "大会一覧",
+      "create": "大会を作成",
+      "search": "大会を検索...",
+      "searchButton": "検索",
+      "startFrom": "開始日（From）",
+      "startTo": "開始日（To）",
+      "noResults": "検索結果が見つかりませんでした",
+      "empty": "まだ大会がありません",
+      "filter": {
+        "all": "すべて",
+        "recruiting": "募集中",
+        "in_progress": "開催中",
+        "completed": "終了"
+      }
+    },
+    "form": {
+      "createTitle": "大会を新規作成",
+      "editTitle": "大会を編集",
+      "back": "← 戻る",
+      "saveDraft": "下書き保存",
+      "saving": "保存中...",
+      "saveChanges": "変更を保存",
+      "creating": "作成中...",
+      "createButton": "大会を作成",
+      "sections": {
+        "overview": "概要",
+        "participants": "参加者設定",
+        "tournament": "トーナメント設定",
+        "schedule": "日程"
+      },
+      "errors": {
+        "imageSize": "画像サイズは3MB以下にしてください",
+        "loginRequired": "ログインが必要です",
+        "titleRequired": "大会名を入力してください",
+        "createFailed": "大会の作成に失敗しました",
+        "updateFailed": "大会の更新に失敗しました"
+      },
+      "coverImage": {
+        "label": "カバー画像",
+        "hint": "JPG, PNG, GIF形式、3MB以下、16:9推奨",
+        "change": "画像を変更"
+      },
+      "title": {
+        "label": "大会名",
+        "placeholder": "例: 第1回 新春トーナメント"
+      },
+      "description": {
+        "label": "説明",
+        "placeholder": "大会の説明やルールを入力..."
+      },
+      "series": {
+        "label": "シリーズ",
+        "hint": "この大会をシリーズに紐付けることができます",
+        "none": "シリーズに紐付けない"
+      },
+      "visibility": {
+        "label": "公開設定",
+        "public": "公開",
+        "publicDesc": "誰でも閲覧・参加可能",
+        "unlisted": "限定公開",
+        "unlistedDesc": "URLを知っている人のみ",
+        "private": "非公開",
+        "privateDesc": "主催者のみ閲覧可能"
+      },
+      "maxParticipants": {
+        "label": "最大参加者数",
+        "hint": "4〜128人"
+      },
+      "entryLimitBehavior": {
+        "label": "定員超過時の対応",
+        "firstCome": "先着順",
+        "firstComeDesc": "定員に達したら自動的に受付終了",
+        "waitlist": "キャンセル待ち",
+        "waitlistDesc": "定員超過分はキャンセル待ちリストに追加"
+      },
+      "customFields": {
+        "label": "エントリー時の入力項目",
+        "hint": "参加者にエントリー時に入力してもらう項目",
+        "add": "+ 項目を追加",
+        "namePlaceholder": "項目名を入力",
+        "copy": "コピー",
+        "delete": "削除",
+        "inputType": {
+          "label": "入力方式",
+          "text": "記述式",
+          "checkbox": "チェックボックス",
+          "image": "画像アップロード"
+        },
+        "placeholder": {
+          "label": "プレースホルダー",
+          "hint": "例: 123-456-789"
+        },
+        "options": {
+          "label": "選択肢（改行で区切る）",
+          "placeholder": "選択肢1\n選択肢2\n選択肢3"
+        },
+        "advanced": {
+          "label": "詳細設定",
+          "optional": "任意回答",
+          "hidden": "回答を非公開"
+        },
+        "editDeadline": {
+          "label": "変更期限",
+          "hint": "参加者が回答を変更できる期限です",
+          "entryClosed": "エントリー後変更不可",
+          "entryPeriod": "エントリー期間終了まで",
+          "bracketPublished": "トーナメント表公開まで",
+          "eventEnd": "イベント終了まで"
+        }
+      },
+      "tournamentFormat": {
+        "label": "トーナメント形式",
+        "singleElimination": "シングルエリミネーション",
+        "singleEliminationDesc": "負けたら終わり",
+        "doubleElimination": "ダブルエリミネーション",
+        "doubleEliminationDesc": "2回負けたら終わり（Phase 2予定）",
+        "swiss": "スイスドロー",
+        "swissDesc": "勝敗に関係なく対戦（Phase 2予定）",
+        "roundRobin": "総当たり",
+        "roundRobinDesc": "全員と対戦（Phase 2予定）"
+      },
+      "matchFormat": {
+        "label": "対戦形式",
+        "bo1": "1本勝負",
+        "bo3": "2本先取",
+        "bo5": "3本先取"
+      },
+      "entryPeriod": {
+        "label": "エントリー期間",
+        "hint": "この期間中にエントリーを受け付けます"
+      }
+    },
+    "detail": {
+      "participants": "{current} / {max}人",
+      "series": "シリーズ: {name}",
+      "organizerTeam": "主催チーム: {name}",
+      "entry": "エントリーする",
+      "alreadyEntered": "エントリー済み",
+      "loginToEntry": "ログインしてエントリー",
+      "viewParticipants": "参加者一覧を見る",
+      "manage": "管理画面"
+    },
+    "entry": {
+      "title": "エントリー",
+      "loginRequired": "トーナメントにエントリーするにはログインしてください",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "大会で表示される名前",
+      "displayNameHint": "この大会で使用する表示名を入力してください",
+      "submitting": "エントリー中...",
+      "submit": "エントリーする",
+      "errors": {
+        "notFound": "大会が見つかりませんでした",
+        "alreadyEntered": "既にエントリーしています",
+        "failed": "エントリーに失敗しました",
+        "displayNameRequired": "表示名を入力してください"
+      }
+    },
+    "bracket": {
+      "title": "トーナメント表",
+      "backToDetail": "大会詳細に戻る"
+    },
+    "participants": {
+      "title": "参加者一覧",
+      "backToDetail": "大会詳細に戻る",
+      "empty": "参加者がいません",
+      "count": "{count}名",
+      "registeredAt": "登録日時"
+    },
+    "ranking": {
+      "title": "ランキング",
+      "backToDetail": "大会詳細に戻る"
+    },
+    "manage": {
+      "title": "大会管理",
+      "backToDetail": "大会詳細に戻る"
+    }
+  },
+  "series": {
+    "title": "シリーズ一覧",
+    "create": "シリーズを作成",
+    "empty": "まだシリーズがありません",
+    "searchEmpty": "検索結果が見つかりませんでした",
+    "notFound": "シリーズが見つかりませんでした",
+    "noPermission": "編集権限がありません",
+    "status": {
+      "all": "すべて",
+      "active": "開催中",
+      "completed": "終了"
+    },
+    "entryType": {
+      "individual": "個人戦",
+      "team": "チーム戦"
+    },
+    "detail": {
+      "organizer": "主催",
+      "edit": "編集",
+      "addTournament": "大会を追加",
+      "tournamentCount": "大会数",
+      "participantCount": "参加者数",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "notSet": "未設定",
+      "overview": "概要",
+      "tournaments": "大会一覧",
+      "ranking": "ランキング",
+      "description": "説明",
+      "noDescription": "説明なし",
+      "pointSystem": "ポイントシステム",
+      "rank": "位",
+      "perWin": "1勝につき ",
+      "points": "pt",
+      "noTournaments": "まだ大会がありません",
+      "viewAll": "すべて見る",
+      "backToDetail": "← シリーズ詳細に戻る",
+      "overallRanking": "総合ランキング"
+    },
+    "form": {
+      "loginRequired": "ログインが必要です",
+      "nameRequired": "シリーズ名を入力してください",
+      "saveFailed": "保存に失敗しました",
+      "back": "← 戻る",
+      "createTitle": "シリーズを作成",
+      "editTitle": "シリーズを編集",
+      "saveDraft": "下書き保存",
+      "saving": "保存中...",
+      "saveChanges": "変更を保存",
+      "basicInfo": "基本情報",
+      "nameLabel": "シリーズ名 *",
+      "namePlaceholder": "例: 2025年シーズンリーグ",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "シリーズの説明を入力...",
+      "entryTypeLabel": "参加形式",
+      "pointSystemLabel": "ポイントシステム",
+      "rankingPoints": "順位別ポイント",
+      "rankLabel": "位:",
+      "winPoints": "勝利ポイント",
+      "perWinLabel": "1勝につき:",
+      "periodLabel": "開催期間"
+    },
+    "filter": {
+      "search": "シリーズを検索...",
+      "filtering": "フィルタリング中..."
+    },
+    "list": {
+      "periodNotSet": "期間未設定",
+      "tournamentUnit": "大会",
+      "empty": "シリーズがありません"
+    },
+    "ranking": {
+      "empty": "まだランキングデータがありません",
+      "rank": "順位",
+      "name": "名前",
+      "points": "ポイント",
+      "tournamentsPlayed": "参加大会",
+      "wins": "勝利",
+      "losses": "敗北",
+      "pointsUnit": "pt"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "ログイン",
+      "description": "Katorinアカウントでログインしてください",
+      "email": "メールアドレス",
+      "emailPlaceholder": "email@example.com",
+      "password": "パスワード",
+      "passwordPlaceholder": "••••••••",
+      "submit": "ログイン",
+      "submitting": "ログイン中...",
+      "or": "または",
+      "google": "Google",
+      "discord": "Discord",
+      "noAccount": "アカウントをお持ちでない方は",
+      "registerLink": "新規登録",
+      "error": "ログインに失敗しました"
+    },
+    "register": {
+      "title": "新規登録",
+      "description": "Katorinアカウントを作成してください",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "ユーザー名",
+      "email": "メールアドレス",
+      "emailPlaceholder": "email@example.com",
+      "password": "パスワード",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "6文字以上で入力してください",
+      "confirmPassword": "パスワード（確認）",
+      "submit": "登録",
+      "submitting": "登録中...",
+      "or": "または",
+      "google": "Google",
+      "discord": "Discord",
+      "hasAccount": "既にアカウントをお持ちの方は",
+      "loginLink": "ログイン",
+      "error": "登録に失敗しました",
+      "validation": {
+        "displayNameMin": "表示名は2文字以上で入力してください",
+        "passwordMin": "パスワードは6文字以上で入力してください",
+        "passwordMismatch": "パスワードが一致しません"
+      }
+    }
+  },
+  "mypage": {
+    "title": "マイページ",
+    "profile": {
+      "edit": "編集"
+    },
+    "actions": {
+      "title": "対応が必要",
+      "bracketReady": "{count}名参加中 - ブラケット生成可能",
+      "entryOpen": "{count}/{max}名 - エントリー受付中",
+      "goToManage": "管理画面へ",
+      "viewDetails": "詳細を見る"
+    },
+    "tabs": {
+      "participating": "参加中",
+      "organizing": "主催"
+    },
+    "sections": {
+      "active": "開催中・募集中",
+      "completed": "終了",
+      "draft": "下書き",
+      "published": "公開（受付前）",
+      "waitingForEntry": "受付待ち",
+      "cancelled": "キャンセル"
+    },
+    "participating": {
+      "title": "参加大会",
+      "viewAll": "すべての参加大会を見る →",
+      "empty": "参加している大会がありません",
+      "findTournaments": "大会を探す"
+    },
+    "organizing": {
+      "title": "主催大会",
+      "viewAll": "すべての主催大会を見る →",
+      "empty": "主催している大会がありません",
+      "createFirst": "最初の大会を作成",
+      "createTournament": "大会を作成"
+    },
+    "backToMypage": "← マイページ",
+    "edit": {
+      "title": "プロフィール編集",
+      "description": "プロフィール情報を更新します",
+      "loadError": "プロフィールの読み込みに失敗しました",
+      "loading": "読み込み中...",
+      "avatarNotice": "アバター画像の変更は今後対応予定です",
+      "displayName": "表示名",
+      "displayNamePlaceholder": "表示名を入力",
+      "displayNameHelp": "大会やランキングで表示される名前です",
+      "masterDuelId": "マスターデュエルID",
+      "masterDuelIdHelp": "対戦相手との連絡に使用します（任意）",
+      "bio": "自己紹介",
+      "bioPlaceholder": "自己紹介を入力（任意）",
+      "saveSuccess": "保存しました。マイページに戻ります...",
+      "saving": "保存中...",
+      "displayNameRequired": "表示名は必須です",
+      "loginRequired": "ログインが必要です",
+      "updateError": "更新に失敗しました: {error}"
+    }
+  },
+  "team": {
+    "list": {
+      "title": "チーム一覧",
+      "create": "チームを作成",
+      "searchPlaceholder": "チーム名で検索...",
+      "myTeams": "自分のチーム",
+      "otherTeams": "その他のチーム",
+      "allTeams": "すべてのチーム",
+      "noResults": "該当するチームが見つかりません",
+      "empty": "まだチームがありません",
+      "createFirst": "最初のチームを作成"
+    },
+    "detail": {
+      "backToList": "チーム一覧に戻る",
+      "leader": "リーダー",
+      "manageMembers": "メンバー管理",
+      "edit": "編集",
+      "memberCount": "メンバー数",
+      "tournamentCount": "参加大会数",
+      "createdDate": "作成日",
+      "status": "ステータス",
+      "isMember": "所属中",
+      "notMember": "非メンバー",
+      "overview": "概要",
+      "members": "メンバー",
+      "tournamentHistory": "大会履歴",
+      "introduction": "チーム紹介",
+      "noIntroduction": "チーム紹介はまだ設定されていません",
+      "memberList": "メンバー一覧",
+      "memberListCount": "メンバー一覧 ({count}人)",
+      "player": "プレイヤー",
+      "role": "役割",
+      "joinedDate": "加入日",
+      "tournamentName": "大会名",
+      "tournamentStatus": "ステータス",
+      "startDate": "開催日",
+      "noTournaments": "まだ大会に参加していません"
+    },
+    "form": {
+      "createTitle": "チームを作成",
+      "editTitle": "チームを編集",
+      "back": "戻る",
+      "saving": "保存中...",
+      "saveChanges": "変更を保存",
+      "create": "チームを作成",
+      "loginRequired": "ログインが必要です",
+      "nameRequired": "チーム名を入力してください",
+      "basicInfo": "基本情報",
+      "name": "チーム名",
+      "namePlaceholder": "例: Team Alpha",
+      "description": "チーム紹介",
+      "descriptionPlaceholder": "チームの紹介文を入力...",
+      "avatar": "アバター",
+      "avatarComingSoon": "今後対応予定"
+    },
+    "members": {
+      "title": "メンバー管理",
+      "titleWithName": "メンバー管理 - {name}",
+      "backToDetail": "チーム詳細に戻る",
+      "memberList": "メンバー一覧",
+      "memberListCount": "メンバー一覧 ({count}人)",
+      "player": "プレイヤー",
+      "role": "役割",
+      "joinedDate": "加入日",
+      "action": "操作",
+      "remove": "除外",
+      "cannotRemoveLeader": "リーダーは削除できません",
+      "inviteLinks": "招待リンク",
+      "createInviteLink": "新しい招待リンクを作成",
+      "createInviteTitle": "招待リンクを作成",
+      "inviteLinkCreated": "招待リンクが作成されました。このリンクを共有してください。",
+      "copy": "コピー",
+      "close": "閉じる",
+      "maxUses": "最大使用回数",
+      "expiresInDays": "有効期限（日数）",
+      "creating": "作成中...",
+      "token": "トークン",
+      "useCount": "使用回数",
+      "expiresAt": "有効期限",
+      "status": "状態",
+      "valid": "有効",
+      "invalid": "無効",
+      "delete": "削除",
+      "noInvites": "招待リンクはまだありません"
+    },
+    "invite": {
+      "title": "チームへの招待",
+      "invalidToken": "招待トークンが無効です",
+      "invalidTokenShort": "無効な招待トークンです",
+      "notFound": "招待リンクが見つかりません",
+      "expired": "この招待リンクは有効期限切れか、使用上限に達しています",
+      "alreadyMember": "既にこのチームのメンバーです",
+      "backToList": "チーム一覧へ",
+      "joined": "チームに参加しました！",
+      "joinedMessage": "{teamName} のメンバーになりました",
+      "goToTeam": "チームページへ",
+      "joining": "参加中...",
+      "join": "チームに参加する",
+      "loginRequired": "チームに参加するにはログインが必要です",
+      "loginToJoin": "ログインして参加",
+      "expiresAtLabel": "有効期限",
+      "remainingUses": "残り使用可能回数"
+    },
+    "role": {
+      "leader": "リーダー",
+      "member": "メンバー"
+    },
+    "error": {
+      "invalidTeamId": "チームIDが無効です",
+      "invalidTeamIdShort": "無効なチームIDです",
+      "teamNotFound": "チームが見つかりません",
+      "noPermission": "編集権限がありません",
+      "noManagePermission": "管理権限がありません",
+      "back": "戻る"
+    },
+    "listItem": {
+      "leader": "リーダー",
+      "memberCount": "{count}人"
+    }
+  }
 }

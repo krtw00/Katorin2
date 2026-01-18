@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,8 @@ import { TeamWithLeader } from '@/types/team'
 type TeamWithCount = TeamWithLeader & { member_count: number }
 
 export default function TeamsPage() {
+  const t = useTranslations('team.list')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
   const [teams, setTeams] = useState<TeamWithCount[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,16 +74,16 @@ export default function TeamsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">チーム一覧</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         <Link href="/teams/new">
-          <Button>チームを作成</Button>
+          <Button>{t('create')}</Button>
         </Link>
       </div>
 
       {/* Search */}
       <div className="mb-6">
         <Input
-          placeholder="チーム名で検索..."
+          placeholder={t('searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -90,7 +93,7 @@ export default function TeamsPage() {
       {/* Loading */}
       {loading && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">読み込み中...</p>
+          <p className="text-muted-foreground">{tCommon('loading')}</p>
         </div>
       )}
 
@@ -100,7 +103,7 @@ export default function TeamsPage() {
           {/* My Teams */}
           {myTeams.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold">自分のチーム</h2>
+              <h2 className="text-lg font-semibold">{t('myTeams')}</h2>
               <div className="grid gap-3">
                 {myTeams.map((team) => (
                   <TeamListItem key={team.id} team={team} />
@@ -113,7 +116,7 @@ export default function TeamsPage() {
           {otherTeams.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">
-                {myTeams.length > 0 ? 'その他のチーム' : 'すべてのチーム'}
+                {myTeams.length > 0 ? t('otherTeams') : t('allTeams')}
               </h2>
               <div className="grid gap-3">
                 {otherTeams.map((team) => (
@@ -127,11 +130,11 @@ export default function TeamsPage() {
           {teams.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? '該当するチームが見つかりません' : 'まだチームがありません'}
+                {searchQuery ? t('noResults') : t('empty')}
               </p>
               {!searchQuery && (
                 <Link href="/teams/new">
-                  <Button>最初のチームを作成</Button>
+                  <Button>{t('createFirst')}</Button>
                 </Link>
               )}
             </div>

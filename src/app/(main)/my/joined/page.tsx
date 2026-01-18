@@ -8,6 +8,7 @@ import {
   TournamentListItem,
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
+import { getTranslations } from 'next-intl/server'
 
 type ParticipationWithTournament = {
   final_placement: number | null
@@ -15,6 +16,7 @@ type ParticipationWithTournament = {
 }
 
 export default async function JoinedTournamentsPage() {
+  const t = await getTranslations('mypage')
   const supabase = await createClient()
 
   const {
@@ -95,12 +97,12 @@ export default async function JoinedTournamentsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/my" className="text-muted-foreground hover:text-foreground">
-            ← マイページ
+            {t('backToMypage')}
           </Link>
-          <h1 className="text-2xl font-bold">参加大会</h1>
+          <h1 className="text-2xl font-bold">{t('participating.title')}</h1>
         </div>
         <Link href="/tournaments">
-          <Button variant="outline">大会を探す</Button>
+          <Button variant="outline">{t('participating.findTournaments')}</Button>
         </Link>
       </div>
 
@@ -112,7 +114,7 @@ export default async function JoinedTournamentsPage() {
               {/* Published tournaments (before entry period) */}
               {grouped.published.length > 0 && (
                 <TournamentListSection
-                  title="受付待ち"
+                  title={t('sections.waitingForEntry')}
                   count={grouped.published.length}
                 >
                   {grouped.published.map((p) => (
@@ -130,7 +132,7 @@ export default async function JoinedTournamentsPage() {
               {/* Active tournaments */}
               {active.length > 0 && (
                 <TournamentListSection
-                  title="開催中・募集中"
+                  title={t('sections.active')}
                   count={active.length}
                 >
                   {active.map((p) => (
@@ -148,7 +150,7 @@ export default async function JoinedTournamentsPage() {
               {/* Completed tournaments */}
               {grouped.completed.length > 0 && (
                 <TournamentListSection
-                  title="終了"
+                  title={t('sections.completed')}
                   count={grouped.completed.length}
                 >
                   {grouped.completed.map((p) => (
@@ -166,7 +168,7 @@ export default async function JoinedTournamentsPage() {
               {/* Cancelled tournaments */}
               {grouped.cancelled.length > 0 && (
                 <TournamentListSection
-                  title="キャンセル"
+                  title={t('sections.cancelled')}
                   count={grouped.cancelled.length}
                 >
                   {grouped.cancelled.map((p) => (
@@ -184,10 +186,10 @@ export default async function JoinedTournamentsPage() {
           ) : (
             <div className="py-12 text-center">
               <p className="text-muted-foreground mb-4">
-                参加している大会がありません
+                {t('participating.empty')}
               </p>
               <Link href="/tournaments">
-                <Button>大会を探す</Button>
+                <Button>{t('participating.findTournaments')}</Button>
               </Link>
             </div>
           )}
