@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SeriesForm } from '@/components/series/SeriesForm'
 import { Series } from '@/types/series'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 export default function EditSeriesPage({ params }: Props) {
+  const t = useTranslations('series')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const supabase = createClient()
   const [series, setSeries] = useState<Series | null>(null)
@@ -36,14 +39,14 @@ export default function EditSeriesPage({ params }: Props) {
         .single()
 
       if (seriesError || !seriesData) {
-        setError('シリーズが見つかりませんでした')
+        setError(t('notFound'))
         setLoading(false)
         return
       }
 
       // Check if user is organizer
       if (user.id !== seriesData.organizer_id) {
-        setError('編集権限がありません')
+        setError(t('noPermission'))
         setLoading(false)
         return
       }
@@ -58,7 +61,7 @@ export default function EditSeriesPage({ params }: Props) {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-muted-foreground">読み込み中...</p>
+        <p className="text-center text-muted-foreground">{tCommon('loading')}</p>
       </div>
     )
   }

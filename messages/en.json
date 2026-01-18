@@ -48,9 +48,486 @@
     "ja": "日本語",
     "en": "English"
   },
-  "tournament": {},
-  "series": {},
-  "auth": {},
-  "mypage": {},
-  "team": {}
+  "tournament": {
+    "list": {
+      "title": "Tournaments",
+      "create": "Create Tournament",
+      "search": "Search tournaments...",
+      "searchButton": "Search",
+      "startFrom": "Start Date (From)",
+      "startTo": "Start Date (To)",
+      "noResults": "No results found",
+      "empty": "No tournaments yet",
+      "filter": {
+        "all": "All",
+        "recruiting": "Recruiting",
+        "in_progress": "In Progress",
+        "completed": "Completed"
+      }
+    },
+    "form": {
+      "createTitle": "Create New Tournament",
+      "editTitle": "Edit Tournament",
+      "back": "← Back",
+      "saveDraft": "Save as Draft",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "creating": "Creating...",
+      "createButton": "Create Tournament",
+      "sections": {
+        "overview": "Overview",
+        "participants": "Participants",
+        "tournament": "Tournament",
+        "schedule": "Schedule"
+      },
+      "errors": {
+        "imageSize": "Image size must be 3MB or less",
+        "loginRequired": "Login required",
+        "titleRequired": "Tournament title is required",
+        "createFailed": "Failed to create tournament",
+        "updateFailed": "Failed to update tournament"
+      },
+      "coverImage": {
+        "label": "Cover Image",
+        "hint": "JPG, PNG, GIF format, 3MB max, 16:9 recommended",
+        "change": "Change Image"
+      },
+      "title": {
+        "label": "Tournament Name",
+        "placeholder": "e.g., Spring Championship 2024"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Enter tournament description and rules..."
+      },
+      "series": {
+        "label": "Series",
+        "hint": "You can link this tournament to a series",
+        "none": "Not linked to any series"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "public": "Public",
+        "publicDesc": "Anyone can view and participate",
+        "unlisted": "Unlisted",
+        "unlistedDesc": "Only people with the URL",
+        "private": "Private",
+        "privateDesc": "Only organizer can view"
+      },
+      "maxParticipants": {
+        "label": "Max Participants",
+        "hint": "4-128 participants"
+      },
+      "entryLimitBehavior": {
+        "label": "Entry Limit Behavior",
+        "firstCome": "First Come",
+        "firstComeDesc": "Close registration when limit is reached",
+        "waitlist": "Waitlist",
+        "waitlistDesc": "Add to waitlist when limit is reached"
+      },
+      "customFields": {
+        "label": "Entry Form Fields",
+        "hint": "Custom fields for participants to fill when entering",
+        "add": "+ Add Field",
+        "namePlaceholder": "Enter field name",
+        "copy": "Copy",
+        "delete": "Delete",
+        "inputType": {
+          "label": "Input Type",
+          "text": "Text",
+          "checkbox": "Checkbox",
+          "image": "Image Upload"
+        },
+        "placeholder": {
+          "label": "Placeholder",
+          "hint": "e.g., 123-456-789"
+        },
+        "options": {
+          "label": "Options (one per line)",
+          "placeholder": "Option 1\nOption 2\nOption 3"
+        },
+        "advanced": {
+          "label": "Advanced Settings",
+          "optional": "Optional",
+          "hidden": "Hide answer"
+        },
+        "editDeadline": {
+          "label": "Edit Deadline",
+          "hint": "When participants can edit their answers",
+          "entryClosed": "Cannot edit after entry",
+          "entryPeriod": "Until entry period ends",
+          "bracketPublished": "Until bracket is published",
+          "eventEnd": "Until event ends"
+        }
+      },
+      "tournamentFormat": {
+        "label": "Tournament Format",
+        "singleElimination": "Single Elimination",
+        "singleEliminationDesc": "Lose once and you're out",
+        "doubleElimination": "Double Elimination",
+        "doubleEliminationDesc": "Lose twice and you're out (Phase 2)",
+        "swiss": "Swiss",
+        "swissDesc": "Play all rounds regardless of wins (Phase 2)",
+        "roundRobin": "Round Robin",
+        "roundRobinDesc": "Everyone plays everyone (Phase 2)"
+      },
+      "matchFormat": {
+        "label": "Match Format",
+        "bo1": "Best of 1",
+        "bo3": "Best of 3",
+        "bo5": "Best of 5"
+      },
+      "entryPeriod": {
+        "label": "Entry Period",
+        "hint": "Entries will be accepted during this period"
+      }
+    },
+    "detail": {
+      "participants": "{current} / {max} participants",
+      "series": "Series: {name}",
+      "organizerTeam": "Organizer Team: {name}",
+      "entry": "Enter Tournament",
+      "alreadyEntered": "Already Entered",
+      "loginToEntry": "Login to Enter",
+      "viewParticipants": "View Participants",
+      "manage": "Manage"
+    },
+    "entry": {
+      "title": "Entry",
+      "loginRequired": "Please login to enter this tournament",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Name to be displayed in the tournament",
+      "displayNameHint": "Enter the display name to use in this tournament",
+      "submitting": "Entering...",
+      "submit": "Enter",
+      "errors": {
+        "notFound": "Tournament not found",
+        "alreadyEntered": "Already entered",
+        "failed": "Entry failed",
+        "displayNameRequired": "Display name is required"
+      }
+    },
+    "bracket": {
+      "title": "Tournament Bracket",
+      "backToDetail": "Back to Tournament"
+    },
+    "participants": {
+      "title": "Participants",
+      "backToDetail": "Back to Tournament",
+      "empty": "No participants yet",
+      "count": "{count} participants",
+      "registeredAt": "Registered At"
+    },
+    "ranking": {
+      "title": "Ranking",
+      "backToDetail": "Back to Tournament"
+    },
+    "manage": {
+      "title": "Manage Tournament",
+      "backToDetail": "Back to Tournament"
+    }
+  },
+  "series": {
+    "title": "Series List",
+    "create": "Create Series",
+    "empty": "No series yet",
+    "searchEmpty": "No results found",
+    "notFound": "Series not found",
+    "noPermission": "No permission to edit",
+    "status": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "entryType": {
+      "individual": "Individual",
+      "team": "Team"
+    },
+    "detail": {
+      "organizer": "Organizer",
+      "edit": "Edit",
+      "addTournament": "Add Tournament",
+      "tournamentCount": "Tournaments",
+      "participantCount": "Participants",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "notSet": "Not Set",
+      "overview": "Overview",
+      "tournaments": "Tournaments",
+      "ranking": "Ranking",
+      "description": "Description",
+      "noDescription": "No description",
+      "pointSystem": "Point System",
+      "rank": "",
+      "perWin": "Per Win: ",
+      "points": "pts",
+      "noTournaments": "No tournaments yet",
+      "viewAll": "View All",
+      "backToDetail": "← Back to Series Detail",
+      "overallRanking": "Overall Ranking"
+    },
+    "form": {
+      "loginRequired": "Login required",
+      "nameRequired": "Please enter series name",
+      "saveFailed": "Failed to save",
+      "back": "← Back",
+      "createTitle": "Create Series",
+      "editTitle": "Edit Series",
+      "saveDraft": "Save as Draft",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "basicInfo": "Basic Information",
+      "nameLabel": "Series Name *",
+      "namePlaceholder": "e.g., 2025 Season League",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter series description...",
+      "entryTypeLabel": "Entry Type",
+      "pointSystemLabel": "Point System",
+      "rankingPoints": "Ranking Points",
+      "rankLabel": "",
+      "winPoints": "Win Points",
+      "perWinLabel": "Per Win:",
+      "periodLabel": "Period"
+    },
+    "filter": {
+      "search": "Search series...",
+      "filtering": "Filtering..."
+    },
+    "list": {
+      "periodNotSet": "Period not set",
+      "tournamentUnit": "tournaments",
+      "empty": "No series"
+    },
+    "ranking": {
+      "empty": "No ranking data yet",
+      "rank": "Rank",
+      "name": "Name",
+      "points": "Points",
+      "tournamentsPlayed": "Tournaments",
+      "wins": "Wins",
+      "losses": "Losses",
+      "pointsUnit": "pts"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "description": "Sign in to your Katorin account",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "or": "or",
+      "google": "Google",
+      "discord": "Discord",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register",
+      "error": "Failed to login"
+    },
+    "register": {
+      "title": "Register",
+      "description": "Create your Katorin account",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Username",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Please enter at least 6 characters",
+      "confirmPassword": "Password (Confirm)",
+      "submit": "Register",
+      "submitting": "Registering...",
+      "or": "or",
+      "google": "Google",
+      "discord": "Discord",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Login",
+      "error": "Failed to register",
+      "validation": {
+        "displayNameMin": "Display name must be at least 2 characters",
+        "passwordMin": "Password must be at least 6 characters",
+        "passwordMismatch": "Passwords do not match"
+      }
+    }
+  },
+  "mypage": {
+    "title": "My Page",
+    "profile": {
+      "edit": "Edit"
+    },
+    "actions": {
+      "title": "Action Required",
+      "bracketReady": "{count} participants - Bracket ready",
+      "entryOpen": "{count}/{max} participants - Entry open",
+      "goToManage": "Go to Management",
+      "viewDetails": "View Details"
+    },
+    "tabs": {
+      "participating": "Participating",
+      "organizing": "Organizing"
+    },
+    "sections": {
+      "active": "Active / Recruiting",
+      "completed": "Completed",
+      "draft": "Draft",
+      "published": "Published (Not Started)",
+      "waitingForEntry": "Waiting for Entry",
+      "cancelled": "Cancelled"
+    },
+    "participating": {
+      "title": "Participating Tournaments",
+      "viewAll": "View all participating tournaments →",
+      "empty": "No tournaments you're participating in",
+      "findTournaments": "Find Tournaments"
+    },
+    "organizing": {
+      "title": "Organized Tournaments",
+      "viewAll": "View all organized tournaments →",
+      "empty": "No tournaments you're organizing",
+      "createFirst": "Create your first tournament",
+      "createTournament": "Create Tournament"
+    },
+    "backToMypage": "← My Page",
+    "edit": {
+      "title": "Edit Profile",
+      "description": "Update your profile information",
+      "loadError": "Failed to load profile",
+      "loading": "Loading...",
+      "avatarNotice": "Avatar image changes will be supported in the future",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Enter display name",
+      "displayNameHelp": "Name displayed in tournaments and rankings",
+      "masterDuelId": "Master Duel ID",
+      "masterDuelIdHelp": "Used to contact opponents (optional)",
+      "bio": "Bio",
+      "bioPlaceholder": "Enter bio (optional)",
+      "saveSuccess": "Saved. Returning to My Page...",
+      "saving": "Saving...",
+      "displayNameRequired": "Display name is required",
+      "loginRequired": "Login required",
+      "updateError": "Update failed: {error}"
+    }
+  },
+  "team": {
+    "list": {
+      "title": "Teams",
+      "create": "Create Team",
+      "searchPlaceholder": "Search by team name...",
+      "myTeams": "My Teams",
+      "otherTeams": "Other Teams",
+      "allTeams": "All Teams",
+      "noResults": "No teams found",
+      "empty": "No teams yet",
+      "createFirst": "Create your first team"
+    },
+    "detail": {
+      "backToList": "Back to Teams",
+      "leader": "Leader",
+      "manageMembers": "Manage Members",
+      "edit": "Edit",
+      "memberCount": "Members",
+      "tournamentCount": "Tournaments",
+      "createdDate": "Created",
+      "status": "Status",
+      "isMember": "Member",
+      "notMember": "Not a Member",
+      "overview": "Overview",
+      "members": "Members",
+      "tournamentHistory": "Tournament History",
+      "introduction": "About Team",
+      "noIntroduction": "No description available",
+      "memberList": "Member List",
+      "memberListCount": "Member List ({count} members)",
+      "player": "Player",
+      "role": "Role",
+      "joinedDate": "Joined",
+      "tournamentName": "Tournament",
+      "tournamentStatus": "Status",
+      "startDate": "Start Date",
+      "noTournaments": "No tournaments yet"
+    },
+    "form": {
+      "createTitle": "Create Team",
+      "editTitle": "Edit Team",
+      "back": "Back",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "create": "Create Team",
+      "loginRequired": "Login required",
+      "nameRequired": "Please enter a team name",
+      "basicInfo": "Basic Information",
+      "name": "Team Name",
+      "namePlaceholder": "e.g. Team Alpha",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter team description...",
+      "avatar": "Avatar",
+      "avatarComingSoon": "Coming soon"
+    },
+    "members": {
+      "title": "Manage Members",
+      "titleWithName": "Manage Members - {name}",
+      "backToDetail": "Back to Team",
+      "memberList": "Member List",
+      "memberListCount": "Member List ({count} members)",
+      "player": "Player",
+      "role": "Role",
+      "joinedDate": "Joined",
+      "action": "Action",
+      "remove": "Remove",
+      "cannotRemoveLeader": "Cannot remove leader",
+      "inviteLinks": "Invite Links",
+      "createInviteLink": "Create New Invite Link",
+      "createInviteTitle": "Create Invite Link",
+      "inviteLinkCreated": "Invite link created. Share this link with others.",
+      "copy": "Copy",
+      "close": "Close",
+      "maxUses": "Max Uses",
+      "expiresInDays": "Expires In (Days)",
+      "creating": "Creating...",
+      "token": "Token",
+      "useCount": "Uses",
+      "expiresAt": "Expires",
+      "status": "Status",
+      "valid": "Valid",
+      "invalid": "Invalid",
+      "delete": "Delete",
+      "noInvites": "No invite links yet"
+    },
+    "invite": {
+      "title": "Team Invitation",
+      "invalidToken": "Invalid invitation token",
+      "invalidTokenShort": "Invalid token",
+      "notFound": "Invitation not found",
+      "expired": "This invitation has expired or reached its usage limit",
+      "alreadyMember": "Already a member of this team",
+      "backToList": "Back to Teams",
+      "joined": "Successfully joined the team!",
+      "joinedMessage": "You are now a member of {teamName}",
+      "goToTeam": "Go to Team",
+      "joining": "Joining...",
+      "join": "Join Team",
+      "loginRequired": "Login required to join the team",
+      "loginToJoin": "Login to Join",
+      "expiresAtLabel": "Expires",
+      "remainingUses": "Remaining Uses"
+    },
+    "role": {
+      "leader": "Leader",
+      "member": "Member"
+    },
+    "error": {
+      "invalidTeamId": "Invalid team ID",
+      "invalidTeamIdShort": "Invalid team ID",
+      "teamNotFound": "Team not found",
+      "noPermission": "No permission to edit",
+      "noManagePermission": "No permission to manage",
+      "back": "Back"
+    },
+    "listItem": {
+      "leader": "Leader",
+      "memberCount": "{count} members"
+    }
+  }
 }

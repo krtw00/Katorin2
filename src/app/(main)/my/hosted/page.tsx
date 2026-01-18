@@ -8,8 +8,10 @@ import {
   TournamentListItem,
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
+import { getTranslations } from 'next-intl/server'
 
 export default async function HostedTournamentsPage() {
+  const t = await getTranslations('mypage')
   const supabase = await createClient()
 
   const {
@@ -80,12 +82,12 @@ export default async function HostedTournamentsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/my" className="text-muted-foreground hover:text-foreground">
-            ← マイページ
+            {t('backToMypage')}
           </Link>
-          <h1 className="text-2xl font-bold">主催大会</h1>
+          <h1 className="text-2xl font-bold">{t('organizing.title')}</h1>
         </div>
         <Link href="/tournaments/new">
-          <Button>大会を作成</Button>
+          <Button>{t('organizing.createTournament')}</Button>
         </Link>
       </div>
 
@@ -97,7 +99,7 @@ export default async function HostedTournamentsPage() {
               {/* Draft tournaments */}
               {grouped.draft.length > 0 && (
                 <TournamentListSection
-                  title="下書き"
+                  title={t('sections.draft')}
                   count={grouped.draft.length}
                 >
                   {grouped.draft.map((tournament) => (
@@ -114,7 +116,7 @@ export default async function HostedTournamentsPage() {
               {/* Published tournaments (before entry period) */}
               {grouped.published.length > 0 && (
                 <TournamentListSection
-                  title="公開（受付前）"
+                  title={t('sections.published')}
                   count={grouped.published.length}
                 >
                   {grouped.published.map((tournament) => (
@@ -131,7 +133,7 @@ export default async function HostedTournamentsPage() {
               {/* Active tournaments */}
               {active.length > 0 && (
                 <TournamentListSection
-                  title="開催中・募集中"
+                  title={t('sections.active')}
                   count={active.length}
                 >
                   {active.map((tournament) => (
@@ -148,7 +150,7 @@ export default async function HostedTournamentsPage() {
               {/* Completed tournaments */}
               {grouped.completed.length > 0 && (
                 <TournamentListSection
-                  title="終了"
+                  title={t('sections.completed')}
                   count={grouped.completed.length}
                 >
                   {grouped.completed.map((tournament) => (
@@ -165,7 +167,7 @@ export default async function HostedTournamentsPage() {
               {/* Cancelled tournaments */}
               {grouped.cancelled.length > 0 && (
                 <TournamentListSection
-                  title="キャンセル"
+                  title={t('sections.cancelled')}
                   count={grouped.cancelled.length}
                 >
                   {grouped.cancelled.map((tournament) => (
@@ -182,10 +184,10 @@ export default async function HostedTournamentsPage() {
           ) : (
             <div className="py-12 text-center">
               <p className="text-muted-foreground mb-4">
-                主催している大会がありません
+                {t('organizing.empty')}
               </p>
               <Link href="/tournaments/new">
-                <Button>最初の大会を作成</Button>
+                <Button>{t('organizing.createFirst')}</Button>
               </Link>
             </div>
           )}

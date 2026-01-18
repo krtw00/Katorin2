@@ -17,6 +17,7 @@ import {
   TournamentListItem,
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
+import { getTranslations } from 'next-intl/server'
 
 type ActionItem = {
   type: ActionType
@@ -28,6 +29,7 @@ type ActionItem = {
 }
 
 export default async function MyPage() {
+  const t = await getTranslations('mypage')
   const supabase = await createClient()
 
   // Get current user
@@ -100,26 +102,26 @@ export default async function MyPage() {
   const actions: ActionItem[] = []
 
   // Check for tournaments that need bracket generation (organizer)
-  organizedTournaments?.forEach((t) => {
-    if (t.status === 'recruiting') {
-      const count = countMap.get(t.id) || 0
+  organizedTournaments?.forEach((tournament) => {
+    if (tournament.status === 'recruiting') {
+      const count = countMap.get(tournament.id) || 0
       if (count >= 2) {
         actions.push({
           type: 'bracket_ready',
-          tournamentId: t.id,
-          tournamentTitle: t.title,
-          description: `${count}名参加中 - ブラケット生成可能`,
-          actionLabel: '管理画面へ',
-          actionHref: `/tournaments/${t.id}/manage`,
+          tournamentId: tournament.id,
+          tournamentTitle: tournament.title,
+          description: t('actions.bracketReady', { count }),
+          actionLabel: t('actions.goToManage'),
+          actionHref: `/tournaments/${tournament.id}/manage`,
         })
       } else {
         actions.push({
           type: 'entry_open',
-          tournamentId: t.id,
-          tournamentTitle: t.title,
-          description: `${count}/${t.max_participants}名 - エントリー受付中`,
-          actionLabel: '詳細を見る',
-          actionHref: `/tournaments/${t.id}`,
+          tournamentId: tournament.id,
+          tournamentTitle: tournament.title,
+          description: t('actions.entryOpen', { count, max: tournament.max_participants }),
+          actionLabel: t('actions.viewDetails'),
+          actionHref: `/tournaments/${tournament.id}`,
         })
       }
     }
@@ -137,8 +139,8 @@ export default async function MyPage() {
       completed: [],
       cancelled: [],
     }
-    tournaments.forEach((t) => {
-      groups[t.status].push(t)
+    tournaments.forEach((tournament) => {
+      groups[tournament.status].push(tournament)
     })
     return groups
   }
@@ -173,7 +175,7 @@ export default async function MyPage() {
             </div>
             <Link href="/my/edit">
               <Button variant="outline" size="sm">
-                編集
+                {t('profile.edit')}
               </Button>
             </Link>
           </div>
@@ -183,7 +185,7 @@ export default async function MyPage() {
       {/* Action Required Section */}
       <section>
         <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-          対応が必要
+          {t('actions.title')}
           {actions.length > 0 && (
             <span className="text-sm font-normal text-muted-foreground">
               ({actions.length})
@@ -205,13 +207,13 @@ export default async function MyPage() {
       <Tabs defaultValue="participating" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="participating" className="gap-2">
-            参加中
+            {t('tabs.participating')}
             <span className="text-xs text-muted-foreground">
               ({participatingTournaments.length})
             </span>
           </TabsTrigger>
           <TabsTrigger value="organizing" className="gap-2">
-            主催
+            {t('tabs.organizing')}
             <span className="text-xs text-muted-foreground">
               ({organizedTournaments?.length || 0})
             </span>
@@ -227,7 +229,7 @@ export default async function MyPage() {
                   {/* Active tournaments */}
                   {activeParticipating.length > 0 && (
                     <TournamentListSection
-                      title="開催中・募集中"
+                      title={t('sections.active')}
                       count={activeParticipating.length}
                     >
                       {activeParticipating.map((tournament) => (
@@ -244,7 +246,7 @@ export default async function MyPage() {
                   {/* Completed tournaments */}
                   {participatingByStatus.completed.length > 0 && (
                     <TournamentListSection
-                      title="終了"
+                      title={t('sections.completed')}
                       count={participatingByStatus.completed.length}
                     >
                       {participatingByStatus.completed.map((tournament) => (
@@ -264,14 +266,14 @@ export default async function MyPage() {
                       href="/my/joined"
                       className="text-sm text-muted-foreground hover:text-foreground"
                     >
-                      すべての参加大会を見る →
+                      {t('participating.viewAll')}
                     </Link>
                   </div>
                 </div>
               ) : (
                 <div className="py-8 text-center">
                   <p className="text-muted-foreground">
-                    参加している大会がありません
+                    {t('participating.empty')}
                   </p>
                 </div>
               )}
@@ -288,7 +290,7 @@ export default async function MyPage() {
                   {/* Draft tournaments */}
                   {organizedByStatus.draft.length > 0 && (
                     <TournamentListSection
-                      title="下書き"
+                      title={t('sections.draft')}
                       count={organizedByStatus.draft.length}
                     >
                       {organizedByStatus.draft.map((tournament) => (
@@ -305,7 +307,7 @@ export default async function MyPage() {
                   {/* Active tournaments */}
                   {activeOrganized.length > 0 && (
                     <TournamentListSection
-                      title="開催中・募集中"
+                      title={t('sections.active')}
                       count={activeOrganized.length}
                     >
                       {activeOrganized.map((tournament) => (
@@ -322,7 +324,7 @@ export default async function MyPage() {
                   {/* Completed tournaments */}
                   {organizedByStatus.completed.length > 0 && (
                     <TournamentListSection
-                      title="終了"
+                      title={t('sections.completed')}
                       count={organizedByStatus.completed.length}
                     >
                       {organizedByStatus.completed.map((tournament) => (
@@ -342,14 +344,14 @@ export default async function MyPage() {
                       href="/my/hosted"
                       className="text-sm text-muted-foreground hover:text-foreground"
                     >
-                      すべての主催大会を見る →
+                      {t('organizing.viewAll')}
                     </Link>
                   </div>
                 </div>
               ) : (
                 <div className="py-8 text-center">
                   <p className="text-muted-foreground">
-                    主催している大会がありません
+                    {t('organizing.empty')}
                   </p>
                 </div>
               )}

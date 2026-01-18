@@ -9,6 +9,7 @@ import {
 } from '@/types/series'
 import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesListItem'
 import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
+import { getTranslations } from 'next-intl/server'
 
 type FilterStatus = 'all' | 'active' | 'completed'
 
@@ -17,6 +18,7 @@ export default async function SeriesPage({
 }: {
   searchParams: Promise<{ q?: string; status?: FilterStatus }>
 }) {
+  const t = await getTranslations('series')
   const params = await searchParams
   const query = params.q || ''
   const statusFilter = params.status || 'all'
@@ -93,10 +95,10 @@ export default async function SeriesPage({
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">シリーズ一覧</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         {user && (
           <Link href="/series/new">
-            <Button>シリーズを作成</Button>
+            <Button>{t('create')}</Button>
           </Link>
         )}
       </div>
@@ -115,7 +117,7 @@ export default async function SeriesPage({
               <div className="space-y-4">
                 {grouped.active.length > 0 && (
                   <SeriesListSection
-                    title="開催中"
+                    title={t('status.active')}
                     count={grouped.active.length}
                   >
                     {grouped.active.map((series) => (
@@ -131,7 +133,7 @@ export default async function SeriesPage({
 
                 {grouped.completed.length > 0 && (
                   <SeriesListSection
-                    title="終了"
+                    title={t('status.completed')}
                     count={grouped.completed.length}
                   >
                     {grouped.completed.map((series) => (
@@ -165,8 +167,8 @@ export default async function SeriesPage({
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
               {query
-                ? '検索結果が見つかりませんでした'
-                : 'まだシリーズがありません'}
+                ? t('searchEmpty')
+                : t('empty')}
             </p>
           </CardContent>
         </Card>

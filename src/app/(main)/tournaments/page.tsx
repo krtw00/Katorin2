@@ -13,15 +13,9 @@ import {
   TournamentListItem,
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
+import { getTranslations } from 'next-intl/server'
 
 type FilterStatus = 'all' | 'recruiting' | 'in_progress' | 'completed'
-
-const filterOptions: { value: FilterStatus; label: string }[] = [
-  { value: 'all', label: 'すべて' },
-  { value: 'recruiting', label: '募集中' },
-  { value: 'in_progress', label: '開催中' },
-  { value: 'completed', label: '終了' },
-]
 
 export default async function TournamentsPage({
   searchParams,
@@ -33,11 +27,19 @@ export default async function TournamentsPage({
     start_to?: string
   }>
 }) {
+  const t = await getTranslations('tournament.list')
   const params = await searchParams
   const query = params.q || ''
   const statusFilter = params.status || 'all'
   const startFrom = params.start_from || ''
   const startTo = params.start_to || ''
+
+  const filterOptions: { value: FilterStatus; label: string }[] = [
+    { value: 'all', label: t('filter.all') },
+    { value: 'recruiting', label: t('filter.recruiting') },
+    { value: 'in_progress', label: t('filter.in_progress') },
+    { value: 'completed', label: t('filter.completed') },
+  ]
 
   const supabase = await createClient()
 
@@ -120,10 +122,10 @@ export default async function TournamentsPage({
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">大会一覧</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         {user && (
           <Link href="/tournaments/new">
-            <Button>大会を作成</Button>
+            <Button>{t('create')}</Button>
           </Link>
         )}
       </div>
@@ -133,7 +135,7 @@ export default async function TournamentsPage({
         <form action="/tournaments" method="get" className="flex flex-wrap gap-2">
           <Input
             name="q"
-            placeholder="大会を検索..."
+            placeholder={t('search')}
             defaultValue={query}
             className="max-w-sm"
           />
@@ -143,7 +145,7 @@ export default async function TournamentsPage({
               name="start_from"
               defaultValue={startFrom}
               className="max-w-[150px]"
-              placeholder="開始日（From）"
+              placeholder={t('startFrom')}
             />
             <span className="text-muted-foreground">〜</span>
             <Input
@@ -151,14 +153,14 @@ export default async function TournamentsPage({
               name="start_to"
               defaultValue={startTo}
               className="max-w-[150px]"
-              placeholder="開始日（To）"
+              placeholder={t('startTo')}
             />
           </div>
           {statusFilter !== 'all' && (
             <input type="hidden" name="status" value={statusFilter} />
           )}
           <Button type="submit" variant="secondary">
-            検索
+            {t('searchButton')}
           </Button>
         </form>
 
@@ -194,7 +196,7 @@ export default async function TournamentsPage({
               <div className="space-y-4">
                 {grouped.recruiting.length > 0 && (
                   <TournamentListSection
-                    title="募集中"
+                    title={t('filter.recruiting')}
                     count={grouped.recruiting.length}
                   >
                     {grouped.recruiting.map((tournament) => (
@@ -210,7 +212,7 @@ export default async function TournamentsPage({
 
                 {grouped.in_progress.length > 0 && (
                   <TournamentListSection
-                    title="開催中"
+                    title={t('filter.in_progress')}
                     count={grouped.in_progress.length}
                   >
                     {grouped.in_progress.map((tournament) => (
@@ -226,7 +228,7 @@ export default async function TournamentsPage({
 
                 {grouped.completed.length > 0 && (
                   <TournamentListSection
-                    title="終了"
+                    title={t('filter.completed')}
                     count={grouped.completed.length}
                   >
                     {grouped.completed.map((tournament) => (
@@ -259,9 +261,7 @@ export default async function TournamentsPage({
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
-              {query
-                ? '検索結果が見つかりませんでした'
-                : 'まだ大会がありません'}
+              {query ? t('noResults') : t('empty')}
             </p>
           </CardContent>
         </Card>

@@ -13,17 +13,11 @@ import {
 } from '@/types/database'
 import { Tournament, CustomField, InputType, EditDeadline } from '@/types/tournament'
 import { parseCustomFields } from '@/lib/types/guards'
+import { useTranslations } from 'next-intl'
 
 type Series = Tables<'series'>
 
 type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
-
-const sections: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: '概要', icon: '📋' },
-  { id: 'participants', label: '参加者設定', icon: '👥' },
-  { id: 'tournament', label: 'トーナメント設定', icon: '🏆' },
-  { id: 'schedule', label: '日程', icon: '📅' },
-]
 
 type TournamentFormProps = {
   mode: 'create' | 'edit'
@@ -32,9 +26,17 @@ type TournamentFormProps = {
 }
 
 export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormProps) {
+  const t = useTranslations('tournament.form')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [activeSection, setActiveSection] = useState<Section>('overview')
+
+  const sections: { id: Section; label: string; icon: string }[] = [
+    { id: 'overview', label: t('sections.overview'), icon: '📋' },
+    { id: 'participants', label: t('sections.participants'), icon: '👥' },
+    { id: 'tournament', label: t('sections.tournament'), icon: '🏆' },
+    { id: 'schedule', label: t('sections.schedule'), icon: '📅' },
+  ]
   const [customFields, setCustomFields] = useState<CustomField[]>(() => {
     try {
       return parseCustomFields(initialData?.custom_fields)
@@ -153,7 +155,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
-        setError('画像サイズは3MB以下にしてください')
+        setError(t('errors.imageSize'))
         return
       }
       const reader = new FileReader()
@@ -173,12 +175,12 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        setError('ログインが必要です')
+        setError(t('errors.loginRequired'))
         return
       }
 
       if (!formData.title.trim()) {
-        setError('大会名を入力してください')
+        setError(t('errors.titleRequired'))
         setActiveSection('overview')
         return
       }
@@ -248,7 +250,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         }
       }
     } catch (err) {
-      setError(mode === 'create' ? '大会の作成に失敗しました' : '大会の更新に失敗しました')
+      setError(mode === 'create' ? t('errors.createFailed') : t('errors.updateFailed'))
     } finally {
       setLoading(false)
     }
@@ -261,10 +263,10 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
   }
 
   const isEditMode = mode === 'edit'
-  const headerTitle = isEditMode ? '大会を編集' : '大会を新規作成'
+  const headerTitle = isEditMode ? t('editTitle') : t('createTitle')
   const submitButtonText = isEditMode
-    ? loading ? '保存中...' : '変更を保存'
-    : loading ? '作成中...' : '大会を作成'
+    ? loading ? t('saving') : t('saveChanges')
+    : loading ? t('creating') : t('createButton')
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -277,7 +279,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
               size="sm"
               onClick={() => router.back()}
             >
-              ← 戻る
+              {t('back')}
             </Button>
             <h1 className="text-lg font-semibold">{headerTitle}</h1>
           </div>
@@ -288,7 +290,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                 onClick={(e) => handleSubmit(e, true)}
                 disabled={loading}
               >
-                下書き保存
+                {t('saveDraft')}
               </Button>
             )}
             <Button
@@ -339,14 +341,14 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
               {/* Overview Section */}
               <section id="section-overview" className="bg-background rounded-lg border p-6 space-y-6">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <span>📋</span> 概要
+                  <span>📋</span> {t('sections.overview')}
                 </h2>
 
                 {/* Cover Image */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">カバー画像</label>
+                  <label className="text-sm font-medium">{t('coverImage.label')}</label>
                   <p className="text-xs text-muted-foreground">
-                    JPG, PNG, GIF形式、3MB以下、16:9推奨
+                    {t('coverImage.hint')}
                   </p>
                   <div
                     onClick={() => fileInputRef.current?.click()}
@@ -367,7 +369,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     ) : (
                       <div className="text-center text-muted-foreground">
                         <div className="text-4xl mb-2">📷</div>
-                        <p className="text-sm">画像を変更</p>
+                        <p className="text-sm">{t('coverImage.change')}</p>
                       </div>
                     )}
                     <input
@@ -383,13 +385,13 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                 {/* Event Name */}
                 <div className="space-y-2">
                   <label htmlFor="title" className="text-sm font-medium">
-                    大会名 <span className="text-destructive">*</span>
+                    {t('title.label')} <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => updateFormData('title', e.target.value)}
-                    placeholder="例: 第1回 新春トーナメント"
+                    placeholder={t('title.placeholder')}
                     disabled={loading}
                     maxLength={100}
                   />
@@ -398,13 +400,13 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                 {/* Description */}
                 <div className="space-y-2">
                   <label htmlFor="description" className="text-sm font-medium">
-                    説明
+                    {t('description.label')}
                   </label>
                   <textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => updateFormData('description', e.target.value)}
-                    placeholder="大会の説明やルールを入力..."
+                    placeholder={t('description.placeholder')}
                     className="w-full min-h-[120px] px-3 py-2 border rounded-md resize-y"
                     disabled={loading}
                   />
@@ -414,10 +416,10 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                 {series.length > 0 && (
                   <div className="space-y-2">
                     <label htmlFor="series_id" className="text-sm font-medium">
-                      シリーズ
+                      {t('series.label')}
                     </label>
                     <p className="text-xs text-muted-foreground">
-                      この大会をシリーズに紐付けることができます
+                      {t('series.hint')}
                     </p>
                     <select
                       id="series_id"
@@ -426,7 +428,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                       disabled={loading}
                       className="w-full px-3 py-2 border rounded-md bg-background"
                     >
-                      <option value="">シリーズに紐付けない</option>
+                      <option value="">{t('series.none')}</option>
                       {series.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.name}
@@ -438,12 +440,12 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
 
                 {/* Visibility */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">公開設定</label>
+                  <label className="text-sm font-medium">{t('visibility.label')}</label>
                   <div className="space-y-2">
                     {[
-                      { value: 'public', label: '公開', desc: '誰でも閲覧・参加可能' },
-                      { value: 'unlisted', label: '限定公開', desc: 'URLを知っている人のみ' },
-                      { value: 'private', label: '非公開', desc: '主催者のみ閲覧可能' },
+                      { value: 'public', label: t('visibility.public'), desc: t('visibility.publicDesc') },
+                      { value: 'unlisted', label: t('visibility.unlisted'), desc: t('visibility.unlistedDesc') },
+                      { value: 'private', label: t('visibility.private'), desc: t('visibility.privateDesc') },
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -478,13 +480,13 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
               {/* Participants Section */}
               <section id="section-participants" className="bg-background rounded-lg border p-6 space-y-6">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <span>👥</span> 参加者設定
+                  <span>👥</span> {t('sections.participants')}
                 </h2>
 
                 {/* Max Participants */}
                 <div className="space-y-2">
                   <label htmlFor="max_participants" className="text-sm font-medium">
-                    最大参加者数
+                    {t('maxParticipants.label')}
                   </label>
                   <Input
                     id="max_participants"
@@ -496,16 +498,16 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     disabled={loading}
                     className="w-32"
                   />
-                  <p className="text-xs text-muted-foreground">4〜128人</p>
+                  <p className="text-xs text-muted-foreground">{t('maxParticipants.hint')}</p>
                 </div>
 
                 {/* Entry Limit Behavior */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">定員超過時の対応</label>
+                  <label className="text-sm font-medium">{t('entryLimitBehavior.label')}</label>
                   <div className="space-y-2">
                     {[
-                      { value: 'first_come', label: '先着順', desc: '定員に達したら自動的に受付終了' },
-                      { value: 'waitlist', label: 'キャンセル待ち', desc: '定員超過分はキャンセル待ちリストに追加' },
+                      { value: 'first_come', label: t('entryLimitBehavior.firstCome'), desc: t('entryLimitBehavior.firstComeDesc') },
+                      { value: 'waitlist', label: t('entryLimitBehavior.waitlist'), desc: t('entryLimitBehavior.waitlistDesc') },
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -540,9 +542,9 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium">エントリー時の入力項目</label>
+                      <label className="text-sm font-medium">{t('customFields.label')}</label>
                       <p className="text-xs text-muted-foreground">
-                        参加者にエントリー時に入力してもらう項目
+                        {t('customFields.hint')}
                       </p>
                     </div>
                     <Button
@@ -552,7 +554,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                       onClick={addCustomField}
                       disabled={loading}
                     >
-                      + 項目を追加
+                      {t('customFields.add')}
                     </Button>
                   </div>
 
@@ -570,7 +572,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                               onChange={(e) =>
                                 updateCustomField(index, { label: e.target.value })
                               }
-                              placeholder="項目名を入力"
+                              placeholder={t('customFields.namePlaceholder')}
                               disabled={loading}
                               className="border-0 bg-transparent p-0 h-auto text-sm font-medium focus-visible:ring-0"
                             />
@@ -586,7 +588,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                                 }}
                                 disabled={loading}
                                 className="h-8 w-8 p-0 text-muted-foreground"
-                                title="コピー"
+                                title={t('customFields.copy')}
                               >
                                 📋
                               </Button>
@@ -597,7 +599,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                                 onClick={() => removeCustomField(index)}
                                 disabled={loading}
                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                title="削除"
+                                title={t('customFields.delete')}
                               >
                                 🗑️
                               </Button>
@@ -608,13 +610,13 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                             {/* Input Type */}
                             <div className="space-y-2">
                               <label className="text-xs font-medium text-muted-foreground">
-                                入力方式
+                                {t('customFields.inputType.label')}
                               </label>
                               <div className="flex flex-wrap gap-2">
                                 {[
-                                  { value: 'text', label: '記述式', icon: '≡' },
-                                  { value: 'checkbox', label: 'チェックボックス', icon: '✓' },
-                                  { value: 'image', label: '画像アップロード', icon: '🖼️' },
+                                  { value: 'text', label: t('customFields.inputType.text'), icon: '≡' },
+                                  { value: 'checkbox', label: t('customFields.inputType.checkbox'), icon: '✓' },
+                                  { value: 'image', label: t('customFields.inputType.image'), icon: '🖼️' },
                                 ].map((option) => (
                                   <label
                                     key={option.value}
@@ -649,14 +651,14 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                             {field.inputType === 'text' && (
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-muted-foreground">
-                                  プレースホルダー
+                                  {t('customFields.placeholder.label')}
                                 </label>
                                 <Input
                                   value={field.placeholder}
                                   onChange={(e) =>
                                     updateCustomField(index, { placeholder: e.target.value })
                                   }
-                                  placeholder="例: 123-456-789"
+                                  placeholder={t('customFields.placeholder.hint')}
                                   disabled={loading}
                                 />
                               </div>
@@ -666,7 +668,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                             {field.inputType === 'checkbox' && (
                               <div className="space-y-2">
                                 <label className="text-xs font-medium text-muted-foreground">
-                                  選択肢（改行で区切る）
+                                  {t('customFields.options.label')}
                                 </label>
                                 <textarea
                                   value={field.options?.join('\n') || ''}
@@ -675,7 +677,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                                       options: e.target.value.split('\n').filter(Boolean),
                                     })
                                   }
-                                  placeholder="選択肢1&#10;選択肢2&#10;選択肢3"
+                                  placeholder={t('customFields.options.placeholder')}
                                   disabled={loading}
                                   className="w-full px-3 py-2 border rounded-md text-sm min-h-[80px] resize-y"
                                 />
@@ -685,7 +687,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                             {/* Advanced Settings */}
                             <div className="space-y-2">
                               <label className="text-xs font-medium text-muted-foreground">
-                                詳細設定
+                                {t('customFields.advanced.label')}
                               </label>
                               <div className="flex flex-wrap gap-4">
                                 <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -698,7 +700,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                                     disabled={loading}
                                     className="rounded"
                                   />
-                                  任意回答
+                                  {t('customFields.advanced.optional')}
                                 </label>
                                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                                   <input
@@ -710,7 +712,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                                     disabled={loading}
                                     className="rounded"
                                   />
-                                  回答を非公開
+                                  {t('customFields.advanced.hidden')}
                                 </label>
                               </div>
                             </div>
@@ -718,17 +720,17 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                             {/* Edit Deadline */}
                             <div className="space-y-2">
                               <label className="text-xs font-medium text-muted-foreground">
-                                変更期限
+                                {t('customFields.editDeadline.label')}
                               </label>
                               <p className="text-xs text-muted-foreground">
-                                参加者が回答を変更できる期限です
+                                {t('customFields.editDeadline.hint')}
                               </p>
                               <div className="space-y-1">
                                 {[
-                                  { value: 'entry_closed', label: 'エントリー後変更不可' },
-                                  { value: 'entry_period', label: 'エントリー期間終了まで' },
-                                  { value: 'bracket_published', label: 'トーナメント表公開まで' },
-                                  { value: 'event_end', label: 'イベント終了まで' },
+                                  { value: 'entry_closed', label: t('customFields.editDeadline.entryClosed') },
+                                  { value: 'entry_period', label: t('customFields.editDeadline.entryPeriod') },
+                                  { value: 'bracket_published', label: t('customFields.editDeadline.bracketPublished') },
+                                  { value: 'event_end', label: t('customFields.editDeadline.eventEnd') },
                                 ].map((option) => (
                                   <label
                                     key={option.value}
@@ -761,18 +763,18 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
               {/* Tournament Section */}
               <section id="section-tournament" className="bg-background rounded-lg border p-6 space-y-6">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <span>🏆</span> トーナメント設定
+                  <span>🏆</span> {t('sections.tournament')}
                 </h2>
 
                 {/* Tournament Format */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">トーナメント形式</label>
+                  <label className="text-sm font-medium">{t('tournamentFormat.label')}</label>
                   <div className="space-y-2">
                     {[
-                      { value: 'single_elimination', label: 'シングルエリミネーション', desc: '負けたら終わり', enabled: true },
-                      { value: 'double_elimination', label: 'ダブルエリミネーション', desc: '2回負けたら終わり（Phase 2予定）', enabled: false },
-                      { value: 'swiss', label: 'スイスドロー', desc: '勝敗に関係なく対戦（Phase 2予定）', enabled: false },
-                      { value: 'round_robin', label: '総当たり', desc: '全員と対戦（Phase 2予定）', enabled: false },
+                      { value: 'single_elimination', label: t('tournamentFormat.singleElimination'), desc: t('tournamentFormat.singleEliminationDesc'), enabled: true },
+                      { value: 'double_elimination', label: t('tournamentFormat.doubleElimination'), desc: t('tournamentFormat.doubleEliminationDesc'), enabled: false },
+                      { value: 'swiss', label: t('tournamentFormat.swiss'), desc: t('tournamentFormat.swissDesc'), enabled: false },
+                      { value: 'round_robin', label: t('tournamentFormat.roundRobin'), desc: t('tournamentFormat.roundRobinDesc'), enabled: false },
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -806,12 +808,12 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
 
                 {/* Match Format */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">対戦形式</label>
+                  <label className="text-sm font-medium">{t('matchFormat.label')}</label>
                   <div className="flex gap-2 flex-wrap">
                     {[
-                      { value: 'bo1', label: '1本勝負' },
-                      { value: 'bo3', label: '2本先取' },
-                      { value: 'bo5', label: '3本先取' },
+                      { value: 'bo1', label: t('matchFormat.bo1') },
+                      { value: 'bo3', label: t('matchFormat.bo3') },
+                      { value: 'bo5', label: t('matchFormat.bo5') },
                     ].map((option) => (
                       <label
                         key={option.value}
@@ -843,12 +845,12 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
               {/* Schedule Section */}
               <section id="section-schedule" className="bg-background rounded-lg border p-6 space-y-6">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <span>📅</span> 日程
+                  <span>📅</span> {t('sections.schedule')}
                 </h2>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">エントリー期間</label>
+                    <label className="text-sm font-medium">{t('entryPeriod.label')}</label>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Input
                         id="entry_start_at"
@@ -869,7 +871,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      この期間中にエントリーを受け付けます
+                      {t('entryPeriod.hint')}
                     </p>
                   </div>
                 </div>
@@ -885,7 +887,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     disabled={loading}
                     className="flex-1"
                   >
-                    下書き保存
+                    {t('saveDraft')}
                   </Button>
                 )}
                 <Button

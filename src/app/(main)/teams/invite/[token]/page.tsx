@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TeamInviteWithTeam, isInviteValid } from '@/types/team'
 
 export default function TeamInvitePage() {
+  const t = useTranslations('team.invite')
+  const tCommon = useTranslations('common')
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
@@ -25,7 +28,7 @@ export default function TeamInvitePage() {
   useEffect(() => {
     const fetchInvite = async () => {
       if (!params.token || typeof params.token !== 'string') {
-        setError('招待トークンが無効です')
+        setError(t('invalidToken'))
         setLoading(false)
         return
       }
@@ -35,7 +38,7 @@ export default function TeamInvitePage() {
 
       const token = typeof params.token === 'string' ? params.token : ''
       if (!token) {
-        setError('無効な招待トークンです')
+        setError(t('invalidTokenShort'))
         setLoading(false)
         return
       }
@@ -51,7 +54,7 @@ export default function TeamInvitePage() {
         .single()
 
       if (inviteError || !inviteData) {
-        setError('招待リンクが見つかりません')
+        setError(t('notFound'))
         setLoading(false)
         return
       }
@@ -92,7 +95,7 @@ export default function TeamInvitePage() {
 
     // 招待の有効性を再チェック
     if (!isInviteValid(invite)) {
-      setError('この招待リンクは有効期限切れか、使用上限に達しています')
+      setError(t('expired'))
       setJoining(false)
       return
     }
@@ -108,7 +111,7 @@ export default function TeamInvitePage() {
 
     if (memberError) {
       if (memberError.message.includes('duplicate') || memberError.message.includes('unique')) {
-        setError('既にこのチームのメンバーです')
+        setError(t('alreadyMember'))
       } else {
         setError(memberError.message)
       }
@@ -129,7 +132,7 @@ export default function TeamInvitePage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-muted-foreground">読み込み中...</p>
+        <p className="text-center text-muted-foreground">{tCommon('loading')}</p>
       </div>
     )
   }
@@ -141,7 +144,7 @@ export default function TeamInvitePage() {
           <CardContent className="pt-6 text-center">
             <p className="text-destructive mb-4">{error}</p>
             <Link href="/teams">
-              <Button variant="outline">チーム一覧へ</Button>
+              <Button variant="outline">{t('backToList')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -160,12 +163,12 @@ export default function TeamInvitePage() {
         <Card>
           <CardContent className="pt-6 text-center space-y-4">
             <div className="text-4xl">🎉</div>
-            <h2 className="text-xl font-bold">チームに参加しました！</h2>
+            <h2 className="text-xl font-bold">{t('joined')}</h2>
             <p className="text-muted-foreground">
-              {invite.team.name} のメンバーになりました
+              {t('joinedMessage', { teamName: invite.team.name })}
             </p>
             <Link href={`/teams/${invite.team_id}`}>
-              <Button className="w-full">チームページへ</Button>
+              <Button className="w-full">{t('goToTeam')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -177,7 +180,7 @@ export default function TeamInvitePage() {
     <div className="container mx-auto px-4 py-8 max-w-md">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>チームへの招待</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Team Info */}
@@ -207,7 +210,7 @@ export default function TeamInvitePage() {
           {!valid && (
             <div className="bg-muted px-4 py-3 rounded text-center">
               <p className="text-muted-foreground">
-                この招待リンクは有効期限切れか、使用上限に達しています
+                {t('expired')}
               </p>
             </div>
           )}
@@ -216,10 +219,10 @@ export default function TeamInvitePage() {
           {alreadyMember && (
             <div className="bg-muted px-4 py-3 rounded text-center">
               <p className="text-muted-foreground mb-3">
-                既にこのチームのメンバーです
+                {t('alreadyMember')}
               </p>
               <Link href={`/teams/${invite.team_id}`}>
-                <Button variant="outline">チームページへ</Button>
+                <Button variant="outline">{t('goToTeam')}</Button>
               </Link>
             </div>
           )}
@@ -233,15 +236,15 @@ export default function TeamInvitePage() {
                   onClick={handleJoin}
                   disabled={joining}
                 >
-                  {joining ? '参加中...' : 'チームに参加する'}
+                  {joining ? t('joining') : t('join')}
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground text-center">
-                    チームに参加するにはログインが必要です
+                    {t('loginRequired')}
                   </p>
                   <Link href={`/login?redirect=/teams/invite/${params.token}`}>
-                    <Button className="w-full">ログインして参加</Button>
+                    <Button className="w-full">{t('loginToJoin')}</Button>
                   </Link>
                 </div>
               )}
@@ -250,8 +253,8 @@ export default function TeamInvitePage() {
 
           {/* Invite Info */}
           <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>有効期限: {new Date(invite.expires_at).toLocaleDateString('ja-JP')}</p>
-            <p>残り使用可能回数: {invite.max_uses - invite.use_count}</p>
+            <p>{t('expiresAtLabel')}: {new Date(invite.expires_at).toLocaleDateString('ja-JP')}</p>
+            <p>{t('remainingUses')}: {invite.max_uses - invite.use_count}</p>
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,6 +12,8 @@ type Props = {
 }
 
 export function TeamListItem({ team }: Props) {
+  const t = useTranslations('team.listItem')
+
   return (
     <Link href={`/teams/${team.id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -28,10 +33,10 @@ export function TeamListItem({ team }: Props) {
                 </p>
               )}
               <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                <span>リーダー: {team.leader.display_name}</span>
+                <span>{t('leader')}: {team.leader.display_name}</span>
                 {team.member_count !== undefined && (
                   <Badge variant="secondary" className="text-xs">
-                    {team.member_count}人
+                    {t('memberCount', { count: team.member_count })}
                   </Badge>
                 )}
               </div>

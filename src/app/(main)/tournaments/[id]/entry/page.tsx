@@ -16,12 +16,14 @@ import {
 } from '@/components/ui/card'
 import { Tournament, CustomField } from '@/types/tournament'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 export default function TournamentEntryPage({ params }: Props) {
+  const t = useTranslations('tournament.entry')
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [customFields, setCustomFields] = useState<CustomField[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,7 +45,7 @@ export default function TournamentEntryPage({ params }: Props) {
         .single()) as { data: Tournament | null; error: any }
 
       if (error || !data) {
-        setError('大会が見つかりませんでした')
+        setError(t('errors.notFound'))
       } else {
         setTournament(data)
         // Parse custom_fields from tournament
@@ -81,7 +83,7 @@ export default function TournamentEntryPage({ params }: Props) {
       }
 
       if (!displayName.trim()) {
-        setError('表示名を入力してください')
+        setError(t('errors.displayNameRequired'))
         return
       }
 
@@ -102,7 +104,7 @@ export default function TournamentEntryPage({ params }: Props) {
         .single()
 
       if (existing) {
-        setError('既にエントリーしています')
+        setError(t('errors.alreadyEntered'))
         return
       }
 
@@ -134,7 +136,7 @@ export default function TournamentEntryPage({ params }: Props) {
 
       router.push(`/tournaments/${tournament.id}`)
     } catch (err) {
-      setError('エントリーに失敗しました')
+      setError(t('errors.failed'))
     } finally {
       setSubmitting(false)
     }
@@ -169,7 +171,7 @@ export default function TournamentEntryPage({ params }: Props) {
       <div className="container mx-auto px-4 py-8 max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>ログインが必要です</CardTitle>
+            <CardTitle>t('loginRequired')</CardTitle>
             <CardDescription>
               トーナメントにエントリーするにはログインしてください
             </CardDescription>
@@ -188,7 +190,7 @@ export default function TournamentEntryPage({ params }: Props) {
     <div className="container mx-auto px-4 py-8 max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>エントリー</CardTitle>
+          <CardTitle>t('title')</CardTitle>
           <CardDescription>{tournament.title}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -207,7 +209,7 @@ export default function TournamentEntryPage({ params }: Props) {
                 id="display_name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="大会で表示される名前"
+                placeholder={t('displayNamePlaceholder')}
                 disabled={submitting}
                 maxLength={50}
               />

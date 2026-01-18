@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ type Props = {
 }
 
 export function TeamForm({ mode, initialData, onSuccess }: Props) {
+  const t = useTranslations('team.form')
   const router = useRouter()
   const supabase = createClient()
 
@@ -49,12 +51,12 @@ export function TeamForm({ mode, initialData, onSuccess }: Props) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setError('ログインが必要です')
+        setError(t('loginRequired'))
         return
       }
 
       if (!formData.name.trim()) {
-        setError('チーム名を入力してください')
+        setError(t('nameRequired'))
         return
       }
 
@@ -127,17 +129,17 @@ export function TeamForm({ mode, initialData, onSuccess }: Props) {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => router.back()}>
-              ← 戻る
+              ← {t('back')}
             </Button>
             <h1 className="text-lg font-bold">
-              {mode === 'create' ? 'チームを作成' : 'チームを編集'}
+              {mode === 'create' ? t('createTitle') : t('editTitle')}
             </h1>
           </div>
           <Button
             onClick={handleSubmit}
             disabled={loading}
           >
-            {loading ? '保存中...' : mode === 'edit' ? '変更を保存' : 'チームを作成'}
+            {loading ? t('saving') : mode === 'edit' ? t('saveChanges') : t('create')}
           </Button>
         </div>
       </div>
@@ -157,35 +159,35 @@ export function TeamForm({ mode, initialData, onSuccess }: Props) {
           {/* Basic Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">基本情報</CardTitle>
+              <CardTitle className="text-lg">{t('basicInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">チーム名 *</Label>
+                <Label htmlFor="name">{t('name')} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => updateFormData('name', e.target.value)}
-                  placeholder="例: Team Alpha"
+                  placeholder={t('namePlaceholder')}
                   maxLength={50}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">チーム紹介</Label>
+                <Label htmlFor="description">{t('description')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => updateFormData('description', e.target.value)}
-                  placeholder="チームの紹介文を入力..."
+                  placeholder={t('descriptionPlaceholder')}
                   rows={4}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>アバター</Label>
+                <Label>{t('avatar')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  今後対応予定
+                  {t('avatarComingSoon')}
                 </p>
               </div>
             </CardContent>

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,8 @@ type Props = {
 
 export default async function TeamDetailPage({ params }: Props) {
   const { id } = await params
+  const t = await getTranslations('team.detail')
+  const tRole = await getTranslations('team.role')
   const supabase = await createClient()
 
   // 現在のユーザーを取得
@@ -65,7 +68,7 @@ export default async function TeamDetailPage({ params }: Props) {
       <div className="mb-6">
         <Link href="/teams">
           <Button variant="ghost" className="mb-4">
-            ← チーム一覧に戻る
+            ← {t('backToList')}
           </Button>
         </Link>
 
@@ -80,7 +83,7 @@ export default async function TeamDetailPage({ params }: Props) {
             <div>
               <h1 className="text-2xl font-bold">{team.name}</h1>
               <p className="text-muted-foreground">
-                リーダー: {team.leader.display_name}
+                {t('leader')}: {team.leader.display_name}
               </p>
             </div>
           </div>
@@ -88,10 +91,10 @@ export default async function TeamDetailPage({ params }: Props) {
           {isLeader && (
             <div className="flex gap-2">
               <Link href={`/teams/${id}/members`}>
-                <Button variant="outline">メンバー管理</Button>
+                <Button variant="outline">{t('manageMembers')}</Button>
               </Link>
               <Link href={`/teams/${id}/edit`}>
-                <Button variant="outline">編集</Button>
+                <Button variant="outline">{t('edit')}</Button>
               </Link>
             </div>
           )}
@@ -102,19 +105,19 @@ export default async function TeamDetailPage({ params }: Props) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">メンバー数</p>
+            <p className="text-sm text-muted-foreground">{t('memberCount')}</p>
             <p className="text-2xl font-bold">{team.members.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">参加大会数</p>
+            <p className="text-sm text-muted-foreground">{t('tournamentCount')}</p>
             <p className="text-2xl font-bold">{teamEntries?.length || 0}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">作成日</p>
+            <p className="text-sm text-muted-foreground">{t('createdDate')}</p>
             <p className="text-lg font-medium">
               {new Date(team.created_at).toLocaleDateString('ja-JP')}
             </p>
@@ -122,9 +125,9 @@ export default async function TeamDetailPage({ params }: Props) {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">ステータス</p>
+            <p className="text-sm text-muted-foreground">{t('status')}</p>
             <Badge variant={isMember ? 'default' : 'secondary'}>
-              {isMember ? '所属中' : '非メンバー'}
+              {isMember ? t('isMember') : t('notMember')}
             </Badge>
           </CardContent>
         </Card>
@@ -133,16 +136,16 @@ export default async function TeamDetailPage({ params }: Props) {
       {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">概要</TabsTrigger>
-          <TabsTrigger value="members">メンバー</TabsTrigger>
-          <TabsTrigger value="tournaments">大会履歴</TabsTrigger>
+          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+          <TabsTrigger value="members">{t('members')}</TabsTrigger>
+          <TabsTrigger value="tournaments">{t('tournamentHistory')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           {team.description ? (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">チーム紹介</CardTitle>
+                <CardTitle className="text-lg">{t('introduction')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap">{team.description}</p>
@@ -151,7 +154,7 @@ export default async function TeamDetailPage({ params }: Props) {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center text-muted-foreground">
-                チーム紹介はまだ設定されていません
+                {t('noIntroduction')}
               </CardContent>
             </Card>
           )}
@@ -161,16 +164,16 @@ export default async function TeamDetailPage({ params }: Props) {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                メンバー一覧 ({team.members.length}人)
+                {t('memberListCount', { count: team.members.length })}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>プレイヤー</TableHead>
-                    <TableHead>役割</TableHead>
-                    <TableHead>加入日</TableHead>
+                    <TableHead>{t('player')}</TableHead>
+                    <TableHead>{t('role')}</TableHead>
+                    <TableHead>{t('joinedDate')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -192,7 +195,7 @@ export default async function TeamDetailPage({ params }: Props) {
                       </TableCell>
                       <TableCell>
                         <Badge variant={member.role === 'leader' ? 'default' : 'secondary'}>
-                          {teamRoleLabels[member.role]}
+                          {tRole(member.role)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -209,16 +212,16 @@ export default async function TeamDetailPage({ params }: Props) {
         <TabsContent value="tournaments">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">大会履歴</CardTitle>
+              <CardTitle className="text-lg">{t('tournamentHistory')}</CardTitle>
             </CardHeader>
             <CardContent>
               {teamEntries && teamEntries.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>大会名</TableHead>
-                      <TableHead>ステータス</TableHead>
-                      <TableHead>開催日</TableHead>
+                      <TableHead>{t('tournamentName')}</TableHead>
+                      <TableHead>{t('tournamentStatus')}</TableHead>
+                      <TableHead>{t('startDate')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -248,7 +251,7 @@ export default async function TeamDetailPage({ params }: Props) {
                 </Table>
               ) : (
                 <p className="text-center text-muted-foreground py-4">
-                  まだ大会に参加していません
+                  {t('noTournaments')}
                 </p>
               )}
             </CardContent>

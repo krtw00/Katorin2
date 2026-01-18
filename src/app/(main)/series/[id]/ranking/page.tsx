@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SeriesWithOrganizer, seriesStatusLabels } from '@/types/series'
 import { SeriesRankingTable } from '@/components/series/SeriesRankingTable'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 export default async function SeriesRankingPage({ params }: Props) {
+  const t = await getTranslations('series')
   const { id } = await params
   const supabase = await createClient()
 
@@ -44,7 +46,7 @@ export default async function SeriesRankingPage({ params }: Props) {
       <div className="mb-6">
         <Link href={`/series/${id}`}>
           <Button variant="ghost" className="mb-4">
-            ← シリーズ詳細に戻る
+            {t('detail.backToDetail')}
           </Button>
         </Link>
         <div className="flex items-center gap-3">
@@ -53,13 +55,13 @@ export default async function SeriesRankingPage({ params }: Props) {
             {seriesStatusLabels[series.status]}
           </Badge>
         </div>
-        <p className="text-muted-foreground mt-1">ランキング</p>
+        <p className="text-muted-foreground mt-1">{t('detail.ranking')}</p>
       </div>
 
       {/* Ranking Table */}
       <Card>
         <CardHeader>
-          <CardTitle>総合ランキング</CardTitle>
+          <CardTitle>{t('detail.overallRanking')}</CardTitle>
         </CardHeader>
         <CardContent>
           <SeriesRankingTable

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,6 +34,10 @@ import {
 } from '@/types/team'
 
 export default function TeamMembersPage() {
+  const t = useTranslations('team.members')
+  const tRole = useTranslations('team.role')
+  const tError = useTranslations('team.error')
+  const tCommon = useTranslations('common')
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
@@ -52,7 +57,7 @@ export default function TeamMembersPage() {
 
   const fetchData = async () => {
     if (!params.id || typeof params.id !== 'string') {
-      setError('チームIDが無効です')
+      setError(tError('invalidTeamId'))
       setLoading(false)
       return
     }
@@ -66,7 +71,7 @@ export default function TeamMembersPage() {
 
     const id = typeof params.id === 'string' ? params.id : ''
     if (!id) {
-      setError('無効なチームIDです')
+      setError(tError('invalidTeamIdShort'))
       setLoading(false)
       return
     }
@@ -86,14 +91,14 @@ export default function TeamMembersPage() {
       .single()
 
     if (teamError || !teamData) {
-      setError('チームが見つかりません')
+      setError(tError('teamNotFound'))
       setLoading(false)
       return
     }
 
     // 権限チェック
     if (teamData.leader_id !== user.id) {
-      setError('管理権限がありません')
+      setError(tError('noManagePermission'))
       setLoading(false)
       return
     }
@@ -160,7 +165,7 @@ export default function TeamMembersPage() {
 
   const handleRemoveMember = async (memberId: string, userId: string) => {
     if (userId === team?.leader_id) {
-      setError('リーダーは削除できません')
+      setError(t('cannotRemoveLeader'))
       return
     }
 
@@ -184,7 +189,7 @@ export default function TeamMembersPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-muted-foreground">読み込み中...</p>
+        <p className="text-center text-muted-foreground">{tCommon('loading')}</p>
       </div>
     )
   }
@@ -198,7 +203,7 @@ export default function TeamMembersPage() {
             onClick={() => router.back()}
             className="text-primary hover:underline"
           >
-            戻る
+            {tError('back')}
           </button>
         </div>
       </div>
@@ -212,9 +217,9 @@ export default function TeamMembersPage() {
       {/* Header */}
       <div className="mb-6">
         <Button variant="ghost" onClick={() => router.push(`/teams/${team.id}`)} className="mb-4">
-          ← チーム詳細に戻る
+          ← {t('backToDetail')}
         </Button>
-        <h1 className="text-2xl font-bold">メンバー管理 - {team.name}</h1>
+        <h1 className="text-2xl font-bold">{t('titleWithName', { name: team.name })}</h1>
       </div>
 
       {error && (
@@ -227,17 +232,17 @@ export default function TeamMembersPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-lg">
-            メンバー一覧 ({team.members.length}人)
+            {t('memberListCount', { count: team.members.length })}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>プレイヤー</TableHead>
-                <TableHead>役割</TableHead>
-                <TableHead>加入日</TableHead>
-                <TableHead className="w-24">操作</TableHead>
+                <TableHead>{t('player')}</TableHead>
+                <TableHead>{t('role')}</TableHead>
+                <TableHead>{t('joinedDate')}</TableHead>
+                <TableHead className="w-24">{t('action')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -259,7 +264,7 @@ export default function TeamMembersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={member.role === 'leader' ? 'default' : 'secondary'}>
-                      {teamRoleLabels[member.role]}
+                      {tRole(member.role)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -273,7 +278,7 @@ export default function TeamMembersPage() {
                         className="text-destructive hover:text-destructive"
                         onClick={() => handleRemoveMember(member.id, member.user_id)}
                       >
-                        除外
+                        {t('remove')}
                       </Button>
                     )}
                   </TableCell>
@@ -287,27 +292,27 @@ export default function TeamMembersPage() {
       {/* Invites Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">招待リンク</CardTitle>
+          <CardTitle className="text-lg">{t('inviteLinks')}</CardTitle>
           <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => setCreatedInviteUrl('')}>
-                新しい招待リンクを作成
+                {t('createInviteLink')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>招待リンクを作成</DialogTitle>
+                <DialogTitle>{t('createInviteTitle')}</DialogTitle>
               </DialogHeader>
 
               {createdInviteUrl ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    招待リンクが作成されました。このリンクを共有してください。
+                    {t('inviteLinkCreated')}
                   </p>
                   <div className="flex gap-2">
                     <Input value={createdInviteUrl} readOnly className="flex-1" />
                     <Button onClick={() => copyToClipboard(createdInviteUrl)}>
-                      コピー
+                      {t('copy')}
                     </Button>
                   </div>
                   <Button
@@ -318,13 +323,13 @@ export default function TeamMembersPage() {
                       setCreatedInviteUrl('')
                     }}
                   >
-                    閉じる
+                    {t('close')}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>最大使用回数</Label>
+                    <Label>{t('maxUses')}</Label>
                     <Input
                       type="number"
                       value={inviteMaxUses}
@@ -334,7 +339,7 @@ export default function TeamMembersPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>有効期限（日数）</Label>
+                    <Label>{t('expiresInDays')}</Label>
                     <Input
                       type="number"
                       value={inviteExpiresInDays}
@@ -348,7 +353,7 @@ export default function TeamMembersPage() {
                     onClick={handleCreateInvite}
                     disabled={creatingInvite}
                   >
-                    {creatingInvite ? '作成中...' : '招待リンクを作成'}
+                    {creatingInvite ? t('creating') : t('createInviteLink')}
                   </Button>
                 </div>
               )}
@@ -360,11 +365,11 @@ export default function TeamMembersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>トークン</TableHead>
-                  <TableHead>使用回数</TableHead>
-                  <TableHead>有効期限</TableHead>
-                  <TableHead>状態</TableHead>
-                  <TableHead className="w-24">操作</TableHead>
+                  <TableHead>{t('token')}</TableHead>
+                  <TableHead>{t('useCount')}</TableHead>
+                  <TableHead>{t('expiresAt')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
+                  <TableHead className="w-24">{t('action')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -383,7 +388,7 @@ export default function TeamMembersPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={valid ? 'default' : 'secondary'}>
-                          {valid ? '有効' : '無効'}
+                          {valid ? t('valid') : t('invalid')}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -396,7 +401,7 @@ export default function TeamMembersPage() {
                                 `${window.location.origin}/teams/invite/${invite.invite_token}`
                               )}
                             >
-                              コピー
+                              {t('copy')}
                             </Button>
                           )}
                           <Button
@@ -405,7 +410,7 @@ export default function TeamMembersPage() {
                             className="text-destructive hover:text-destructive"
                             onClick={() => handleDeleteInvite(invite.id)}
                           >
-                            削除
+                            {t('delete')}
                           </Button>
                         </div>
                       </TableCell>
@@ -416,7 +421,7 @@ export default function TeamMembersPage() {
             </Table>
           ) : (
             <p className="text-center text-muted-foreground py-4">
-              招待リンクはまだありません
+              {t('noInvites')}
             </p>
           )}
         </CardContent>

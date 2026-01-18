@@ -5,6 +5,7 @@ import {
   seriesStatusLabels,
   pointSystemLabels,
 } from '@/types/series'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   series: SeriesWithOrganizer
@@ -20,8 +21,8 @@ const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondar
   cancelled: { dot: '🔴', variant: 'destructive' },
 }
 
-function formatDateRange(startDate: string | null, endDate: string | null): string {
-  if (!startDate && !endDate) return '期間未設定'
+function formatDateRange(startDate: string | null, endDate: string | null, notSetLabel: string): string {
+  if (!startDate && !endDate) return notSetLabel
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -42,6 +43,7 @@ export function SeriesListItem({
   showOrganizer = false,
   showManageLink = false,
 }: Props) {
+  const t = useTranslations('series')
   const config = statusConfig[series.status]
   const href = showManageLink
     ? `/series/${series.id}/edit`
@@ -65,15 +67,15 @@ export function SeriesListItem({
             {seriesStatusLabels[series.status]}
           </Badge>
           <Badge variant="outline" className="text-xs shrink-0">
-            {series.entry_type === 'individual' ? '個人戦' : 'チーム戦'}
+            {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
           </Badge>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
           <span>{pointSystemLabels[series.point_system]}</span>
-          <span>{tournamentCount}大会</span>
-          <span>{formatDateRange(series.start_date, series.end_date)}</span>
+          <span>{tournamentCount}{t('list.tournamentUnit')}</span>
+          <span>{formatDateRange(series.start_date, series.end_date, t('list.periodNotSet'))}</span>
           {showOrganizer && (
-            <span>主催: {series.organizer.display_name}</span>
+            <span>{t('detail.organizer')}: {series.organizer.display_name}</span>
           )}
         </div>
       </div>
@@ -91,13 +93,15 @@ export function SeriesListSection({
   title,
   count,
   children,
-  emptyMessage = 'シリーズがありません',
+  emptyMessage,
 }: {
   title: string
   count: number
   children: React.ReactNode
   emptyMessage?: string
 }) {
+  const t = useTranslations('series')
+  const defaultEmptyMessage = emptyMessage || t('list.empty')
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2 px-3 py-2">
@@ -110,7 +114,7 @@ export function SeriesListSection({
         <div className="divide-y">{children}</div>
       ) : (
         <p className="text-sm text-muted-foreground px-3 py-4 text-center">
-          {emptyMessage}
+          {defaultEmptyMessage}
         </p>
       )}
     </div>

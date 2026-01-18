@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SeriesRanking, PointSystem } from '@/types/series'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   rankings: SeriesRanking[]
@@ -22,10 +23,12 @@ function getRankDisplay(rank: number): string {
 }
 
 export function SeriesRankingTable({ rankings, pointSystem, showDetails = false }: Props) {
+  const t = useTranslations('series.ranking')
+
   if (rankings.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
-        まだランキングデータがありません
+        {t('empty')}
       </p>
     )
   }
@@ -34,14 +37,14 @@ export function SeriesRankingTable({ rankings, pointSystem, showDetails = false 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-16 text-center">順位</TableHead>
-          <TableHead>名前</TableHead>
-          <TableHead className="text-right">ポイント</TableHead>
-          <TableHead className="text-right">参加大会</TableHead>
+          <TableHead className="w-16 text-center">{t('rank')}</TableHead>
+          <TableHead>{t('name')}</TableHead>
+          <TableHead className="text-right">{t('points')}</TableHead>
+          <TableHead className="text-right">{t('tournamentsPlayed')}</TableHead>
           {showDetails && (
             <>
-              <TableHead className="text-right">勝利</TableHead>
-              <TableHead className="text-right">敗北</TableHead>
+              <TableHead className="text-right">{t('wins')}</TableHead>
+              <TableHead className="text-right">{t('losses')}</TableHead>
             </>
           )}
         </TableRow>
@@ -54,7 +57,7 @@ export function SeriesRankingTable({ rankings, pointSystem, showDetails = false 
             </TableCell>
             <TableCell className="font-medium">{ranking.name}</TableCell>
             <TableCell className="text-right font-bold text-primary">
-              {ranking.total_points}pt
+              {ranking.total_points}{t('pointsUnit')}
             </TableCell>
             <TableCell className="text-right text-muted-foreground">
               {ranking.tournaments_played}
