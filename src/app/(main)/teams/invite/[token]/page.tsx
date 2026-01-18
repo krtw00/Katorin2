@@ -27,9 +27,9 @@ export default function TeamInvitePage() {
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
 
-      const token = params.token as string
+      const token = typeof params.token === 'string' ? params.token : ''
       if (!token) {
-        setError('トークンが見つかりません')
+        setError('無効な招待トークンです')
         setLoading(false)
         return
       }

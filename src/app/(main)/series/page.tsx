@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import {
   SeriesWithOrganizer,
@@ -10,14 +8,9 @@ import {
   seriesStatusLabels,
 } from '@/types/series'
 import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesListItem'
+import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
 
 type FilterStatus = 'all' | 'active' | 'completed'
-
-const filterOptions: { value: FilterStatus; label: string }[] = [
-  { value: 'all', label: 'すべて' },
-  { value: 'active', label: '開催中' },
-  { value: 'completed', label: '終了' },
-]
 
 export default async function SeriesPage({
   searchParams,
@@ -109,41 +102,8 @@ export default async function SeriesPage({
       </div>
 
       {/* Search & Filters */}
-      <div className="space-y-4 mb-6">
-        <form action="/series" method="get" className="flex gap-2">
-          <Input
-            name="q"
-            placeholder="シリーズを検索..."
-            defaultValue={query}
-            className="max-w-sm"
-          />
-          {statusFilter !== 'all' && (
-            <input type="hidden" name="status" value={statusFilter} />
-          )}
-          <Button type="submit" variant="secondary">
-            検索
-          </Button>
-        </form>
-
-        {/* Status Filter Tabs */}
-        <div className="flex gap-2 flex-wrap">
-          {filterOptions.map((option) => (
-            <Link
-              key={option.value}
-              href={`/series?${new URLSearchParams({
-                ...(query ? { q: query } : {}),
-                ...(option.value !== 'all' ? { status: option.value } : {}),
-              }).toString()}`}
-            >
-              <Badge
-                variant={statusFilter === option.value ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-primary/80 px-3 py-1"
-              >
-                {option.label}
-              </Badge>
-            </Link>
-          ))}
-        </div>
+      <div className="mb-6">
+        <SeriesFilterForm />
       </div>
 
       {/* Series List */}
