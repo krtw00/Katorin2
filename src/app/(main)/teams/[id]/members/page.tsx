@@ -58,6 +58,13 @@ export default function TeamMembersPage() {
     }
     setCurrentUserId(user.id)
 
+    const teamId = typeof params.id === 'string' ? params.id : ''
+    if (!teamId) {
+      setError('無効なチームIDです')
+      setLoading(false)
+      return
+    }
+
     // チーム情報取得
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
@@ -69,7 +76,7 @@ export default function TeamMembersPage() {
           user:profiles(*)
         )
       `)
-      .eq('id', params.id)
+      .eq('id', teamId)
       .single()
 
     if (teamError || !teamData) {
@@ -91,7 +98,7 @@ export default function TeamMembersPage() {
     const { data: inviteData } = await supabase
       .from('team_invites')
       .select('*')
-      .eq('team_id', params.id)
+      .eq('team_id', teamId)
       .order('created_at', { ascending: false })
 
     setInvites(inviteData || [])
@@ -100,6 +107,7 @@ export default function TeamMembersPage() {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
 
   const handleCreateInvite = async () => {

@@ -22,10 +22,17 @@ export default function EditTeamPage() {
         return
       }
 
+      const teamId = typeof params.id === 'string' ? params.id : ''
+      if (!teamId) {
+        setError('無効なチームIDです')
+        setLoading(false)
+        return
+      }
+
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', teamId)
         .single()
 
       if (teamError || !teamData) {
