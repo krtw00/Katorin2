@@ -22,9 +22,9 @@ export default function EditTeamPage() {
         return
       }
 
-      const teamId = params.id as string
-      if (!teamId) {
-        setError('チームIDが見つかりません')
+      const id = typeof params.id === 'string' ? params.id : ''
+      if (!id) {
+        setError('無効なチームIDです')
         setLoading(false)
         return
       }
@@ -32,7 +32,7 @@ export default function EditTeamPage() {
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .select('*')
-        .eq('id', teamId)
+        .eq('id', id)
         .single()
 
       if (teamError || !teamData) {
