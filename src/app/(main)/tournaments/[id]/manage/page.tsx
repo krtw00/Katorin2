@@ -31,6 +31,7 @@ export default function TournamentManagePage({ params }: Props) {
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [checkingIn, setCheckingIn] = useState<Record<string, boolean>>({})
   const router = useRouter()
   const supabase = createClient()
 
@@ -146,6 +147,64 @@ export default function TournamentManagePage({ params }: Props) {
     }
   }
 
+  const handleCheckIn = async (participantId: string) => {
+    setCheckingIn(prev => ({ ...prev, [participantId]: true }))
+    setError('')
+
+    try {
+      const { error: updateError } = await supabase
+        .from('participants')
+        .update({ checked_in_at: new Date().toISOString() })
+        .eq('id', participantId)
+
+      if (updateError) {
+        setError(updateError.message)
+        return
+      }
+
+      // Update local state
+      setParticipants(prev =>
+        prev.map(p =>
+          p.id === participantId
+            ? { ...p, checked_in_at: new Date().toISOString() }
+            : p
+        )
+      )
+    } catch (err: any) {
+      setError(err.message || 'チェックインに失敗しました')
+    } finally {
+      setCheckingIn(prev => ({ ...prev, [participantId]: false }))
+    }
+  }
+
+  const handleUndoCheckIn = async (participantId: string) => {
+    setCheckingIn(prev => ({ ...prev, [participantId]: true }))
+    setError('')
+
+    try {
+      const { error: updateError } = await supabase
+        .from('participants')
+        .update({ checked_in_at: null })
+        .eq('id', participantId)
+
+      if (updateError) {
+        setError(updateError.message)
+        return
+      }
+
+      // Update local state
+      setParticipants(prev =>
+        prev.map(p =>
+          p.id === participantId ? { ...p, checked_in_at: null } : p
+        )
+      )
+    } catch (err: any) {
+      setError(err.message || 'チェックイン取消に失敗しました')
+    } finally {
+      setCheckingIn(prev => ({ ...prev, [participantId]: false }))
+    }
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -187,19 +246,50 @@ export default function TournamentManagePage({ params }: Props) {
           <CardTitle>参加者一覧</CardTitle>
           <CardDescription>
             {participants.length}名が参加しています
+            {participants.filter(p => p.checked_in_at).length > 0 && (
+              <> （チェックイン済み: {participants.filter(p => p.checked_in_at).length}名）</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {participants.length > 0 ? (
             <div className="space-y-2">
               {participants.map((participant) => (
-                <div key={participant.id} className="flex items-center gap-2 p-2 border rounded">
-                  <span>{participant.user.display_name}</span>
-                  {participant.master_duel_id && (
-                    <span className="text-sm text-muted-foreground">
-                      ({participant.master_duel_id})
-                    </span>
-                  )}
+                <div key={participant.id} className="flex items-center justify-between gap-2 p-3 border rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{participant.user.display_name}</span>
+                    {participant.master_duel_id && (
+                      <span className="text-sm text-muted-foreground">
+                        ({participant.master_duel_id})
+                      </span>
+                    )}
+                    {participant.checked_in_at && (
+                      <Badge variant="secondary" className="ml-2">
+                        チェックイン済み
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {participant.checked_in_at ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUndoCheckIn(participant.id)}
+                        disabled={checkingIn[participant.id]}
+                      >
+                        {checkingIn[participant.id] ? '処理中...' : '取消'}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleCheckIn(participant.id)}
+                        disabled={checkingIn[participant.id]}
+                      >
+                        {checkingIn[participant.id] ? '処理中...' : 'チェックイン'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
