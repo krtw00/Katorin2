@@ -94,7 +94,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         point_config: formData.point_config,
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
-        status: asDraft ? 'draft' : 'active',
+        status: (asDraft ? 'draft' : 'active') as 'draft' | 'active',
       }
 
       if (mode === 'create') {
