@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   SeriesWithOrganizer,
+  SeriesRanking,
   seriesStatusLabels,
   pointSystemLabels,
 } from '@/types/series'
@@ -63,12 +64,12 @@ export default async function SeriesDetailPage({ params }: Props) {
   })
 
   // Fetch rankings
-  const { data: rankings } = await supabase
+  const { data: rankings } = (await supabase
     .from('series_rankings')
     .select('*')
     .eq('series_id', id)
     .order('rank', { ascending: true })
-    .limit(10)
+    .limit(10)) as { data: SeriesRanking[] | null }
 
   // Get current user
   const {

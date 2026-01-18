@@ -91,7 +91,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         description: formData.description.trim() || null,
         entry_type: formData.entry_type,
         point_system: formData.point_system,
-        point_config: formData.point_config,
+        point_config: formData.point_config as any,
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
         status: asDraft ? 'draft' : 'active',
@@ -103,7 +103,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           .insert({
             ...seriesData,
             organizer_id: user.id,
-          })
+          } as any)
           .select()
           .single()
 
@@ -116,7 +116,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       } else {
         const { data, error: updateError } = await supabase
           .from('series')
-          .update(seriesData)
+          .update(seriesData as any)
           .eq('id', initialData!.id)
           .select()
           .single()
