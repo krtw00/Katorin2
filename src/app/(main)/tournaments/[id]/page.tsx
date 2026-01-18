@@ -26,12 +26,13 @@ export default async function TournamentDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch tournament with organizer
+  // Fetch tournament with organizer and series
   const { data: tournament, error } = await supabase
     .from('tournaments')
     .select(`
       *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
+      organizer:profiles!tournaments_organizer_id_fkey(*),
+      series:series(*)
     `)
     .eq('id', id)
     .single()
@@ -39,6 +40,13 @@ export default async function TournamentDetailPage({ params }: Props) {
   if (error || !tournament) {
     notFound()
   }
+
+  // Fetch organizer's team (if exists)
+  const { data: organizerTeam } = await supabase
+    .from('teams')
+    .select('*')
+    .eq('leader_id', tournament.organizer_id)
+    .maybeSingle()
 
   // Fetch participants with user details
   const { data: participants } = await supabase
@@ -79,10 +87,10 @@ export default async function TournamentDetailPage({ params }: Props) {
     'default' | 'secondary' | 'destructive' | 'outline'
   > = {
     draft: 'outline',
-    published: 'secondary',
+    published: 'outline',
     recruiting: 'default',
     in_progress: 'secondary',
-    completed: 'outline',
+    completed: 'secondary',
     cancelled: 'destructive',
   }
 
@@ -94,8 +102,28 @@ export default async function TournamentDetailPage({ params }: Props) {
             <div className="flex-1">
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
               <CardDescription className="mt-1">
-                {(participants?.length || 0)}名参加
+                {(participants?.length || 0)} / {tournament.max_participants}人
               </CardDescription>
+              {tournament.series && (
+                <div className="mt-2">
+                  <Link
+                    href={`/series/${tournament.series.id}`}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    シリーズ: {tournament.series.name}
+                  </Link>
+                </div>
+              )}
+              {organizerTeam && (
+                <div className="mt-1">
+                  <Link
+                    href={`/teams/${organizerTeam.id}`}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    主催チーム: {organizerTeam.name}
+                  </Link>
+                </div>
+              )}
             </div>
             <Badge variant={statusVariants[tournament.status]} className="shrink-0">
               {tournamentStatusLabels[tournament.status]}
