@@ -78,8 +78,9 @@ export default function TeamInvitePage() {
     setError('')
 
     const { data: { user } } = await supabase.auth.getUser()
+    const token = typeof params.token === 'string' ? params.token : ''
     if (!user) {
-      router.push(`/login?redirect=/teams/invite/${params.token}`)
+      router.push(`/login?redirect=/teams/invite/${token}`)
       return
     }
 
