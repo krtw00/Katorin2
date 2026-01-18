@@ -1,0 +1,56 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "reset": "Reset",
+    "required": "Required",
+    "optional": "Optional",
+    "error": "An error occurred",
+    "success": "Success",
+    "noData": "No data available",
+    "viewAll": "View All",
+    "viewDetails": "View Details"
+  },
+  "nav": {
+    "home": "Home",
+    "tournaments": "Tournaments",
+    "series": "Series",
+    "teams": "Teams",
+    "mypage": "My Page",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "footer": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "contact": "Contact"
+  },
+  "language": {
+    "select": "Select Language",
+    "ja": "日本語",
+    "en": "English"
+  },
+  "tournament": {},
+  "series": {},
+  "auth": {},
+  "mypage": {},
+  "team": {}
+}

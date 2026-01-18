@@ -1,0 +1,56 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "update": "更新",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "search": "検索",
+    "filter": "フィルター",
+    "all": "すべて",
+    "none": "なし",
+    "yes": "はい",
+    "no": "いいえ",
+    "confirm": "確認",
+    "submit": "送信",
+    "reset": "リセット",
+    "required": "必須",
+    "optional": "任意",
+    "error": "エラーが発生しました",
+    "success": "成功しました",
+    "noData": "データがありません",
+    "viewAll": "すべて見る",
+    "viewDetails": "詳細を見る"
+  },
+  "nav": {
+    "home": "ホーム",
+    "tournaments": "大会一覧",
+    "series": "シリーズ",
+    "teams": "チーム",
+    "mypage": "マイページ",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "register": "新規登録"
+  },
+  "footer": {
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "contact": "お問い合わせ"
+  },
+  "language": {
+    "select": "言語を選択",
+    "ja": "日本語",
+    "en": "English"
+  },
+  "tournament": {},
+  "series": {},
+  "auth": {},
+  "mypage": {},
+  "team": {}
+}
