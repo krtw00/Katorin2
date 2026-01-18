@@ -48,7 +48,7 @@ export default function EditSeriesPage({ params }: Props) {
         return
       }
 
-      setSeries(seriesData)
+      setSeries(seriesData as Series)
       setLoading(false)
     }
 
