@@ -24,6 +24,12 @@ export default function TeamInvitePage() {
 
   useEffect(() => {
     const fetchInvite = async () => {
+      if (!params.token || typeof params.token !== 'string') {
+        setError('招待トークンが無効です')
+        setLoading(false)
+        return
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       setIsLoggedIn(!!user)
 
