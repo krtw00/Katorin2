@@ -47,14 +47,19 @@ export function Header() {
           {isAuthenticated && profile ? (
             <>
               <Link href="/my">
-                <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80">
-                  {profile.avatar_url && (
-                    <AvatarImage src={profile.avatar_url} alt="" />
-                  )}
-                  <AvatarFallback>
-                    {user?.email?.substring(0, 2).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
+                  <Avatar className="h-8 w-8">
+                    {profile.avatar_url && (
+                      <AvatarImage src={profile.avatar_url} alt="" />
+                    )}
+                    <AvatarFallback>
+                      {profile.display_name.substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium hidden sm:inline">
+                    {profile.display_name}
+                  </span>
+                </div>
               </Link>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 {t('logout')}

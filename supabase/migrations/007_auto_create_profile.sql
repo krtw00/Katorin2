@@ -1,6 +1,6 @@
 -- ============================================
 -- 新規ユーザー登録時にprofilesを自動作成するトリガー
--- 匿名名バージョン（大会ごとにニックネームを入力させるため）
+-- OAuth対応版（Google/Discord等のname, avatar_urlを取得）
 -- ============================================
 
 -- 新規ユーザー作成時にプロフィールを自動作成する関数
@@ -10,7 +10,12 @@ BEGIN
   INSERT INTO public.profiles (id, display_name, avatar_url)
   VALUES (
     NEW.id,
-    'Player',  -- 匿名のデフォルト名（大会ごとにニックネームを入力させる）
+    COALESCE(
+      NEW.raw_user_meta_data->>'display_name',
+      NEW.raw_user_meta_data->>'name',
+      NEW.raw_user_meta_data->>'full_name',
+      split_part(NEW.email, '@', 1)
+    ),
     NEW.raw_user_meta_data->>'avatar_url'
   );
   RETURN NEW;
