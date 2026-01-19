@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export function Header() {
@@ -47,16 +47,14 @@ export function Header() {
           {isAuthenticated && profile ? (
             <>
               <Link href="/my">
-                <div className="flex items-center gap-2 cursor-pointer hover:opacity-80">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      {profile.display_name.substring(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium hidden sm:inline">
-                    {profile.display_name}
-                  </span>
-                </div>
+                <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80">
+                  {profile.avatar_url && (
+                    <AvatarImage src={profile.avatar_url} alt="" />
+                  )}
+                  <AvatarFallback>
+                    {user?.email?.substring(0, 2).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
               </Link>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 {t('logout')}

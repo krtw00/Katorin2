@@ -64,12 +64,12 @@ export default function TournamentEntryPage({ params }: Props) {
     loadTournament()
   }, [params])
 
-  // Set display name from profile when loaded
-  useEffect(() => {
-    if (profile?.display_name) {
-      setDisplayName(profile.display_name)
-    }
-  }, [profile])
+  // 大会ごとに表示名を入力させるため、プロファイルの名前はデフォルトにしない
+  // useEffect(() => {
+  //   if (profile?.display_name) {
+  //     setDisplayName(profile.display_name)
+  //   }
+  // }, [profile])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()

@@ -2,8 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database'
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
+export async function updateSession(request: NextRequest, response?: NextResponse) {
+  // next-intlなど他のmiddlewareからのresponseがあればそれを使用
+  let supabaseResponse = response ?? NextResponse.next({
     request,
   })
 
@@ -33,21 +34,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const pathname = request.nextUrl.pathname
+
+  // ロケールプレフィックスを考慮したパスチェック
+  // /my, /en/my, /ja/my などにマッチ
+  const isProtectedRoute = /^(\/(?:ja|en))?\/my(\/|$)/.test(pathname)
+  const isAuthPage = /^(\/(?:ja|en))?\/(login|register)$/.test(pathname)
+
   // Protected routes - redirect to login if not authenticated
-  if (!user && request.nextUrl.pathname.startsWith('/my')) {
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    // ロケールプレフィックスを保持してリダイレクト
+    const localeMatch = pathname.match(/^\/(?:ja|en)/)
+    url.pathname = localeMatch ? `${localeMatch[0]}/login` : '/login'
     return NextResponse.redirect(url)
   }
 
   // Redirect authenticated users away from auth pages
-  if (
-    user &&
-    (request.nextUrl.pathname === '/login' ||
-      request.nextUrl.pathname === '/register')
-  ) {
+  if (user && isAuthPage) {
     const url = request.nextUrl.clone()
-    url.pathname = '/tournaments'
+    const localeMatch = pathname.match(/^\/(?:ja|en)/)
+    url.pathname = localeMatch ? `${localeMatch[0]}/tournaments` : '/tournaments'
     return NextResponse.redirect(url)
   }
 
