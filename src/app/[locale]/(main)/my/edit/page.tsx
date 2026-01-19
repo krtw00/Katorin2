@@ -31,7 +31,6 @@ export default function ProfileEditPage() {
 
   // Form state
   const [displayName, setDisplayName] = useState('')
-  const [masterDuelId, setMasterDuelId] = useState('')
   const [bio, setBio] = useState('')
 
   useEffect(() => {
@@ -58,7 +57,6 @@ export default function ProfileEditPage() {
 
       setProfile(data)
       setDisplayName(data.display_name || '')
-      setMasterDuelId(data.master_duel_id || '')
       setBio(data.bio || '')
       setLoading(false)
     }
@@ -89,7 +87,6 @@ export default function ProfileEditPage() {
         .from('profiles')
         .update({
           display_name: displayName.trim(),
-          master_duel_id: masterDuelId.trim() || null,
           bio: bio.trim() || null,
         })
         .eq('id', user.id)
@@ -156,21 +153,6 @@ export default function ProfileEditPage() {
               />
               <p className="text-xs text-muted-foreground">
                 {t('displayNameHelp')}
-              </p>
-            </div>
-
-            {/* Master Duel ID */}
-            <div className="space-y-2">
-              <Label htmlFor="masterDuelId">{t('masterDuelId')}</Label>
-              <Input
-                id="masterDuelId"
-                value={masterDuelId}
-                onChange={(e) => setMasterDuelId(e.target.value)}
-                placeholder="000-000-000"
-                maxLength={20}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('masterDuelIdHelp')}
               </p>
             </div>
 

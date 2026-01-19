@@ -289,7 +289,6 @@ export type Database = {
           discord_id: string | null
           display_name: string
           id: string
-          master_duel_id: string | null
           updated_at: string
         }
         Insert: {
@@ -299,7 +298,6 @@ export type Database = {
           discord_id?: string | null
           display_name: string
           id: string
-          master_duel_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -309,7 +307,6 @@ export type Database = {
           discord_id?: string | null
           display_name?: string
           id?: string
-          master_duel_id?: string | null
           updated_at?: string
         }
         Relationships: []
