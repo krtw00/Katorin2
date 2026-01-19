@@ -1,41 +1,9 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { NextIntlClientProvider } from 'next-intl'
-import { getLocale, getMessages } from 'next-intl/server'
-import './globals.css'
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
-
-export const metadata: Metadata = {
-  title: 'Katorin - トーナメント運営システム',
-  description: '遊戯王マスターデュエルのオンライントーナメント運営システム',
-}
-
-export default async function RootLayout({
+// このファイルは[locale]外のルート（auth/callbackなど）のために必要
+// 実際のレイアウトは[locale]/layout.tsxで定義
+export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
-  const locale = await getLocale()
-  const messages = await getMessages()
-
-  return (
-    <html lang={locale}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
-  )
+}) {
+  return children
 }
