@@ -9,7 +9,12 @@ const handleI18nRouting = createMiddleware(routing)
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // ルートパス（/en, /ja, /）を /tournaments にリダイレクト
+  // auth/callbackはスキップ（APIルート）
+  if (pathname.startsWith('/auth/')) {
+    return NextResponse.next()
+  }
+
+  // ルートパス（/, /en, /ja）を /tournaments にリダイレクト
   if (pathname === '/' || pathname === '/en' || pathname === '/ja') {
     const url = request.nextUrl.clone()
     if (pathname === '/en') {
