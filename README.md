@@ -174,7 +174,7 @@ MVPで使用しているテーブル:
 - `matches` - 試合記録
 - `notifications` - 通知（Phase 2で完全実装）
 
-詳細は `doc/database-design.md` を参照してください。
+詳細は `docs/04-data/database-design.md` を参照してください。
 
 ## Phase 2で実装予定の機能
 

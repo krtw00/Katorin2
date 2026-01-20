@@ -6,6 +6,24 @@
 - 認証: Supabase Auth
 - リアルタイム: Supabase Realtime
 
+## Phase区分
+
+本ドキュメントは将来の理想設計を含みます。現在のマイグレーション状況との対応を以下に示します。
+
+| Phase | 状態 | 含まれる機能 |
+|-------|------|-------------|
+| **Phase 1** | 実装済み | 基本的な大会運営（シングルエリミ、個人戦、主催者による結果入力） |
+| **Phase 2** | 未実装 | チェックイン、デッキ登録、カスタムフィールド、チーム招待通知 |
+
+### 実装との乖離（Phase 2として予定）
+
+以下の項目はドキュメントに記載されていますが、現在のマイグレーションには未実装です：
+
+- `tournament_status` ENUM: `check_in` ステータス
+- `notification_type` ENUM: `check_in_reminder`, `team_invite`
+- `tournaments` テーブル: `check_in_enabled`, `check_in_start_at`, `check_in_deadline`, `deck_registration_mode`, `swiss_rounds`
+- `custom_fields`, `custom_answers` テーブル（現在は`tournaments.custom_fields` JSONBで簡易実装）
+
 ## ER図（概要）
 
 ```
