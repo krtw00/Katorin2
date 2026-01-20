@@ -7,9 +7,11 @@
 ```
 00-INDEX.md (このファイル)         ← ナビゲーション・入り口
 01-introduction/                   ← プロジェクト概要・技術スタック
+02-architecture/                   ← アーキテクチャ・ディレクトリ構造
 04-data/                           ← データベース設計
 05-features/                       ← 機能要件
 06-interfaces/                     ← 画面設計
+07-security/                       ← セキュリティ・RLSポリシー
 08-deployment/                     ← セットアップ・設定
 09-development/                    ← 開発者向け（Issue等）
 10-decisions/                      ← 設計決定記録
@@ -22,6 +24,12 @@
 | ドキュメント | 説明 |
 |-------------|------|
 | [tech-stack.md](01-introduction/tech-stack.md) | 技術スタック詳細 |
+
+### 02-architecture - アーキテクチャ
+
+| ドキュメント | 説明 |
+|-------------|------|
+| [directory-structure.md](02-architecture/directory-structure.md) | ディレクトリ構造・コンポーネント設計 |
 
 ### 04-data - データ
 
@@ -40,6 +48,12 @@
 | ドキュメント | 説明 |
 |-------------|------|
 | [screen-design.md](06-interfaces/screen-design.md) | 画面設計・UI仕様 |
+
+### 07-security - セキュリティ
+
+| ドキュメント | 説明 |
+|-------------|------|
+| [rls-policies.md](07-security/rls-policies.md) | Row Level Security ポリシー設計 |
 
 ### 08-deployment - デプロイ・設定
 

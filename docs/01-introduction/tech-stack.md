@@ -62,6 +62,6 @@ src/
 ## 進捗
 
 - [x] UIライブラリの決定 → shadcn/ui
-- [x] 機能要件の整理 → doc/requirements.md
-- [ ] データベース設計
-- [ ] 画面設計
+- [x] 機能要件の整理 → docs/05-features/requirements.md
+- [x] データベース設計 → docs/04-data/database-design.md
+- [x] 画面設計 → docs/06-interfaces/screen-design.md

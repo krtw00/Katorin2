@@ -869,7 +869,7 @@ tournament: { id, title, logo_url }
 
 ---
 
-### 31. 結果カード生成 `/tournaments/[id]/share/result/[matchId]`
+### 35. 結果カード生成 `/tournaments/[id]/share/result/[matchId]`
 
 **用途:** 試合後の結果画像をTwitter/Discordで共有
 
