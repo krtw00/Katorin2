@@ -27,7 +27,7 @@ export default async function SeriesRankingPage({ params }: Props) {
     `
     )
     .eq('id', id)
-    .single() as { data: SeriesWithOrganizer | null; error: any }
+    .single() as { data: SeriesWithOrganizer | null; error: unknown }
 
   if (error || !series) {
     notFound()

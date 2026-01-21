@@ -125,6 +125,13 @@
         "waitlist": "キャンセル待ち",
         "waitlistDesc": "定員超過分はキャンセル待ちリストに追加"
       },
+      "entryMode": {
+        "label": "エントリー方式",
+        "open": "オープン",
+        "openDesc": "誰でもエントリー可能",
+        "inviteOnly": "招待制",
+        "inviteOnlyDesc": "主催者から招待されたユーザーのみエントリー可能"
+      },
       "customFields": {
         "label": "エントリー時の入力項目",
         "hint": "参加者にエントリー時に入力してもらう項目",
@@ -224,7 +231,44 @@
     },
     "manage": {
       "title": "大会管理",
-      "backToDetail": "大会詳細に戻る"
+      "backToDetail": "大会詳細に戻る",
+      "participants": {
+        "title": "参加者一覧",
+        "count": "{count}名が参加しています",
+        "checkedIn": "チェックイン済み: {count}名",
+        "empty": "参加者がいません",
+        "checkIn": "チェックイン",
+        "undoCheckIn": "取消",
+        "processing": "処理中..."
+      },
+      "invites": {
+        "title": "招待管理",
+        "description": "ユーザーを検索して招待できます",
+        "searchPlaceholder": "ユーザー名で検索",
+        "invite": "招待",
+        "inviting": "招待中...",
+        "pending": "招待中",
+        "accepted": "承諾済み",
+        "declined": "辞退",
+        "expired": "期限切れ",
+        "cancel": "取消",
+        "cancelling": "取消中...",
+        "noInvites": "招待はありません",
+        "noResults": "検索結果がありません"
+      },
+      "bracket": {
+        "title": "ブラケット生成",
+        "description": "トーナメント表を生成して大会を開始します",
+        "generate": "ブラケットを生成",
+        "generating": "生成中..."
+      },
+      "dangerZone": {
+        "title": "危険な操作",
+        "description": "これらの操作は取り消すことができません",
+        "delete": "大会を削除",
+        "deleteConfirm": "本当に「{title}」を削除しますか？この操作は取り消せません。",
+        "deleting": "削除中..."
+      }
     }
   },
   "series": {
@@ -266,6 +310,14 @@
       "backToDetail": "← シリーズ詳細に戻る",
       "overallRanking": "総合ランキング"
     },
+    "manualPoints": {
+      "title": "ポイント確定",
+      "description": "完了した大会のポイントを確定してください",
+      "confirm": "ポイント確定",
+      "confirmed": "確定済み",
+      "calculating": "計算中...",
+      "error": "ポイント計算に失敗しました"
+    },
     "form": {
       "loginRequired": "ログインが必要です",
       "nameRequired": "シリーズ名を入力してください",
@@ -287,6 +339,9 @@
       "rankLabel": "位:",
       "winPoints": "勝利ポイント",
       "perWinLabel": "1勝につき:",
+      "calculationModeLabel": "ポイント計算方式",
+      "calculationModeAutoDesc": "大会完了時に自動でポイントを計算",
+      "calculationModeManualDesc": "主催者が手動でポイントを確定",
       "periodLabel": "開催期間"
     },
     "filter": {

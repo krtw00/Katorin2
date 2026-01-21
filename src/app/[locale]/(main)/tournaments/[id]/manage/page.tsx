@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Card,
   CardContent,
@@ -17,21 +19,37 @@ import {
   ParticipantWithUser,
   tournamentStatusLabels,
 } from '@/types/tournament'
+import { Tables, InviteStatus } from '@/types/database'
 import { generateSingleEliminationBracket } from '@/lib/tournament/bracket-generator'
+
+type Profile = Tables<'profiles'>
+type TournamentInvite = Tables<'tournament_invites'> & {
+  user: Profile
+}
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
 export default function TournamentManagePage({ params }: Props) {
+  const t = useTranslations('tournament.manage')
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [participants, setParticipants] = useState<ParticipantWithUser[]>([])
+  const [invites, setInvites] = useState<TournamentInvite[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [checkingIn, setCheckingIn] = useState<Record<string, boolean>>({})
+
+  // Invite related state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Profile[]>([])
+  const [searching, setSearching] = useState(false)
+  const [inviting, setInviting] = useState<Record<string, boolean>>({})
+  const [cancelling, setCancelling] = useState<Record<string, boolean>>({})
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -72,12 +90,143 @@ export default function TournamentManagePage({ params }: Props) {
         .eq('tournament_id', id)
         .order('created_at', { ascending: true })
 
-      setParticipants((participantsData as any) || [])
+      setParticipants((participantsData as ParticipantWithUser[]) || [])
+
+      // Load invites if invite_only tournament
+      if (tournamentData.entry_mode === 'invite_only') {
+        const { data: invitesData } = await supabase
+          .from('tournament_invites')
+          .select(`
+            *,
+            user:profiles!tournament_invites_user_id_fkey(*)
+          `)
+          .eq('tournament_id', id)
+          .order('created_at', { ascending: false })
+
+        setInvites((invitesData as TournamentInvite[]) || [])
+      }
+
       setLoading(false)
     }
 
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params])
+
+  // Search for users to invite
+  const handleSearch = useCallback(async () => {
+    if (!searchQuery.trim() || !tournament) return
+
+    setSearching(true)
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('display_name', `%${searchQuery}%`)
+        .limit(10)
+
+      // Filter out already invited users and participants
+      const invitedUserIds = new Set(invites.map(i => i.user_id))
+      const participantUserIds = new Set(participants.map(p => p.user_id))
+
+      const filtered = (data || []).filter(
+        u => !invitedUserIds.has(u.id) && !participantUserIds.has(u.id)
+      )
+
+      setSearchResults(filtered)
+    } catch (err) {
+      console.error('Search error:', err)
+    } finally {
+      setSearching(false)
+    }
+  }, [searchQuery, tournament, invites, participants, supabase])
+
+  // Send invite to user
+  const handleInvite = async (userId: string) => {
+    if (!tournament) return
+
+    setInviting(prev => ({ ...prev, [userId]: true }))
+    setError('')
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('ログインが必要です')
+        return
+      }
+
+      const { data: invite, error: insertError } = await supabase
+        .from('tournament_invites')
+        .insert({
+          tournament_id: tournament.id,
+          user_id: userId,
+          invited_by: user.id,
+        })
+        .select(`
+          *,
+          user:profiles!tournament_invites_user_id_fkey(*)
+        `)
+        .single()
+
+      if (insertError) {
+        setError(insertError.message)
+        return
+      }
+
+      // Update state
+      setInvites(prev => [invite as TournamentInvite, ...prev])
+      setSearchResults(prev => prev.filter(u => u.id !== userId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '招待に失敗しました')
+    } finally {
+      setInviting(prev => ({ ...prev, [userId]: false }))
+    }
+  }
+
+  // Cancel invite
+  const handleCancelInvite = async (inviteId: string) => {
+    setCancelling(prev => ({ ...prev, [inviteId]: true }))
+    setError('')
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('tournament_invites')
+        .delete()
+        .eq('id', inviteId)
+
+      if (deleteError) {
+        setError(deleteError.message)
+        return
+      }
+
+      // Update state
+      setInvites(prev => prev.filter(i => i.id !== inviteId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '招待の取消に失敗しました')
+    } finally {
+      setCancelling(prev => ({ ...prev, [inviteId]: false }))
+    }
+  }
+
+  const getInviteStatusLabel = (status: InviteStatus) => {
+    const labels: Record<InviteStatus, string> = {
+      pending: t('invites.pending'),
+      accepted: t('invites.accepted'),
+      declined: t('invites.declined'),
+      expired: t('invites.expired'),
+    }
+    return labels[status]
+  }
+
+  const getInviteStatusVariant = (status: InviteStatus): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    const variants: Record<InviteStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+      pending: 'secondary',
+      accepted: 'default',
+      declined: 'destructive',
+      expired: 'outline',
+    }
+    return variants[status]
+  }
 
   const handleGenerateBracket = async () => {
     if (!tournament || !participants) return
@@ -115,8 +264,8 @@ export default function TournamentManagePage({ params }: Props) {
 
       // Reload page
       window.location.reload()
-    } catch (err: any) {
-      setError(err.message || 'ブラケット生成に失敗しました')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'ブラケット生成に失敗しました')
     } finally {
       setGenerating(false)
     }
@@ -141,7 +290,7 @@ export default function TournamentManagePage({ params }: Props) {
       }
 
       router.push('/tournaments')
-    } catch (err) {
+    } catch {
       setError('削除に失敗しました')
       setDeleting(false)
     }
@@ -170,8 +319,8 @@ export default function TournamentManagePage({ params }: Props) {
             : p
         )
       )
-    } catch (err: any) {
-      setError(err.message || 'チェックインに失敗しました')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'チェックインに失敗しました')
     } finally {
       setCheckingIn(prev => ({ ...prev, [participantId]: false }))
     }
@@ -198,8 +347,8 @@ export default function TournamentManagePage({ params }: Props) {
           p.id === participantId ? { ...p, checked_in_at: null } : p
         )
       )
-    } catch (err: any) {
-      setError(err.message || 'チェックイン取消に失敗しました')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'チェックイン取消に失敗しました')
     } finally {
       setCheckingIn(prev => ({ ...prev, [participantId]: false }))
     }
@@ -299,18 +448,89 @@ export default function TournamentManagePage({ params }: Props) {
         </CardContent>
       </Card>
 
+      {/* Invite Users - Only for invite_only tournaments */}
+      {tournament?.entry_mode === 'invite_only' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('invites.title')}</CardTitle>
+            <CardDescription>{t('invites.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Search */}
+            <div className="flex gap-2">
+              <Input
+                placeholder={t('invites.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+              <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
+                {searching ? '...' : '検索'}
+              </Button>
+            </div>
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="border rounded-lg divide-y">
+                {searchResults.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-3">
+                    <span className="font-medium">{user.display_name}</span>
+                    <Button
+                      size="sm"
+                      onClick={() => handleInvite(user.id)}
+                      disabled={inviting[user.id]}
+                    >
+                      {inviting[user.id] ? t('invites.inviting') : t('invites.invite')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Invite List */}
+            {invites.length > 0 ? (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">招待一覧</h4>
+                <div className="border rounded-lg divide-y">
+                  {invites.map((invite) => (
+                    <div key={invite.id} className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{invite.user.display_name}</span>
+                        <Badge variant={getInviteStatusVariant(invite.status)}>
+                          {getInviteStatusLabel(invite.status)}
+                        </Badge>
+                      </div>
+                      {invite.status === 'pending' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancelInvite(invite.id)}
+                          disabled={cancelling[invite.id]}
+                        >
+                          {cancelling[invite.id] ? t('invites.cancelling') : t('invites.cancel')}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t('invites.noInvites')}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Bracket Generation */}
       {tournament?.status === 'recruiting' && participants.length >= 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>ブラケット生成</CardTitle>
-            <CardDescription>
-              トーナメント表を生成して大会を開始します
-            </CardDescription>
+            <CardTitle>{t('bracket.title')}</CardTitle>
+            <CardDescription>{t('bracket.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleGenerateBracket} disabled={generating}>
-              {generating ? '生成中...' : 'ブラケットを生成'}
+              {generating ? t('bracket.generating') : t('bracket.generate')}
             </Button>
           </CardContent>
         </Card>

@@ -28,30 +28,30 @@ export function SeriesFilterForm() {
 
   // デバウンス処理
   useEffect(() => {
+    const updateURL = () => {
+      const params = new URLSearchParams()
+
+      if (query) {
+        params.set('q', query)
+      }
+
+      if (statusFilter !== 'all') {
+        params.set('status', statusFilter)
+      }
+
+      startTransition(() => {
+        router.push(`/series${params.toString() ? `?${params.toString()}` : ''}`, {
+          scroll: false,
+        })
+      })
+    }
+
     const timer = setTimeout(() => {
       updateURL()
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [query, statusFilter])
-
-  const updateURL = () => {
-    const params = new URLSearchParams()
-
-    if (query) {
-      params.set('q', query)
-    }
-
-    if (statusFilter !== 'all') {
-      params.set('status', statusFilter)
-    }
-
-    startTransition(() => {
-      router.push(`/series${params.toString() ? `?${params.toString()}` : ''}`, {
-        scroll: false,
-      })
-    })
-  }
+  }, [query, statusFilter, router])
 
   const handleStatusChange = (status: FilterStatus) => {
     setStatusFilter(status)

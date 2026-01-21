@@ -6,6 +6,7 @@ import { Profile, Tournament } from './tournament'
 
 export type SeriesStatus = 'draft' | 'active' | 'completed' | 'cancelled'
 export type PointSystem = 'ranking' | 'wins'
+export type PointCalculationMode = 'auto' | 'manual'
 
 // Series テーブル型
 export type Series = {
@@ -16,6 +17,7 @@ export type Series = {
   entry_type: Database['public']['Enums']['entry_type']
   point_system: PointSystem
   point_config: PointConfig
+  point_calculation_mode: PointCalculationMode
   start_date: string | null
   end_date: string | null
   status: SeriesStatus
@@ -141,8 +143,15 @@ export type SeriesFormData = {
   entry_type: 'individual' | 'team'
   point_system: PointSystem
   point_config: PointConfig
+  point_calculation_mode: PointCalculationMode
   start_date: string | null
   end_date: string | null
+}
+
+// ポイント計算モードのラベル
+export const pointCalculationModeLabels: Record<PointCalculationMode, string> = {
+  auto: '自動計算',
+  manual: '手動確定',
 }
 
 // ポイント計算ヘルパー

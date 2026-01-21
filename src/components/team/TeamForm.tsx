@@ -115,8 +115,8 @@ export function TeamForm({ mode, initialData, onSuccess }: Props) {
           router.push(`/teams/${data.id}`)
         }
       }
-    } catch (err: any) {
-      setError(err.message || '保存に失敗しました')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '保存に失敗しました')
     } finally {
       setLoading(false)
     }

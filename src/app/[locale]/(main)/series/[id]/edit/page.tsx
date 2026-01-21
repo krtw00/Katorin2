@@ -56,7 +56,7 @@ export default function EditSeriesPage({ params }: Props) {
     }
 
     loadSeries()
-  }, [params, router, supabase])
+  }, [params, router, supabase, t])
 
   if (loading) {
     return (
