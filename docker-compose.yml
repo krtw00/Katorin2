@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    container_name: katorin-app
+    restart: unless-stopped
+    volumes:
+      - .:/app:cached
+      - node_modules:/app/node_modules
+      - next_cache:/app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.katorin.rule=Host(`katorin.localhost`)"
+      - "traefik.http.services.katorin.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik"
+
+volumes:
+  node_modules:
+  next_cache:
+
+networks:
+  traefik:
+    external: true
