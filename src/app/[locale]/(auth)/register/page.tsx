@@ -56,7 +56,7 @@ export default function RegisterPage() {
       } else {
         router.push('/tournaments')
       }
-    } catch (err) {
+    } catch {
       setError(t('error'))
     } finally {
       setLoading(false)
@@ -74,7 +74,7 @@ export default function RegisterPage() {
         setLoading(false)
       }
       // OAuth redirects automatically, no need to handle success
-    } catch (err) {
+    } catch {
       setError(t('error'))
       setLoading(false)
     }

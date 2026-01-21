@@ -40,12 +40,16 @@ export default async function MyTeamsPage() {
     .order('joined_at', { ascending: false })
 
   // Transform data
+  type MembershipRow = {
+    role: string
+    team: TeamWithLeader & { team_members: { count: number }[] } | null
+  }
   const teams: TeamWithMembership[] =
     memberships
-      ?.filter((m: any) => m.team)
-      .map((m: any) => ({
-        ...m.team,
-        member_count: m.team.team_members?.[0]?.count || 0,
+      ?.filter((m: MembershipRow) => m.team)
+      .map((m: MembershipRow) => ({
+        ...m.team!,
+        member_count: m.team!.team_members?.[0]?.count || 0,
         role: m.role as TeamRole,
       })) || []
 

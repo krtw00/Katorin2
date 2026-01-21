@@ -18,7 +18,6 @@ export function generateSingleEliminationBracket(
 
   // Calculate bracket size (next power of 2)
   const bracketSize = Math.pow(2, Math.ceil(Math.log2(participants.length)))
-  const byeCount = bracketSize - participants.length
 
   // Sort by seed (if seeded) or by entry order
   const sortedParticipants = [...participants].sort((a, b) => {
@@ -32,7 +31,7 @@ export function generateSingleEliminationBracket(
   const totalRounds = Math.log2(bracketSize)
 
   // Generate all matches for all rounds
-  let currentRoundMatches: { player1?: string; player2?: string }[] = []
+  const currentRoundMatches: { player1?: string; player2?: string }[] = []
 
   // Round 1: Create matches with participants
   const round1MatchCount = bracketSize / 2
@@ -74,7 +73,6 @@ export function generateSingleEliminationBracket(
   }
 
   // Convert to database format with proper references
-  let matchId = 0
   const matchIdMap: Record<string, string> = {}
 
   for (let roundIndex = 0; roundIndex < totalRounds; roundIndex++) {
@@ -127,7 +125,6 @@ export function generateSingleEliminationBracket(
       }
 
       matches.push(match)
-      matchId++
     }
   }
 

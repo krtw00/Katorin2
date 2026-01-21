@@ -31,7 +31,7 @@ export default function TournamentEntryPage({ params }: Props) {
   const [error, setError] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [customData, setCustomData] = useState<Record<string, string>>({})
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
   const supabase = createClient()
 
@@ -42,7 +42,7 @@ export default function TournamentEntryPage({ params }: Props) {
         .from('tournaments')
         .select('*')
         .eq('id', id)
-        .single()) as { data: Tournament | null; error: any }
+        .single()) as { data: Tournament | null; error: unknown }
 
       if (error || !data) {
         setError(t('errors.notFound'))
@@ -62,6 +62,7 @@ export default function TournamentEntryPage({ params }: Props) {
     }
 
     loadTournament()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params])
 
   // 大会ごとに表示名を入力させるため、プロファイルの名前はデフォルトにしない
@@ -135,7 +136,7 @@ export default function TournamentEntryPage({ params }: Props) {
       }
 
       router.push(`/tournaments/${tournament.id}`)
-    } catch (err) {
+    } catch {
       setError(t('errors.failed'))
     } finally {
       setSubmitting(false)
@@ -171,7 +172,7 @@ export default function TournamentEntryPage({ params }: Props) {
       <div className="container mx-auto px-4 py-8 max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>t('loginRequired')</CardTitle>
+            <CardTitle>{t('loginRequired')}</CardTitle>
             <CardDescription>
               トーナメントにエントリーするにはログインしてください
             </CardDescription>
@@ -190,7 +191,7 @@ export default function TournamentEntryPage({ params }: Props) {
     <div className="container mx-auto px-4 py-8 max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>t('title')</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{tournament.title}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

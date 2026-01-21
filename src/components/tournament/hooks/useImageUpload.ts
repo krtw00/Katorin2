@@ -79,7 +79,7 @@ export function useImageUpload(initialPreview?: string | null) {
         // プレビュー生成
         const previewURL = await convertToPreviewURL(file)
         setCoverPreview(previewURL)
-      } catch (error) {
+      } catch {
         setUploadError('画像の読み込みに失敗しました')
       }
     },

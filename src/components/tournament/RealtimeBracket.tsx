@@ -33,6 +33,42 @@ type MatchPosition = {
   nextMatchId: string | null
 }
 
+type PlayerRowProps = {
+  player: { display_name: string } | null
+  playerId: string | null
+  score: number
+  isWinner: boolean
+}
+
+function PlayerRow({ player, playerId, score, isWinner }: PlayerRowProps) {
+  return (
+    <div
+      className={`
+        flex items-center justify-between px-2 py-1.5
+        ${isWinner ? 'bg-green-100 dark:bg-green-900/50' : ''}
+      `}
+    >
+      <span
+        className={`
+          truncate flex-1 mr-2 text-sm
+          ${isWinner ? 'font-bold text-green-700 dark:text-green-300' : ''}
+          ${!player ? 'text-muted-foreground italic' : ''}
+        `}
+      >
+        {player?.display_name || 'TBD'}
+      </span>
+      <span
+        className={`
+          font-mono text-sm min-w-[1.5rem] text-right
+          ${isWinner ? 'font-bold' : 'text-muted-foreground'}
+        `}
+      >
+        {playerId ? score : '-'}
+      </span>
+    </div>
+  )
+}
+
 function MatchCard({
   match,
   onPositionChange,
@@ -64,43 +100,6 @@ function MatchCard({
       }
     }
   }, [match.id, onPositionChange])
-
-  const PlayerRow = ({
-    player,
-    playerId,
-    score,
-    isWinner,
-  }: {
-    player: { display_name: string } | null
-    playerId: string | null
-    score: number
-    isWinner: boolean
-  }) => (
-    <div
-      className={`
-        flex items-center justify-between px-2 py-1.5
-        ${isWinner ? 'bg-green-100 dark:bg-green-900/50' : ''}
-      `}
-    >
-      <span
-        className={`
-          truncate flex-1 mr-2 text-sm
-          ${isWinner ? 'font-bold text-green-700 dark:text-green-300' : ''}
-          ${!player ? 'text-muted-foreground italic' : ''}
-        `}
-      >
-        {player?.display_name || 'TBD'}
-      </span>
-      <span
-        className={`
-          font-mono text-sm min-w-[1.5rem] text-right
-          ${isWinner ? 'font-bold' : 'text-muted-foreground'}
-        `}
-      >
-        {playerId ? score : '-'}
-      </span>
-    </div>
-  )
 
   return (
     <div
