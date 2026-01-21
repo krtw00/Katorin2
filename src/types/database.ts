@@ -101,6 +101,7 @@ export type Database = {
           status: Database["public"]["Enums"]["match_status"]
           tournament_id: string
           winner_id: string | null
+          winner_team_id: string | null
           team1_id: string | null
           team2_id: string | null
           bracket_side: Database["public"]["Enums"]["bracket_side"] | null
@@ -121,6 +122,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["match_status"]
           tournament_id: string
           winner_id?: string | null
+          winner_team_id?: string | null
           team1_id?: string | null
           team2_id?: string | null
           bracket_side?: Database["public"]["Enums"]["bracket_side"] | null
@@ -141,6 +143,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["match_status"]
           tournament_id?: string
           winner_id?: string | null
+          winner_team_id?: string | null
           team1_id?: string | null
           team2_id?: string | null
           bracket_side?: Database["public"]["Enums"]["bracket_side"] | null
@@ -179,6 +182,13 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_winner_team_id_fkey"
+            columns: ["winner_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
