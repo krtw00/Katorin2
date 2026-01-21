@@ -408,6 +408,19 @@
       "displayNameRequired": "表示名は必須です",
       "loginRequired": "ログインが必要です",
       "updateError": "更新に失敗しました: {error}"
+    },
+    "teams": {
+      "title": "所属チーム",
+      "description": "リーダーまたはメンバーとして所属しているチーム",
+      "link": "所属チーム",
+      "create": "チームを作成",
+      "createFirst": "最初のチームを作成",
+      "empty": "所属しているチームがありません",
+      "viewAll": "すべてのチームを見る →",
+      "sections": {
+        "leader": "リーダーとして所属",
+        "member": "メンバーとして所属"
+      }
     }
   },
   "team": {

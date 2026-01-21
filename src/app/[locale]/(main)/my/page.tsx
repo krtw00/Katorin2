@@ -203,6 +203,15 @@ export default async function MyPage() {
         )}
       </section>
 
+      {/* Quick Links */}
+      <div className="flex gap-2">
+        <Link href="/my/teams">
+          <Button variant="outline" size="sm">
+            {t('teams.link')}
+          </Button>
+        </Link>
+      </div>
+
       {/* Main Tabs */}
       <Tabs defaultValue="participating" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
