@@ -15,7 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { uploadUserAvatar, isUploadError } from '@/lib/supabase/storage'
 import { Profile } from '@/types/tournament'
 import { useTranslations } from 'next-intl'
 
@@ -32,6 +33,9 @@ export default function ProfileEditPage() {
   // Form state
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [discordId, setDiscordId] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -42,6 +46,8 @@ export default function ProfileEditPage() {
         router.push('/login')
         return
       }
+
+      setUserId(user.id)
 
       const { data, error } = await supabase
         .from('profiles')
@@ -58,6 +64,8 @@ export default function ProfileEditPage() {
       setProfile(data)
       setDisplayName(data.display_name || '')
       setBio(data.bio || '')
+      setAvatarUrl(data.avatar_url || null)
+      setDiscordId(data.discord_id || '')
       setLoading(false)
     }
 
@@ -88,6 +96,8 @@ export default function ProfileEditPage() {
         .update({
           display_name: displayName.trim(),
           bio: bio.trim() || null,
+          avatar_url: avatarUrl || null,
+          discord_id: discordId.trim() || null,
         })
         .eq('id', user.id)
 
@@ -126,16 +136,25 @@ export default function ProfileEditPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
-            {/* Avatar Preview */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-xl">
-                  {displayName.substring(0, 2) || '??'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-sm text-muted-foreground">
-                {t('avatarNotice')}
-              </div>
+            {/* Avatar */}
+            <div className="space-y-2">
+              <Label>{t('avatar')}</Label>
+              <ImageUpload
+                value={avatarUrl}
+                onChange={setAvatarUrl}
+                onUpload={async (file) => {
+                  if (!userId) throw new Error(t('loginRequired'))
+                  const supabase = createClient()
+                  const result = await uploadUserAvatar(supabase, file, userId)
+                  if (isUploadError(result)) throw new Error(result.message)
+                  return result.url
+                }}
+                shape="circle"
+                size="lg"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('avatarHint')}
+              </p>
             </div>
 
             {/* Display Name */}
@@ -153,6 +172,20 @@ export default function ProfileEditPage() {
               />
               <p className="text-xs text-muted-foreground">
                 {t('displayNameHelp')}
+              </p>
+            </div>
+
+            {/* Discord ID */}
+            <div className="space-y-2">
+              <Label htmlFor="discordId">{t('discordId')}</Label>
+              <Input
+                id="discordId"
+                value={discordId}
+                onChange={(e) => setDiscordId(e.target.value)}
+                placeholder={t('discordIdPlaceholder')}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('discordIdHelp')}
               </p>
             </div>
 

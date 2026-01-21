@@ -379,7 +379,42 @@
       "discord": "Discord",
       "noAccount": "Don't have an account?",
       "registerLink": "Register",
+      "forgotPassword": "Forgot password?",
       "error": "Failed to login"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "submit": "Send Reset Link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to Login",
+      "successTitle": "Email Sent",
+      "successDescription": "We've sent you a password reset link. Please check your email.",
+      "error": "Failed to send email"
+    },
+    "resetPassword": {
+      "title": "Set New Password",
+      "description": "Enter your new password.",
+      "password": "New Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Please enter at least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "••••••••",
+      "submit": "Change Password",
+      "submitting": "Changing...",
+      "backToLogin": "Back to Login",
+      "successTitle": "Password Changed",
+      "successDescription": "Redirecting automatically...",
+      "invalidLink": "Invalid Link",
+      "invalidLinkDescription": "This password reset link is invalid or has expired.",
+      "requestNewLink": "Request New Link",
+      "error": "Failed to change password",
+      "validation": {
+        "passwordMin": "Password must be at least 6 characters",
+        "passwordMismatch": "Passwords do not match"
+      }
     },
     "register": {
       "title": "Register",
@@ -450,12 +485,14 @@
       "description": "Update your profile information",
       "loadError": "Failed to load profile",
       "loading": "Loading...",
-      "avatarNotice": "Avatar image changes will be supported in the future",
+      "avatar": "Avatar",
+      "avatarHint": "JPG, PNG format, 2MB max",
       "displayName": "Display Name",
       "displayNamePlaceholder": "Enter display name",
       "displayNameHelp": "Name displayed in tournaments and rankings",
-      "masterDuelId": "Master Duel ID",
-      "masterDuelIdHelp": "Used to contact opponents (optional)",
+      "discordId": "Discord ID",
+      "discordIdPlaceholder": "e.g., username or username#1234",
+      "discordIdHelp": "Used to contact opponents (optional)",
       "bio": "Bio",
       "bioPlaceholder": "Enter bio (optional)",
       "saveSuccess": "Saved. Returning to My Page...",
@@ -531,7 +568,7 @@
       "description": "Description",
       "descriptionPlaceholder": "Enter team description...",
       "avatar": "Avatar",
-      "avatarComingSoon": "Coming soon"
+      "avatarHint": "JPG, PNG format, 2MB max"
     },
     "members": {
       "title": "Manage Members",

@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { uploadTeamAvatar, isUploadError } from '@/lib/supabase/storage'
 import { Team, TeamFormData } from '@/types/team'
 
 type Props = {
@@ -186,8 +188,21 @@ export function TeamForm({ mode, initialData, onSuccess }: Props) {
 
               <div className="space-y-2">
                 <Label>{t('avatar')}</Label>
+                <ImageUpload
+                  value={formData.avatar_url}
+                  onChange={(url) => updateFormData('avatar_url', url || '')}
+                  onUpload={async (file) => {
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (!user) throw new Error(t('loginRequired'))
+                    const result = await uploadTeamAvatar(supabase, file, user.id)
+                    if (isUploadError(result)) throw new Error(result.message)
+                    return result.url
+                  }}
+                  shape="square"
+                  size="lg"
+                />
                 <p className="text-sm text-muted-foreground">
-                  {t('avatarComingSoon')}
+                  {t('avatarHint')}
                 </p>
               </div>
             </CardContent>
