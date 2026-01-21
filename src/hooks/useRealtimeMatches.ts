@@ -28,7 +28,7 @@ export function useRealtimeMatches(
             table: 'matches',
             filter: `tournament_id=eq.${tournamentId}`,
           },
-          async (payload) => {
+          async () => {
             // Refetch matches when there's a change
             const { data: updatedMatches } = await supabase
               .from('matches')

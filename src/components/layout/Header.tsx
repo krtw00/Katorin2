@@ -10,7 +10,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export function Header() {
   const t = useTranslations('nav')
-  const { user, profile, isAuthenticated, signOut } = useAuth()
+  const { profile, isAuthenticated, signOut } = useAuth()
   const router = useRouter()
 
   const handleSignOut = async () => {

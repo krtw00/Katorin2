@@ -79,7 +79,8 @@ export default function TeamInvitePage() {
     }
 
     fetchInvite()
-  }, [params.token, supabase])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.token])
 
   const handleJoin = async () => {
     if (!invite) return

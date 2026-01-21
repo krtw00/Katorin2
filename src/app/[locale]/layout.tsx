@@ -34,6 +34,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params
 
   // Validate that the incoming `locale` parameter is valid
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!routing.locales.includes(locale as any)) {
     notFound()
   }

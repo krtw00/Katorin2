@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, usePathname } from '@/i18n/routing'
-import { locales, type Locale } from '@/i18n/routing'
+import type { Locale } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import { Globe } from 'lucide-react'
 

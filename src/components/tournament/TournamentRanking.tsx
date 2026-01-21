@@ -64,8 +64,7 @@ function calculateRankings(
     }
   })
 
-  // Find max round (final)
-  const maxRound = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0
+  // Find max round (final) - used implicitly in ranking calculation
 
   // Create ranked list
   const ranked: RankedParticipant[] = participants.map((p) => {
@@ -112,10 +111,9 @@ function calculateRankings(
   })
 
   // Assign ranks
-  let currentRank = 1
   ranked.forEach((item, index) => {
     if (index === 0) {
-      item.rank = currentRank
+      item.rank = 1
     } else {
       const prev = ranked[index - 1]
       // Same rank if same stats
@@ -194,7 +192,7 @@ export function TournamentRanking({ participants, matches, tournamentStatus }: P
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rankings.map((item, index) => (
+          {rankings.map((item) => (
             <TableRow
               key={item.participant.id}
               className={item.rank <= 3 ? 'bg-muted/30' : ''}

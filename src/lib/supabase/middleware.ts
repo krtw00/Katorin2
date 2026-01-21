@@ -4,7 +4,7 @@ import { Database } from '@/types/database'
 
 export async function updateSession(request: NextRequest, response?: NextResponse) {
   // next-intlなど他のmiddlewareからのresponseがあればそれを使用
-  let supabaseResponse = response ?? NextResponse.next({
+  const supabaseResponse = response ?? NextResponse.next({
     request,
   })
 

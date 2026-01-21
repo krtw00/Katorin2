@@ -15,7 +15,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { TeamWithMembers, teamRoleLabels } from '@/types/team'
+import { TeamWithMembers } from '@/types/team'
+
+type TeamEntryRow = {
+  id: string
+  tournament: {
+    id: string
+    title: string
+    status: string
+    start_at: string | null
+  }
+}
 
 type Props = {
   params: Promise<{ id: string }>
@@ -42,7 +52,7 @@ export default async function TeamDetailPage({ params }: Props) {
       )
     `)
     .eq('id', id)
-    .single() as { data: TeamWithMembers | null; error: any }
+    .single() as { data: TeamWithMembers | null; error: unknown }
 
   if (error || !team) {
     notFound()
@@ -225,7 +235,7 @@ export default async function TeamDetailPage({ params }: Props) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {teamEntries.map((entry: any) => (
+                    {teamEntries.map((entry: TeamEntryRow) => (
                       <TableRow key={entry.id}>
                         <TableCell>
                           <Link

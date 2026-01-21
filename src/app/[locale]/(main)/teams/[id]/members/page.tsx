@@ -28,7 +28,6 @@ import {
 import {
   TeamWithMembers,
   TeamInvite,
-  teamRoleLabels,
   generateInviteToken,
   isInviteValid,
 } from '@/types/team'
@@ -117,7 +116,8 @@ export default function TeamMembersPage() {
   }
 
   useEffect(() => {
-    fetchData()
+    void fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
 
   const handleCreateInvite = async () => {

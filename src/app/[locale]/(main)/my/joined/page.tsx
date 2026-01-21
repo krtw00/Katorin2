@@ -43,7 +43,7 @@ export default async function JoinedTournamentsPage() {
     .order('created_at', { ascending: false })
 
   const participationsData: ParticipationWithTournament[] =
-    (participations?.filter((p: any) => p.tournament) as ParticipationWithTournament[]) || []
+    (participations?.filter((p): p is ParticipationWithTournament => p.tournament !== null) as ParticipationWithTournament[]) || []
 
   // Get participant counts for all tournaments
   const tournamentIds = participationsData.map((p) => p.tournament.id)

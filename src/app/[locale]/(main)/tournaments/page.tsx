@@ -4,11 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import {
-  TournamentWithOrganizer,
-  TournamentStatus,
-  tournamentStatusLabels,
-} from '@/types/tournament'
+import { TournamentWithOrganizer } from '@/types/tournament'
+import type { PostgrestError } from '@supabase/supabase-js'
 import {
   TournamentListItem,
   TournamentListSection,
@@ -77,7 +74,7 @@ export default async function TournamentsPage({
   }
 
   const { data: tournaments, error: tournamentsError } =
-    (await tournamentsQuery) as { data: TournamentWithOrganizer[] | null; error: any }
+    (await tournamentsQuery) as { data: TournamentWithOrganizer[] | null; error: PostgrestError | null }
 
   if (tournamentsError) {
     console.error('Error fetching tournaments:', tournamentsError)

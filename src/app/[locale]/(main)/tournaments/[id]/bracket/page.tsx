@@ -25,7 +25,7 @@ export default async function TournamentBracketPage({ params }: Props) {
     .from('tournaments')
     .select('*')
     .eq('id', id)
-    .single()) as { data: Tournament | null; error: any }
+    .single()) as { data: Tournament | null; error: unknown }
 
   if (tournamentError || !tournament) {
     notFound()

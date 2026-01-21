@@ -3,9 +3,6 @@ import { redirect } from 'next/navigation'
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -78,7 +75,7 @@ export default async function MyPage() {
     .order('created_at', { ascending: false })
 
   const participatingTournaments: TournamentWithOrganizer[] =
-    participations?.map((p: any) => p.tournament).filter(Boolean) || []
+    participations?.map((p: { tournament: TournamentWithOrganizer }) => p.tournament).filter(Boolean) || []
 
   // Get participant counts for all tournaments
   const allTournamentIds = [

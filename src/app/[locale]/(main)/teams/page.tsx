@@ -48,7 +48,8 @@ export default function TeamsPage() {
       const { data, error } = await query
 
       if (!error && data) {
-        const teamsWithCount = data.map((team: any) => ({
+        type TeamRow = TeamWithLeader & { team_members?: { count: number }[] }
+        const teamsWithCount = data.map((team: TeamRow) => ({
           ...team,
           member_count: team.team_members?.[0]?.count || 0,
         }))

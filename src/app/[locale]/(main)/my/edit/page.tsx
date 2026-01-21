@@ -24,7 +24,7 @@ export default function ProfileEditPage() {
   const tCommon = useTranslations('common')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -62,7 +62,7 @@ export default function ProfileEditPage() {
     }
 
     loadProfile()
-  }, [router])
+  }, [router, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
