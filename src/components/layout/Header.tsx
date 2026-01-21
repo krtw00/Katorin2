@@ -32,6 +32,18 @@ export function Header() {
             >
               {t('tournaments')}
             </Link>
+            <Link
+              href="/series"
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
+              {t('series')}
+            </Link>
+            <Link
+              href="/teams"
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
+              {t('teams')}
+            </Link>
             {isAuthenticated && (
               <Link
                 href="/my"
