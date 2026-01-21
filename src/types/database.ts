@@ -320,6 +320,7 @@ export type Database = {
           entry_type: Database["public"]["Enums"]["entry_type"]
           point_system: Database["public"]["Enums"]["point_system"]
           point_config: Json
+          point_calculation_mode: Database["public"]["Enums"]["point_calculation_mode"]
           start_date: string | null
           end_date: string | null
           status: Database["public"]["Enums"]["series_status"]
@@ -334,6 +335,7 @@ export type Database = {
           entry_type?: Database["public"]["Enums"]["entry_type"]
           point_system?: Database["public"]["Enums"]["point_system"]
           point_config?: Json
+          point_calculation_mode?: Database["public"]["Enums"]["point_calculation_mode"]
           start_date?: string | null
           end_date?: string | null
           status?: Database["public"]["Enums"]["series_status"]
@@ -348,6 +350,7 @@ export type Database = {
           entry_type?: Database["public"]["Enums"]["entry_type"]
           point_system?: Database["public"]["Enums"]["point_system"]
           point_config?: Json
+          point_calculation_mode?: Database["public"]["Enums"]["point_calculation_mode"]
           start_date?: string | null
           end_date?: string | null
           status?: Database["public"]["Enums"]["series_status"]
@@ -644,6 +647,61 @@ export type Database = {
           },
         ]
       }
+      tournament_invites: {
+        Row: {
+          id: string
+          tournament_id: string
+          user_id: string
+          invited_by: string
+          status: Database["public"]["Enums"]["invite_status"]
+          message: string | null
+          created_at: string
+          responded_at: string | null
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          user_id: string
+          invited_by: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          message?: string | null
+          created_at?: string
+          responded_at?: string | null
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          user_id?: string
+          invited_by?: string
+          status?: Database["public"]["Enums"]["invite_status"]
+          message?: string | null
+          created_at?: string
+          responded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invites_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_invites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           cover_image_url: string | null
@@ -653,6 +711,7 @@ export type Database = {
           description: string | null
           entry_deadline: string | null
           entry_limit_behavior: Database["public"]["Enums"]["entry_limit_behavior"]
+          entry_mode: Database["public"]["Enums"]["entry_mode"]
           entry_start_at: string | null
           entry_type: Database["public"]["Enums"]["entry_type"]
           id: string
@@ -680,6 +739,7 @@ export type Database = {
           description?: string | null
           entry_deadline?: string | null
           entry_limit_behavior?: Database["public"]["Enums"]["entry_limit_behavior"]
+          entry_mode?: Database["public"]["Enums"]["entry_mode"]
           entry_start_at?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
@@ -707,6 +767,7 @@ export type Database = {
           description?: string | null
           entry_deadline?: string | null
           entry_limit_behavior?: Database["public"]["Enums"]["entry_limit_behavior"]
+          entry_mode?: Database["public"]["Enums"]["entry_mode"]
           entry_start_at?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
@@ -768,7 +829,9 @@ export type Database = {
       bracket_side: "winners" | "losers" | "grand_final"
       check_in_status: "pending" | "checked_in" | "no_show"
       entry_limit_behavior: "first_come" | "waitlist"
+      entry_mode: "open" | "invite_only"
       entry_type: "individual" | "team"
+      invite_status: "pending" | "accepted" | "declined" | "expired"
       match_format: "bo1" | "bo3" | "bo5"
       match_status: "pending" | "in_progress" | "completed" | "bye"
       notification_type:
@@ -776,6 +839,7 @@ export type Database = {
         | "match_result"
         | "tournament_start"
         | "report_needed"
+      point_calculation_mode: "auto" | "manual"
       point_system: "ranking" | "wins"
       result_report_mode: "organizer_only" | "participant"
       series_status: "draft" | "active" | "completed" | "cancelled"
@@ -916,8 +980,13 @@ export type NotificationType = Database['public']['Enums']['notification_type']
 // Series & Team type exports
 export type SeriesStatus = Database['public']['Enums']['series_status']
 export type PointSystem = Database['public']['Enums']['point_system']
+export type PointCalculationMode = Database['public']['Enums']['point_calculation_mode']
 export type TeamRole = Database['public']['Enums']['team_role']
 export type TeamBattleFormat = Database['public']['Enums']['team_battle_format']
 export type TeamCreationMode = Database['public']['Enums']['team_creation_mode']
 export type CheckInStatus = Database['public']['Enums']['check_in_status']
 export type BracketSide = Database['public']['Enums']['bracket_side']
+
+// Invite type exports
+export type EntryMode = Database['public']['Enums']['entry_mode']
+export type InviteStatus = Database['public']['Enums']['invite_status']

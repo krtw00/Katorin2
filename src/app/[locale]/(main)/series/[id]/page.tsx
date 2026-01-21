@@ -10,10 +10,12 @@ import {
   SeriesRanking,
   seriesStatusLabels,
   pointSystemLabels,
+  pointCalculationModeLabels,
 } from '@/types/series'
 import { TournamentWithOrganizer } from '@/types/tournament'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
 import { SeriesRankingTable } from '@/components/series/SeriesRankingTable'
+import { ManualPointsConfirm } from '@/components/series/ManualPointsConfirm'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -35,7 +37,7 @@ export default async function SeriesDetailPage({ params }: Props) {
     `
     )
     .eq('id', id)
-    .single() as { data: SeriesWithOrganizer | null; error: any }
+    .single() as { data: SeriesWithOrganizer | null; error: unknown }
 
   if (error || !series) {
     notFound()
@@ -72,6 +74,14 @@ export default async function SeriesDetailPage({ params }: Props) {
     .eq('series_id', id)
     .order('rank', { ascending: true })
     .limit(10)) as { data: SeriesRanking[] | null }
+
+  // Fetch calculated tournament IDs (for manual point confirmation)
+  const { data: calculatedPoints } = await supabase
+    .from('series_points')
+    .select('tournament_id')
+    .eq('series_id', id)
+
+  const calculatedTournamentIds = [...new Set(calculatedPoints?.map(p => p.tournament_id) || [])]
 
   // Get current user
   const {
@@ -162,46 +172,60 @@ export default async function SeriesDetailPage({ params }: Props) {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('detail.description')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {series.description || t('detail.noDescription')}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Point System */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('detail.pointSystem')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-medium mb-2">
-                  {pointSystemLabels[series.point_system]}
-                </p>
-                {series.point_system === 'ranking' ? (
-                  <div className="space-y-1 text-sm">
-                    {Object.entries(series.point_config as Record<string, number>).map(
-                      ([rank, points]) => (
-                        <div key={rank} className="flex justify-between">
-                          <span>{rank}{t('detail.rank')}</span>
-                          <span className="font-medium">{points}{t('detail.points')}</span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm">
-                    {t('detail.perWin')}{(series.point_config as { points_per_win: number }).points_per_win}{t('detail.points')}
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Description */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t('detail.description')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {series.description || t('detail.noDescription')}
                   </p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Point System */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t('detail.pointSystem')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-medium mb-2">
+                    {pointSystemLabels[series.point_system]}
+                  </p>
+                  {series.point_system === 'ranking' ? (
+                    <div className="space-y-1 text-sm">
+                      {Object.entries(series.point_config as Record<string, number>).map(
+                        ([rank, points]) => (
+                          <div key={rank} className="flex justify-between">
+                            <span>{rank}{t('detail.rank')}</span>
+                            <span className="font-medium">{points}{t('detail.points')}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm">
+                      {t('detail.perWin')}{(series.point_config as { points_per_win: number }).points_per_win}{t('detail.points')}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-3 pt-3 border-t">
+                    {pointCalculationModeLabels[series.point_calculation_mode as 'auto' | 'manual'] || pointCalculationModeLabels.manual}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Manual Point Confirmation - Only for organizers with manual mode */}
+            {isOrganizer && series.point_calculation_mode === 'manual' && tournaments && (
+              <ManualPointsConfirm
+                seriesId={id}
+                tournaments={tournaments}
+                calculatedTournamentIds={calculatedTournamentIds}
+              />
+            )}
           </div>
         </TabsContent>
 

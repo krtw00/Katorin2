@@ -9,6 +9,7 @@ import {
   TournamentFormat,
   MatchFormat,
   Visibility,
+  EntryMode,
   Tables,
 } from '@/types/database'
 import { Tournament, CustomField, InputType, EditDeadline } from '@/types/tournament'
@@ -70,6 +71,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         match_format: initialData.match_format,
         max_participants: initialData.max_participants,
         entry_limit_behavior: initialData.entry_limit_behavior,
+        entry_mode: initialData.entry_mode || 'open' as EntryMode,
         visibility: initialData.visibility,
         series_id: initialData.series_id || '',
         entry_start_at: formatDateTimeLocal(initialData.entry_start_at),
@@ -85,6 +87,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       match_format: 'bo3' as MatchFormat,
       max_participants: 32,
       entry_limit_behavior: 'first_come' as 'first_come' | 'waitlist',
+      entry_mode: 'open' as EntryMode,
       visibility: 'public' as Visibility,
       series_id: '',
       entry_start_at: formatDateTimeLocal(now),
@@ -194,6 +197,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         match_format: formData.match_format,
         max_participants: formData.max_participants,
         entry_limit_behavior: formData.entry_limit_behavior,
+        entry_mode: formData.entry_mode,
         visibility: formData.visibility,
         series_id: formData.series_id || null,
         entry_start_at: formData.entry_start_at
@@ -249,7 +253,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
           router.push(`/tournaments/${data.id}`)
         }
       }
-    } catch (err) {
+    } catch {
       setError(mode === 'create' ? t('errors.createFailed') : t('errors.updateFailed'))
     } finally {
       setLoading(false)
@@ -361,6 +365,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     `}
                   >
                     {coverPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={coverPreview}
                         alt="Cover preview"
@@ -526,6 +531,43 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                           value={option.value}
                           checked={formData.entry_limit_behavior === option.value}
                           onChange={(e) => updateFormData('entry_limit_behavior', e.target.value)}
+                          disabled={loading}
+                          className="mt-1"
+                        />
+                        <div>
+                          <div className="font-medium text-sm">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Entry Mode */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('entryMode.label')}</label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'open', label: t('entryMode.open'), desc: t('entryMode.openDesc') },
+                      { value: 'invite_only', label: t('entryMode.inviteOnly'), desc: t('entryMode.inviteOnlyDesc') },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`
+                          flex items-start gap-3 p-3 rounded-md border cursor-pointer
+                          transition-colors
+                          ${formData.entry_mode === option.value
+                            ? 'border-primary bg-primary/5'
+                            : 'hover:bg-muted/50'
+                          }
+                        `}
+                      >
+                        <input
+                          type="radio"
+                          name="entry_mode"
+                          value={option.value}
+                          checked={formData.entry_mode === option.value}
+                          onChange={(e) => updateFormData('entry_mode', e.target.value)}
                           disabled={loading}
                           className="mt-1"
                         />

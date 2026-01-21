@@ -6,12 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { SeriesRanking, PointSystem } from '@/types/series'
+import { SeriesRanking } from '@/types/series'
 import { useTranslations } from 'next-intl'
 
 type Props = {
   rankings: SeriesRanking[]
-  pointSystem: PointSystem
+  pointSystem?: string
   showDetails?: boolean
 }
 
@@ -22,7 +22,7 @@ function getRankDisplay(rank: number): string {
   return `${rank}`
 }
 
-export function SeriesRankingTable({ rankings, pointSystem, showDetails = false }: Props) {
+export function SeriesRankingTable({ rankings, showDetails = false }: Props) {
   const t = useTranslations('series.ranking')
 
   if (rankings.length === 0) {

@@ -12,7 +12,9 @@ import {
   Series,
   SeriesFormData,
   PointSystem,
+  PointCalculationMode,
   pointSystemLabels,
+  pointCalculationModeLabels,
   defaultRankingPoints,
   defaultWinsPointConfig,
   RankingPointConfig,
@@ -28,7 +30,8 @@ type Props = {
 
 export function SeriesForm({ mode, initialData, onSuccess }: Props) {
   const t = useTranslations('series.form')
-  const tCommon = useTranslations('common')
+  const tEntryType = useTranslations('series.entryType')
+  const tDetail = useTranslations('series.detail')
   const router = useRouter()
   const supabase = createClient()
 
@@ -43,6 +46,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         entry_type: initialData.entry_type,
         point_system: initialData.point_system,
         point_config: initialData.point_config,
+        point_calculation_mode: initialData.point_calculation_mode || 'manual',
         start_date: initialData.start_date,
         end_date: initialData.end_date,
       }
@@ -53,12 +57,13 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       entry_type: 'individual',
       point_system: 'ranking',
       point_config: defaultRankingPoints,
+      point_calculation_mode: 'manual' as PointCalculationMode,
       start_date: null,
       end_date: null,
     }
   })
 
-  const updateFormData = (field: keyof SeriesFormData, value: any) => {
+  const updateFormData = (field: keyof SeriesFormData, value: SeriesFormData[keyof SeriesFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -94,7 +99,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         description: formData.description.trim() || null,
         entry_type: formData.entry_type,
         point_system: formData.point_system,
-        point_config: formData.point_config as any,
+        point_config: formData.point_config as RankingPointConfig | WinsPointConfig,
+        point_calculation_mode: formData.point_calculation_mode,
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
         status: (asDraft ? 'draft' : 'active') as 'draft' | 'active',
@@ -106,7 +112,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           .insert({
             ...seriesData,
             organizer_id: user.id,
-          } as any)
+          })
           .select()
           .single()
 
@@ -119,7 +125,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       } else {
         const { data, error: updateError } = await supabase
           .from('series')
-          .update(seriesData as any)
+          .update(seriesData)
           .eq('id', initialData!.id)
           .select()
           .single()
@@ -135,8 +141,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           router.push(`/series/${data.id}`)
         }
       }
-    } catch (err: any) {
-      setError(err.message || t('saveFailed'))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('saveFailed'))
     } finally {
       setLoading(false)
     }
@@ -230,7 +236,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                     onChange={() => updateFormData('entry_type', 'individual')}
                     className="w-4 h-4"
                   />
-                  <span>{useTranslations('series.entryType')('individual')}</span>
+                  <span>{tEntryType('individual')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -241,7 +247,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                     onChange={() => updateFormData('entry_type', 'team')}
                     className="w-4 h-4"
                   />
-                  <span>{useTranslations('series.entryType')('team')}</span>
+                  <span>{tEntryType('team')}</span>
                 </label>
               </div>
             </CardContent>
@@ -296,7 +302,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                           }}
                           className="w-20 h-8"
                         />
-                        <span>{useTranslations('series.detail')('points')}</span>
+                        <span>{tDetail('points')}</span>
                       </div>
                     ))}
                   </div>
@@ -317,10 +323,45 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                       }}
                       className="w-20 h-8"
                     />
-                    <span>{useTranslations('series.detail')('points')}</span>
+                    <span>{tDetail('points')}</span>
                   </div>
                 </div>
               )}
+
+              {/* Point Calculation Mode */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label>{t('calculationModeLabel')}</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="point_calculation_mode"
+                      value="auto"
+                      checked={formData.point_calculation_mode === 'auto'}
+                      onChange={() => updateFormData('point_calculation_mode', 'auto')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <span className="font-medium">{pointCalculationModeLabels.auto}</span>
+                      <p className="text-xs text-muted-foreground">{t('calculationModeAutoDesc')}</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="point_calculation_mode"
+                      value="manual"
+                      checked={formData.point_calculation_mode === 'manual'}
+                      onChange={() => updateFormData('point_calculation_mode', 'manual')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <span className="font-medium">{pointCalculationModeLabels.manual}</span>
+                      <p className="text-xs text-muted-foreground">{t('calculationModeManualDesc')}</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -332,7 +373,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">{useTranslations('series.detail')('startDate')}</Label>
+                  <Label htmlFor="start_date">{tDetail('startDate')}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -341,7 +382,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">{useTranslations('series.detail')('endDate')}</Label>
+                  <Label htmlFor="end_date">{tDetail('endDate')}</Label>
                   <Input
                     id="end_date"
                     type="date"

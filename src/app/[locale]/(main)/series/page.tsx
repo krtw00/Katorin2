@@ -2,11 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
-import {
-  SeriesWithOrganizer,
-  SeriesStatus,
-  seriesStatusLabels,
-} from '@/types/series'
+import { SeriesWithOrganizer } from '@/types/series'
+import type { PostgrestError } from '@supabase/supabase-js'
 import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesListItem'
 import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
 import { getTranslations } from 'next-intl/server'
@@ -50,7 +47,7 @@ export default async function SeriesPage({
   }
 
   const { data: seriesList, error: seriesError } =
-    (await seriesQuery) as { data: SeriesWithOrganizer[] | null; error: any }
+    (await seriesQuery) as { data: SeriesWithOrganizer[] | null; error: PostgrestError | null }
 
   if (seriesError) {
     console.error('Error fetching series:', seriesError)

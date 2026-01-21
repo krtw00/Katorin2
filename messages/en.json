@@ -125,6 +125,13 @@
         "waitlist": "Waitlist",
         "waitlistDesc": "Add to waitlist when limit is reached"
       },
+      "entryMode": {
+        "label": "Entry Mode",
+        "open": "Open",
+        "openDesc": "Anyone can enter",
+        "inviteOnly": "Invite Only",
+        "inviteOnlyDesc": "Only users invited by the organizer can enter"
+      },
       "customFields": {
         "label": "Entry Form Fields",
         "hint": "Custom fields for participants to fill when entering",
@@ -224,7 +231,44 @@
     },
     "manage": {
       "title": "Manage Tournament",
-      "backToDetail": "Back to Tournament"
+      "backToDetail": "Back to Tournament",
+      "participants": {
+        "title": "Participants",
+        "count": "{count} participants",
+        "checkedIn": "Checked in: {count}",
+        "empty": "No participants yet",
+        "checkIn": "Check In",
+        "undoCheckIn": "Undo",
+        "processing": "Processing..."
+      },
+      "invites": {
+        "title": "Invite Users",
+        "description": "Search for users to invite",
+        "searchPlaceholder": "Search by username",
+        "invite": "Invite",
+        "inviting": "Inviting...",
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "expired": "Expired",
+        "cancel": "Cancel",
+        "cancelling": "Cancelling...",
+        "noInvites": "No invites",
+        "noResults": "No results found"
+      },
+      "bracket": {
+        "title": "Generate Bracket",
+        "description": "Generate tournament bracket and start the tournament",
+        "generate": "Generate Bracket",
+        "generating": "Generating..."
+      },
+      "dangerZone": {
+        "title": "Danger Zone",
+        "description": "These actions cannot be undone",
+        "delete": "Delete Tournament",
+        "deleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+        "deleting": "Deleting..."
+      }
     }
   },
   "series": {
@@ -266,6 +310,14 @@
       "backToDetail": "← Back to Series Detail",
       "overallRanking": "Overall Ranking"
     },
+    "manualPoints": {
+      "title": "Confirm Points",
+      "description": "Confirm points for completed tournaments",
+      "confirm": "Confirm Points",
+      "confirmed": "Confirmed",
+      "calculating": "Calculating...",
+      "error": "Failed to calculate points"
+    },
     "form": {
       "loginRequired": "Login required",
       "nameRequired": "Please enter series name",
@@ -287,6 +339,9 @@
       "rankLabel": "",
       "winPoints": "Win Points",
       "perWinLabel": "Per Win:",
+      "calculationModeLabel": "Point Calculation Mode",
+      "calculationModeAutoDesc": "Automatically calculate points when tournament completes",
+      "calculationModeManualDesc": "Organizer manually confirms points",
       "periodLabel": "Period"
     },
     "filter": {
