@@ -408,6 +408,19 @@
       "displayNameRequired": "Display name is required",
       "loginRequired": "Login required",
       "updateError": "Update failed: {error}"
+    },
+    "teams": {
+      "title": "My Teams",
+      "description": "Teams you belong to as leader or member",
+      "link": "My Teams",
+      "create": "Create Team",
+      "createFirst": "Create your first team",
+      "empty": "You don't belong to any teams",
+      "viewAll": "View all teams →",
+      "sections": {
+        "leader": "As Leader",
+        "member": "As Member"
+      }
     }
   },
   "team": {
