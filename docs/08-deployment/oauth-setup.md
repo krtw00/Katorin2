@@ -1,234 +1,180 @@
 # OAuth認証セットアップガイド
 
-Katorin2では、メール/パスワード認証に加えて、Google・DiscordのOAuth認証をサポートしています。
+## 目的
 
-## 概要
+Katorin2のOAuth認証セットアップ手順を定義する。本ドキュメントは認証設定のSSoTである。
 
-- **対応プロバイダー**: Google、Discord
-- **実装状況**: フロントエンド実装済み
-- **必要な作業**: Supabase Dashboardでの設定
+## 背景
 
----
+メール/パスワード認証に加えて、Google・DiscordのOAuth認証をサポートする。Supabase Authを使用して実装している。
 
-## 1. Google OAuth設定
+## 対応プロバイダー
 
-### 1.1 Google Cloud Consoleでの設定
+| プロバイダー | 状態 | 用途 |
+|-------------|------|------|
+| Google | 対応済み | 一般ユーザー向け |
+| Discord | 対応済み | ゲームコミュニティ向け |
 
-1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
-2. プロジェクトを作成または既存のプロジェクトを選択
-3. 「APIとサービス」→「認証情報」に移動
-4. 「認証情報を作成」→「OAuthクライアントID」を選択
-5. 同意画面の設定（初回のみ）
-   - ユーザータイプ: 外部
-   - アプリ名: Katorin
-   - サポートメール: あなたのメールアドレス
-   - 開発者の連絡先情報: あなたのメールアドレス
-6. OAuthクライアントIDの作成
-   - アプリケーションの種類: ウェブアプリケーション
-   - 名前: Katorin (任意)
-   - 承認済みのリダイレクトURI:
-     ```
-     https://<YOUR_SUPABASE_PROJECT_ID>.supabase.co/auth/v1/callback
-     ```
-7. クライアントIDとクライアントシークレットをコピー
+## Google OAuth設定
 
-### 1.2 Supabase Dashboardでの設定
+### Google Cloud Console
 
-1. [Supabase Dashboard](https://app.supabase.com/)にアクセス
-2. プロジェクトを選択
-3. 「Authentication」→「Providers」に移動
-4. 「Google」を選択
-5. 「Enable Sign in with Google」を有効化
-6. Google Cloud Consoleで取得した情報を入力
-   - **Client ID**: Google Cloud ConsoleのクライアントID
-   - **Client Secret**: Google Cloud Consoleのクライアントシークレット
-7. 「Save」をクリック
+| 手順 | 操作 |
+|:----:|------|
+| 1 | Google Cloud Consoleにアクセス |
+| 2 | プロジェクトを作成または既存プロジェクトを選択 |
+| 3 | 「APIとサービス」→「認証情報」に移動 |
+| 4 | 「認証情報を作成」→「OAuthクライアントID」を選択 |
+| 5 | 同意画面を設定（初回のみ） |
+| 6 | OAuthクライアントIDを作成 |
+| 7 | クライアントIDとクライアントシークレットをコピー |
 
----
+### 同意画面設定
 
-## 2. Discord OAuth設定
+| 項目 | 値 |
+|------|-----|
+| ユーザータイプ | 外部 |
+| アプリ名 | Katorin |
+| サポートメール | 管理者のメールアドレス |
 
-### 2.1 Discord Developer Portalでの設定
+### OAuthクライアントID設定
 
-1. [Discord Developer Portal](https://discord.com/developers/applications)にアクセス
-2. 「New Application」をクリックしてアプリケーションを作成
-3. アプリケーション名: Katorin（任意）
-4. 「OAuth2」セクションに移動
-5. 「Redirects」に以下を追加:
-   ```
-   https://<YOUR_SUPABASE_PROJECT_ID>.supabase.co/auth/v1/callback
-   ```
-6. 「General Information」に戻り、以下をコピー:
-   - **CLIENT ID**
-   - **CLIENT SECRET**（「Reset Secret」をクリックして生成）
+| 項目 | 値 |
+|------|-----|
+| アプリケーションの種類 | ウェブアプリケーション |
+| 名前 | Katorin（任意） |
+| 承認済みのリダイレクトURI | https://[PROJECT_ID].supabase.co/auth/v1/callback |
 
-### 2.2 Supabase Dashboardでの設定
+### Supabase Dashboard設定
 
-1. [Supabase Dashboard](https://app.supabase.com/)にアクセス
-2. プロジェクトを選択
-3. 「Authentication」→「Providers」に移動
-4. 「Discord」を選択
-5. 「Enable Sign in with Discord」を有効化
-6. Discord Developer Portalで取得した情報を入力
-   - **Client ID**: Discord Developer PortalのCLIENT ID
-   - **Client Secret**: Discord Developer PortalのCLIENT SECRET
-7. 「Save」をクリック
+| 手順 | 操作 |
+|:----:|------|
+| 1 | Supabase Dashboardにアクセス |
+| 2 | プロジェクトを選択 |
+| 3 | 「Authentication」→「Providers」に移動 |
+| 4 | 「Google」を選択 |
+| 5 | 「Enable Sign in with Google」を有効化 |
+| 6 | Client IDとClient Secretを入力 |
+| 7 | 「Save」をクリック |
 
----
+## Discord OAuth設定
 
-## 3. 本番環境の設定
+### Discord Developer Portal
 
-### 3.1 リダイレクトURIの追加
+| 手順 | 操作 |
+|:----:|------|
+| 1 | Discord Developer Portalにアクセス |
+| 2 | 「New Application」でアプリケーションを作成 |
+| 3 | アプリケーション名を設定（Katorin） |
+| 4 | 「OAuth2」セクションに移動 |
+| 5 | 「Redirects」にリダイレクトURIを追加 |
+| 6 | CLIENT IDとCLIENT SECRETをコピー |
 
-本番環境（Vercel等）にデプロイした後、各OAuthプロバイダーに本番URLを追加します。
+### リダイレクトURI
 
-#### Google Cloud Console
-1. 「認証情報」→作成したOAuthクライアントIDを選択
-2. 「承認済みのリダイレクトURI」に以下を追加:
-   ```
-   https://yourdomain.com/auth/callback
-   ```
+| 環境 | URI |
+|------|-----|
+| 開発環境 | https://[PROJECT_ID].supabase.co/auth/v1/callback |
+| 本番環境 | https://yourdomain.com/auth/callback |
 
-#### Discord Developer Portal
-1. 「OAuth2」→「Redirects」に以下を追加:
-   ```
-   https://yourdomain.com/auth/callback
-   ```
+### Supabase Dashboard設定
 
-### 3.2 Supabase側の設定
+| 手順 | 操作 |
+|:----:|------|
+| 1 | Supabase Dashboardにアクセス |
+| 2 | プロジェクトを選択 |
+| 3 | 「Authentication」→「Providers」に移動 |
+| 4 | 「Discord」を選択 |
+| 5 | 「Enable Sign in with Discord」を有効化 |
+| 6 | Client IDとClient Secretを入力 |
+| 7 | 「Save」をクリック |
 
-1. Supabase Dashboard →「Authentication」→「URL Configuration」
-2. 「Site URL」を本番URLに設定:
-   ```
-   https://yourdomain.com
-   ```
-3. 「Redirect URLs」に以下を追加:
-   ```
-   https://yourdomain.com/auth/callback
-   ```
+## 本番環境設定
 
----
+### リダイレクトURIの追加
 
-## 4. 動作確認
+本番環境にデプロイ後、各OAuthプロバイダーに本番URLを追加する。
 
-### 4.1 ローカル環境での確認
+| プロバイダー | 設定場所 | 追加するURI |
+|-------------|---------|-------------|
+| Google | 認証情報 → OAuthクライアントID | https://yourdomain.com/auth/callback |
+| Discord | OAuth2 → Redirects | https://yourdomain.com/auth/callback |
 
-1. 開発サーバーを起動:
-   ```bash
-   pnpm dev
-   ```
+### Supabase URL設定
 
-2. ブラウザで`http://localhost:3000/login`にアクセス
+| 項目 | 設定値 |
+|------|--------|
+| Site URL | https://yourdomain.com |
+| Redirect URLs | https://yourdomain.com/auth/callback |
 
-3. 「Google」または「Discord」ボタンをクリック
+設定場所：Supabase Dashboard →「Authentication」→「URL Configuration」
 
-4. 各プロバイダーの認証画面が表示されることを確認
+## 動作確認
 
-5. 認証後、`/tournaments`ページにリダイレクトされることを確認
+### ローカル環境
 
-### 4.2 本番環境での確認
+| 手順 | 操作 |
+|:----:|------|
+| 1 | 開発サーバーを起動 |
+| 2 | ログインページにアクセス |
+| 3 | OAuth認証ボタンをクリック |
+| 4 | プロバイダーの認証画面が表示されることを確認 |
+| 5 | 認証後、リダイレクトされることを確認 |
 
-1. 本番環境にデプロイ後、ログインページにアクセス
+### 本番環境
 
-2. OAuth認証が正常に動作することを確認
+| 手順 | 操作 |
+|:----:|------|
+| 1 | 本番環境にデプロイ |
+| 2 | ログインページにアクセス |
+| 3 | OAuth認証が正常に動作することを確認 |
 
----
+## トラブルシューティング
 
-## 5. トラブルシューティング
+| エラー | 原因 | 対処 |
+|--------|------|------|
+| リダイレクトURIが一致しません | OAuth設定のリダイレクトURIが正しくない | プロバイダーとSupabaseの設定を確認 |
+| Client ID or Secret is invalid | Client情報が間違っている | プロバイダーで再確認、必要に応じて再生成 |
+| プロフィールが作成されない | データベーストリガーが動作していない | トリガー設定を確認 |
+| ローカルでOAuthが動作しない | ローカル用リダイレクトURIが未設定 | localhost用のURIを追加 |
 
-### 5.1 「リダイレクトURIが一致しません」エラー
+## セキュリティ上の注意点
 
-**原因**: OAuth設定のリダイレクトURIが正しくない
+| 項目 | 説明 |
+|------|------|
+| Client Secret | Supabase Dashboardに保存され、クライアント側には公開されない |
+| HTTPS必須 | 本番環境では必ずHTTPSを使用 |
+| CORS設定 | 本番ドメインがSupabaseで許可されていることを確認 |
+| 環境分離 | 本番と開発で別のOAuthアプリケーションを使用することを推奨 |
 
-**解決方法**:
-- Google Cloud Console / Discord Developer PortalのリダイレクトURIを確認
-- Supabase DashboardのプロジェクトIDを確認
-- URIが完全に一致していることを確認（末尾のスラッシュなども含む）
+## 認証フロー
 
-### 5.2 「Client ID or Secret is invalid」エラー
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant App as アプリ
+    participant Supabase as Supabase Auth
+    participant Provider as OAuthプロバイダー
 
-**原因**: Supabase Dashboardに設定したClient IDまたはClient Secretが間違っている
-
-**解決方法**:
-- Google Cloud Console / Discord Developer Portalで再度確認
-- Client Secretを再生成して、新しい値をSupabaseに設定
-
-### 5.3 OAuthログイン後、プロフィールが作成されない
-
-**原因**: データベーストリガーが正しく動作していない可能性
-
-**解決方法**:
-1. Supabase Dashboard →「Database」→「Functions」でトリガーを確認
-2. `001_mvp_schema.sql`のトリガー部分が実行されているか確認
-3. 必要に応じて手動でトリガーを再作成
-
-### 5.4 ローカル開発でOAuthが動作しない
-
-**原因**: ローカル環境のリダイレクトURIが設定されていない
-
-**解決方法**:
-- 開発環境では、Google/Discordの設定に`http://localhost:3000`のリダイレクトURIを追加
-- **注意**: セキュリティ上、本番環境の設定と開発環境の設定は別のOAuthアプリケーションとして分けることを推奨
-
----
-
-## 6. セキュリティ上の注意点
-
-### 6.1 Client Secretの管理
-
-- Client SecretはSupabase Dashboardに保存され、クライアント側には公開されません
-- 環境変数に保存する必要はありません（Supabaseが管理）
-
-### 6.2 HTTPS必須
-
-- 本番環境では必ずHTTPSを使用してください
-- HTTPではOAuth認証が正常に動作しません
-
-### 6.3 CORS設定
-
-- Supabaseの設定で、本番ドメインが許可されていることを確認
-- 必要に応じて「Authentication」→「URL Configuration」でドメインを追加
-
----
-
-## 7. 実装の詳細
-
-### 7.1 フロントエンド
-
-- `src/hooks/useAuth.ts`: `signInWithOAuth`関数を実装
-- `src/app/(auth)/login/page.tsx`: GoogleボタンとDiscordボタンを追加
-- `src/app/(auth)/register/page.tsx`: 同様にOAuthボタンを追加
-- `src/app/auth/callback/route.ts`: OAuthコールバック処理（既存のコードで対応）
-
-### 7.2 認証フロー
-
-```
-1. ユーザーがOAuthボタンをクリック
-   ↓
-2. signInWithOAuth(provider)を呼び出し
-   ↓
-3. Supabase AuthがOAuthプロバイダーにリダイレクト
-   ↓
-4. ユーザーが認証を許可
-   ↓
-5. プロバイダーがSupabase callbackにリダイレクト
-   ↓
-6. Supabaseがアプリの/auth/callbackにリダイレクト
-   ↓
-7. exchangeCodeForSession()でセッションを確立
-   ↓
-8. /tournamentsページにリダイレクト
+    User->>App: OAuthボタンクリック
+    App->>Supabase: signInWithOAuth()
+    Supabase->>Provider: リダイレクト
+    User->>Provider: 認証許可
+    Provider->>Supabase: コールバック
+    Supabase->>App: /auth/callback
+    App->>App: セッション確立
+    App->>User: トップページにリダイレクト
 ```
 
----
+## 関連ドキュメント
 
-## 8. 参考リンク
+- @07-security/rls-policies.md - RLSポリシー設計
+- @01-introduction/tech-stack.md - 技術スタック
+- @appendix/glossary.md - 用語集
 
-- [Supabase Auth - Google OAuth](https://supabase.com/docs/guides/auth/social-login/auth-google)
-- [Supabase Auth - Discord OAuth](https://supabase.com/docs/guides/auth/social-login/auth-discord)
-- [Google Cloud Console](https://console.cloud.google.com/)
-- [Discord Developer Portal](https://discord.com/developers/applications)
+## 参考リンク
 
----
-
-以上でOAuth認証のセットアップは完了です。
+- Supabase Auth - Google OAuth
+- Supabase Auth - Discord OAuth
+- Google Cloud Console
+- Discord Developer Portal
