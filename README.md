@@ -38,7 +38,52 @@
    - トーナメント表のリアルタイム更新
    - Supabase Realtimeによる自動同期
 
-## セットアップ手順
+## セットアップ手順（Docker）
+
+### 必要条件
+
+- Docker Desktop
+- Traefik起動済み（`~/work/infra/traefik`）
+- Supabaseプロジェクト（クラウド）
+
+### 起動
+
+```bash
+# Traefikネットワーク作成（初回のみ）
+docker network create traefik
+
+# Traefik起動
+cd ~/work/infra/traefik && docker compose up -d
+
+# .env.localを作成（Supabase接続情報を設定）
+cp .env.example .env.local
+
+# プロジェクト起動
+cd ~/work/projects/Katorin2
+docker compose up -d
+```
+
+### アクセス
+
+- アプリ: http://katorin.localhost
+
+### コマンド
+
+```bash
+# 起動
+docker compose up -d
+
+# ログ確認
+docker compose logs -f app
+
+# 停止
+docker compose down
+
+# 再ビルド
+docker compose up -d --build
+```
+
+## ローカル開発（非推奨）
 
 ### 1. 環境構築
 
