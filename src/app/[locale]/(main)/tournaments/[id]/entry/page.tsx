@@ -17,6 +17,13 @@ import {
 import { Tournament, CustomField } from '@/types/tournament'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { uploadEntryImage, isUploadError } from '@/lib/supabase/storage'
+
+// Pending image upload tracking
+type PendingImage = {
+  file: File
+  previewUrl: string
+}
 
 type Props = {
   params: Promise<{ id: string }>
@@ -31,6 +38,8 @@ export default function TournamentEntryPage({ params }: Props) {
   const [error, setError] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [customData, setCustomData] = useState<Record<string, string>>({})
+  const [pendingImages, setPendingImages] = useState<Record<string, PendingImage>>({})
+  const [uploadingImages, setUploadingImages] = useState(false)
   const { user } = useAuth()
   const router = useRouter()
   const supabase = createClient()
@@ -120,6 +129,32 @@ export default function TournamentEntryPage({ params }: Props) {
         return
       }
 
+      // Upload pending images
+      const finalCustomData = { ...customData }
+      const pendingImageEntries = Object.entries(pendingImages)
+
+      if (pendingImageEntries.length > 0) {
+        setUploadingImages(true)
+        for (const [fieldKey, pendingImage] of pendingImageEntries) {
+          const result = await uploadEntryImage(
+            supabase,
+            pendingImage.file,
+            user.id,
+            tournament.id
+          )
+
+          if (isUploadError(result)) {
+            setError(`画像のアップロードに失敗しました: ${result.message}`)
+            setUploadingImages(false)
+            return
+          }
+
+          // Store the uploaded URL
+          finalCustomData[fieldKey] = result.url
+        }
+        setUploadingImages(false)
+      }
+
       // Create entry
       const { error: insertError } = await supabase
         .from('participants')
@@ -127,7 +162,7 @@ export default function TournamentEntryPage({ params }: Props) {
           tournament_id: tournament.id,
           user_id: user.id,
           display_name: displayName.trim(),
-          custom_data: customData,
+          custom_data: finalCustomData,
         })
 
       if (insertError) {
@@ -273,22 +308,41 @@ export default function TournamentEntryPage({ params }: Props) {
                   <div className="space-y-2">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
                       onChange={(e) => {
                         const file = e.target.files?.[0]
                         if (file) {
-                          // For now, just store the file name
-                          // TODO: Implement actual image upload to storage
+                          // Validate file size (3MB max)
+                          if (file.size > 3 * 1024 * 1024) {
+                            setError('画像サイズは3MB以下にしてください')
+                            return
+                          }
+                          // Create preview URL
+                          const previewUrl = URL.createObjectURL(file)
+                          // Store file for later upload
+                          setPendingImages(prev => ({
+                            ...prev,
+                            [field.key]: { file, previewUrl }
+                          }))
+                          // Store filename temporarily for display
                           setCustomData({ ...customData, [field.key]: file.name })
                         }
                       }}
-                      disabled={submitting}
+                      disabled={submitting || uploadingImages}
                       className="text-sm"
                     />
-                    {customData[field.key] && (
-                      <p className="text-xs text-muted-foreground">
-                        選択: {customData[field.key]}
-                      </p>
+                    {pendingImages[field.key] && (
+                      <div className="space-y-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={pendingImages[field.key].previewUrl}
+                          alt="Preview"
+                          className="max-w-[200px] max-h-[200px] rounded border object-cover"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          選択: {customData[field.key]}
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -304,8 +358,8 @@ export default function TournamentEntryPage({ params }: Props) {
             >
               キャンセル
             </Button>
-            <Button type="submit" disabled={submitting} className="flex-1">
-              {submitting ? 'エントリー中...' : 'エントリーする'}
+            <Button type="submit" disabled={submitting || uploadingImages} className="flex-1">
+              {uploadingImages ? '画像アップロード中...' : submitting ? 'エントリー中...' : 'エントリーする'}
             </Button>
           </CardFooter>
         </form>
