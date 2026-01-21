@@ -43,3 +43,9 @@ next-env.d.ts
 # devhive (deprecated)
 .devhive/
 .devhive.yaml
+
+# serena
+.serena/
+
+# supabase temp files
+supabase/.temp/
