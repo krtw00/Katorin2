@@ -379,7 +379,42 @@
       "discord": "Discord",
       "noAccount": "アカウントをお持ちでない方は",
       "registerLink": "新規登録",
+      "forgotPassword": "パスワードを忘れた場合",
       "error": "ログインに失敗しました"
+    },
+    "forgotPassword": {
+      "title": "パスワードをリセット",
+      "description": "登録したメールアドレスを入力してください。パスワードリセット用のリンクをお送りします。",
+      "email": "メールアドレス",
+      "emailPlaceholder": "email@example.com",
+      "submit": "リセットリンクを送信",
+      "submitting": "送信中...",
+      "backToLogin": "ログインに戻る",
+      "successTitle": "メールを送信しました",
+      "successDescription": "パスワードリセット用のリンクをメールで送信しました。メールをご確認ください。",
+      "error": "送信に失敗しました"
+    },
+    "resetPassword": {
+      "title": "新しいパスワードを設定",
+      "description": "新しいパスワードを入力してください。",
+      "password": "新しいパスワード",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "6文字以上で入力してください",
+      "confirmPassword": "パスワード（確認）",
+      "confirmPasswordPlaceholder": "••••••••",
+      "submit": "パスワードを変更",
+      "submitting": "変更中...",
+      "backToLogin": "ログインに戻る",
+      "successTitle": "パスワードを変更しました",
+      "successDescription": "まもなく自動的にリダイレクトされます...",
+      "invalidLink": "無効なリンク",
+      "invalidLinkDescription": "このパスワードリセットリンクは無効か、有効期限が切れています。",
+      "requestNewLink": "新しいリンクをリクエスト",
+      "error": "パスワードの変更に失敗しました",
+      "validation": {
+        "passwordMin": "パスワードは6文字以上で入力してください",
+        "passwordMismatch": "パスワードが一致しません"
+      }
     },
     "register": {
       "title": "新規登録",
@@ -450,12 +485,14 @@
       "description": "プロフィール情報を更新します",
       "loadError": "プロフィールの読み込みに失敗しました",
       "loading": "読み込み中...",
-      "avatarNotice": "アバター画像の変更は今後対応予定です",
+      "avatar": "アバター",
+      "avatarHint": "JPG, PNG形式、2MB以下",
       "displayName": "表示名",
       "displayNamePlaceholder": "表示名を入力",
       "displayNameHelp": "大会やランキングで表示される名前です",
-      "masterDuelId": "マスターデュエルID",
-      "masterDuelIdHelp": "対戦相手との連絡に使用します（任意）",
+      "discordId": "Discord ID",
+      "discordIdPlaceholder": "例: username または username#1234",
+      "discordIdHelp": "対戦相手との連絡に使用します（任意）",
       "bio": "自己紹介",
       "bioPlaceholder": "自己紹介を入力（任意）",
       "saveSuccess": "保存しました。マイページに戻ります...",
@@ -531,7 +568,7 @@
       "description": "チーム紹介",
       "descriptionPlaceholder": "チームの紹介文を入力...",
       "avatar": "アバター",
-      "avatarComingSoon": "今後対応予定"
+      "avatarHint": "JPG, PNG形式、2MB以下"
     },
     "members": {
       "title": "メンバー管理",
