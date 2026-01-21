@@ -1,140 +1,142 @@
 # ディレクトリ構造
 
-## 概要
+## 目的
 
-Next.js 16 (App Router) + TypeScript のプロジェクト構造
+Katorin2のディレクトリ構造とコンポーネント設計を定義する。本ドキュメントはアーキテクチャ設計のSSoTである。
 
-## ディレクトリツリー
+## 背景
 
-```
-src/
-├── app/                          # Next.js App Router
-│   ├── [locale]/                 # i18n対応（next-intl）
-│   │   ├── (main)/              # メインレイアウト
-│   │   │   ├── tournaments/     # 大会関連ページ
-│   │   │   ├── series/          # シリーズ関連ページ
-│   │   │   ├── teams/           # チーム関連ページ
-│   │   │   └── my/              # マイページ
-│   │   └── (auth)/              # 認証レイアウト
-│   │       ├── login/
-│   │       └── register/
-│   └── auth/callback/            # OAuth認証コールバック
-│
-├── components/                   # UIコンポーネント
-│   ├── ui/                      # shadcn/ui コンポーネント
-│   ├── layout/                  # レイアウトコンポーネント
-│   ├── tournament/              # 大会関連コンポーネント
-│   │   └── hooks/               # 大会固有のカスタムフック
-│   ├── series/                  # シリーズ関連コンポーネント
-│   └── team/                    # チーム関連コンポーネント
-│
-├── lib/                         # ユーティリティ・ライブラリ
-│   ├── supabase/                # Supabaseクライアント設定
-│   ├── tournament/              # トーナメントロジック
-│   ├── errors/                  # エラーハンドリング
-│   └── types/                   # 共通型定義
-│
-├── hooks/                       # グローバルカスタムフック
-│
-├── i18n/                        # 国際化設定
-│
-└── types/                       # グローバル型定義
-```
+Next.js 16 (App Router) + TypeScript を採用し、next-intlによる多言語対応を実装している。
+コンポーネントは機能ごとに分類し、再利用性と保守性を重視する。
 
-## ルーティング構造
+## 主要ディレクトリ
 
-### i18n対応
+| ディレクトリ | 用途 |
+|-------------|------|
+| src/app/ | Next.js App Router（ページ、レイアウト、API Routes） |
+| src/components/ | UIコンポーネント |
+| src/lib/ | ユーティリティ、Supabaseクライアント、ビジネスロジック |
+| src/hooks/ | グローバルカスタムフック |
+| src/types/ | グローバル型定義 |
+| src/i18n/ | 国際化設定 |
+| supabase/ | マイグレーション、シードデータ |
 
-`[locale]` セグメントにより多言語対応：
-- `/en/tournaments` - 英語
-- `/ja/tournaments` - 日本語
+## App Router構造
 
-### Route Groups
+### ルーティング
 
-| グループ | 用途 | レイアウト |
-|----------|------|-----------|
-| `(main)` | メインアプリケーション | ヘッダー + サイドバー |
-| `(auth)` | 認証ページ | シンプルなセンタリングレイアウト |
+i18n対応のため、`[locale]` セグメントを最上位に配置。Route Groupsでレイアウトを分離している。
+
+| Route Group | 用途 | レイアウト |
+|-------------|------|-----------|
+| (main) | メインアプリケーション | ヘッダー + サイドバー |
+| (auth) | 認証ページ | シンプルなセンタリング |
+
+### 言語対応
+
+| URL | 言語 |
+|-----|------|
+| /en/tournaments | 英語 |
+| /ja/tournaments | 日本語 |
 
 ### 主要ルート
 
 | パス | 説明 |
 |------|------|
-| `/` | トップページ |
-| `/tournaments` | 大会一覧 |
-| `/tournaments/new` | 大会作成 |
-| `/tournaments/[id]` | 大会詳細 |
-| `/tournaments/[id]/manage` | 大会管理 |
-| `/tournaments/[id]/bracket` | トーナメント表 |
-| `/series` | シリーズ一覧 |
-| `/teams` | チーム一覧 |
-| `/my` | マイページ |
+| / | トップページ |
+| /tournaments | 大会一覧 |
+| /tournaments/new | 大会作成 |
+| /tournaments/[id] | 大会詳細 |
+| /tournaments/[id]/manage | 大会管理（主催者向け） |
+| /tournaments/[id]/bracket | トーナメント表 |
+| /series | シリーズ一覧 |
+| /teams | チーム一覧 |
+| /my | マイページ |
 
 ## コンポーネント設計
 
-### コンポーネント分類
+### 分類
 
-1. **UIコンポーネント** (`components/ui/`)
-   - shadcn/ui ベースの汎用コンポーネント
-   - プロジェクト固有のカスタマイズあり
-
-2. **機能コンポーネント** (`components/{feature}/`)
-   - 特定機能に紐づくコンポーネント
-   - 例: `TournamentCard`, `BracketView`
-
-3. **レイアウトコンポーネント** (`components/layout/`)
-   - ヘッダー、フッター、サイドバー等
+| 分類 | ディレクトリ | 説明 |
+|------|-------------|------|
+| UIコンポーネント | components/ui/ | shadcn/ui ベースの汎用コンポーネント |
+| レイアウト | components/layout/ | ヘッダー、フッター、サイドバー等 |
+| 大会機能 | components/tournament/ | 大会関連コンポーネント |
+| シリーズ機能 | components/series/ | シリーズ関連コンポーネント |
+| チーム機能 | components/team/ | チーム関連コンポーネント |
 
 ### 命名規則
 
 | 種類 | 命名 | 例 |
 |------|------|-----|
-| コンポーネント | PascalCase | `TournamentCard.tsx` |
-| フック | camelCase (use prefix) | `useRealtimeMatches.ts` |
-| ユーティリティ | camelCase | `bracketUtils.ts` |
-| 型定義 | PascalCase | `Tournament.ts` |
+| コンポーネント | PascalCase | TournamentCard.tsx |
+| フック | camelCase (use prefix) | useRealtimeMatches.ts |
+| ユーティリティ | camelCase | bracketUtils.ts |
+| 型定義 | PascalCase | Tournament.ts |
 
 ## データフロー
 
-```
-┌─────────────────┐
-│   Page/Layout   │ ← Server Component (デフォルト)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Server Action  │ ← データ取得・更新
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│    Supabase     │ ← データベース
-└─────────────────┘
+Server ComponentsとClient Componentsを適切に使い分け、Supabaseとのデータ連携を行う。
 
-┌─────────────────┐
-│ Client Component│ ← 'use client' 指定
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Custom Hooks   │ ← useRealtimeMatches等
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│Supabase Realtime│ ← リアルタイム更新
-└─────────────────┘
+```mermaid
+flowchart TD
+    subgraph Server["Server Components"]
+        Page[Page/Layout]
+        Action[Server Action]
+    end
+
+    subgraph Client["Client Components"]
+        CC[Client Component]
+        Hook[Custom Hooks]
+    end
+
+    subgraph Supabase
+        DB[(Database)]
+        Realtime[Realtime]
+    end
+
+    Page --> Action
+    Action --> DB
+    CC --> Hook
+    Hook --> Realtime
+    Realtime --> DB
 ```
+
+### Server Components（デフォルト）
+
+| 用途 | 説明 |
+|------|------|
+| データ取得 | Server Actionsでデータ取得 |
+| SEO | メタデータ生成 |
+| 初期表示 | 高速な初期レンダリング |
+
+### Client Components（'use client' 指定）
+
+| 用途 | 説明 |
+|------|------|
+| インタラクション | フォーム、ボタンクリック |
+| リアルタイム | Supabase Realtime連携 |
+| 状態管理 | useState, useReducer |
 
 ## 状態管理
 
 ### サーバーサイド
-- Server Components でのデータ取得
-- Server Actions でのデータ更新
+
+Server ComponentsでSupabaseからデータを取得し、クライアントに渡す。Server Actionsでデータ更新を行う。
 
 ### クライアントサイド
-- **ローカル状態**: React useState/useReducer
-- **リアルタイム**: Supabase Realtime + カスタムフック
-- **フォーム**: React Hook Form
 
-グローバル状態管理ライブラリ（Redux, Zustand等）は現在不使用。
+| 用途 | 手法 |
+|------|------|
+| ローカル状態 | React useState/useReducer |
+| リアルタイム更新 | Supabase Realtime + カスタムフック |
+| フォーム | React Hook Form |
+
+グローバル状態管理ライブラリ（Redux, Zustand等）は現在不使用。必要に応じて検討する。
+
+## 関連ドキュメント
+
+- @01-introduction/tech-stack.md - 技術スタック
+- @04-data/database-design.md - データベース設計
+- @06-interfaces/screen-design.md - 画面設計
+- @appendix/glossary.md - 用語集
