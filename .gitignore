@@ -49,3 +49,7 @@ next-env.d.ts
 
 # supabase temp files
 supabase/.temp/
+
+# AI
+CLAUDE.md
+.claude/
