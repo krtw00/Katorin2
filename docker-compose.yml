@@ -14,18 +14,9 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-    networks:
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.katorin.rule=Host(`katorin.localhost`)"
-      - "traefik.http.services.katorin.loadbalancer.server.port=3000"
-      - "traefik.docker.network=traefik"
+    ports:
+      - "3000:3000"
 
 volumes:
   node_modules:
   next_cache:
-
-networks:
-  traefik:
-    external: true

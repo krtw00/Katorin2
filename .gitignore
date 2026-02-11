@@ -53,3 +53,4 @@ supabase/.temp/
 # AI
 CLAUDE.md
 .claude/
+docker-compose.override.yml
