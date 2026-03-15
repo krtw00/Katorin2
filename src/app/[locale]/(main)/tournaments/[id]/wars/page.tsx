@@ -30,12 +30,23 @@ export default async function WarsPage({ params }: Props) {
 
   if (!tournament) notFound()
 
-  // ブロック取得
-  const { data: blocks } = await supabase
+  // ブロック取得（tournament_id or series_id経由）
+  let blocks = (await supabase
     .from('tournament_blocks')
     .select('*')
     .eq('tournament_id', id)
     .order('block_order', { ascending: true })
+  ).data
+
+  // シリーズ配下ならseries_idでも検索
+  if ((!blocks || blocks.length === 0) && tournament.series_id) {
+    blocks = (await supabase
+      .from('tournament_blocks')
+      .select('*')
+      .eq('series_id', tournament.series_id)
+      .order('block_order', { ascending: true })
+    ).data
+  }
 
   // 全War取得
   const { data: matches } = await supabase
