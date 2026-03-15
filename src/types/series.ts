@@ -42,9 +42,10 @@ export const seriesStatusLabels: Record<SeriesStatus, string> = {
   cancelled: 'キャンセル',
 }
 
-// フォーム型（新スキーマ用、最小限）
+// フォーム型（新スキーマ用）
 export type SeriesFormData = {
   title: string
   description: string
   entry_type: 'individual' | 'team'
+  config_preset: 'wmgp' | 'rocket_cup' | 'custom'
 }

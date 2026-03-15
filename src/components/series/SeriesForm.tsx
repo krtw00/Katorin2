@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import {
   Series,
   SeriesFormData,
 } from '@/types/series'
+import { WMGP_CONFIG, ROCKET_CUP_CONFIG } from '@/lib/schemas/series-config'
 import { useTranslations } from 'next-intl'
 
 type Props = {
@@ -35,12 +36,14 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         title: initialData.title,
         description: initialData.description || '',
         entry_type: initialData.entry_type,
+        config_preset: 'custom',
       }
     }
     return {
       title: '',
       description: '',
-      entry_type: 'individual',
+      entry_type: 'team',
+      config_preset: 'wmgp',
     }
   })
 
@@ -48,7 +51,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = async (e: FormEvent, asDraft = false) => {
+  const handleSubmit = async (e: React.FormEvent, asDraft = false) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -66,11 +69,15 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         return
       }
 
+      const configPresets = { wmgp: WMGP_CONFIG, rocket_cup: ROCKET_CUP_CONFIG, custom: {} }
+      const seriesConfig = configPresets[formData.config_preset] || {}
+
       const seriesData = {
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         entry_type: formData.entry_type as 'individual' | 'team',
         status: (asDraft ? 'draft' : 'in_progress') as 'draft' | 'in_progress',
+        series_config: seriesConfig,
       }
 
       if (mode === 'create') {
@@ -219,6 +226,37 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Config Preset (チーム戦のみ) */}
+          {formData.entry_type === 'team' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">ルール設定</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { value: 'wmgp' as const, label: 'WMGP形式', desc: '3v3星取戦(BO3) / ブロック別総当たり / 3メイン+1サブ' },
+                  { value: 'rocket_cup' as const, label: 'ロケットカップ形式', desc: '5人Ban&Pick→3v3 / スイスドロー / デッキテーマ被り禁止' },
+                  { value: 'custom' as const, label: 'カスタム', desc: '後から手動で設定' },
+                ].map(opt => (
+                  <label key={opt.value} className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                    <input
+                      type="radio"
+                      name="config_preset"
+                      value={opt.value}
+                      checked={formData.config_preset === opt.value}
+                      onChange={() => updateFormData('config_preset', opt.value)}
+                      className="w-4 h-4 mt-0.5"
+                    />
+                    <div>
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="text-sm text-muted-foreground">{opt.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </form>
       </div>
     </div>

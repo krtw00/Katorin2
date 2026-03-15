@@ -40,7 +40,7 @@ export default async function SeriesDetailPage({ params }: Props) {
     notFound()
   }
 
-  // Fetch tournaments in this series
+  // Fetch tournaments in this series (round_number順)
   const { data: tournaments } = await supabase
     .from('tournaments')
     .select(
@@ -50,14 +50,63 @@ export default async function SeriesDetailPage({ params }: Props) {
     `
     )
     .eq('series_id', id)
-    .order('start_at', { ascending: false }) as { data: TournamentWithOrganizer[] | null }
+    .order('round_number', { ascending: true })
+    .order('start_at', { ascending: true }) as { data: TournamentWithOrganizer[] | null }
+
+  // Fetch block standings across all tournaments in this series
+  const tournamentIds = tournaments?.map((t) => t.id) || []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let allStandings: any[] = []
+  if (tournamentIds.length > 0) {
+    const { data: standings } = await supabase
+      .from('block_standings')
+      .select('*')
+      .in('tournament_id', tournamentIds)
+    allStandings = standings || []
+  }
+
+  // Aggregate standings by team across all weeks
+  const teamAgg = new Map<string, { team_name: string; team_avatar_url: string | null; block_id: string; wins: number; losses: number; total_win_points: number; round_diff: number; match_diff: number; total_rounds_won: number; matches_played: number }>()
+  for (const s of allStandings) {
+    const key = s.team_id as string
+    const prev = teamAgg.get(key)
+    if (prev) {
+      prev.wins += s.wins ?? 0
+      prev.losses += s.losses ?? 0
+      prev.total_win_points += s.total_win_points ?? 0
+      prev.round_diff += s.round_diff ?? 0
+      prev.match_diff += s.match_diff ?? 0
+      prev.total_rounds_won += s.total_rounds_won ?? 0
+      prev.matches_played += s.matches_played ?? 0
+    } else {
+      teamAgg.set(key, {
+        team_name: s.team_name,
+        team_avatar_url: s.team_avatar_url,
+        block_id: s.block_id,
+        wins: s.wins ?? 0,
+        losses: s.losses ?? 0,
+        total_win_points: s.total_win_points ?? 0,
+        round_diff: s.round_diff ?? 0,
+        match_diff: s.match_diff ?? 0,
+        total_rounds_won: s.total_rounds_won ?? 0,
+        matches_played: s.matches_played ?? 0,
+      })
+    }
+  }
+
+  // Get blocks for this series
+  const { data: blocks } = await supabase
+    .from('tournament_blocks')
+    .select('*')
+    .eq('series_id', id)
+    .order('block_order', { ascending: true })
 
   // Fetch participant counts for tournaments
-  const tournamentIds = tournaments?.map((t) => t.id) || []
+  const tIds = tournaments?.map((t) => t.id) || []
   const { data: participantCounts } = await supabase
     .from('participants')
     .select('tournament_id')
-    .in('tournament_id', tournamentIds) as { data: { tournament_id: string }[] | null }
+    .in('tournament_id', tIds) as { data: { tournament_id: string }[] | null }
 
   const countMap = new Map<string, number>()
   participantCounts?.forEach((p) => {
@@ -126,23 +175,73 @@ export default async function SeriesDetailPage({ params }: Props) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue="standings">
         <TabsList className="mb-4">
-          <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
+          <TabsTrigger value="standings">順位表</TabsTrigger>
           <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
+          <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('detail.description')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {series.description || t('detail.noDescription')}
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="standings">
+          {blocks && blocks.length > 0 && teamAgg.size > 0 ? (
+            <div className="space-y-6">
+              {blocks.map((block) => {
+                const blockTeams = Array.from(teamAgg.entries())
+                  .filter(([, v]) => v.block_id === block.id)
+                  .sort((a, b) => {
+                    if (b[1].total_win_points !== a[1].total_win_points) return b[1].total_win_points - a[1].total_win_points
+                    if (b[1].round_diff !== a[1].round_diff) return b[1].round_diff - a[1].round_diff
+                    if (b[1].match_diff !== a[1].match_diff) return b[1].match_diff - a[1].match_diff
+                    return b[1].total_rounds_won - a[1].total_rounds_won
+                  })
+                return (
+                  <Card key={block.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{block.block_name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b bg-muted/50">
+                              <th className="px-4 py-2 text-left">#</th>
+                              <th className="px-4 py-2 text-left">チーム</th>
+                              <th className="px-4 py-2 text-center">試合</th>
+                              <th className="px-4 py-2 text-center">勝</th>
+                              <th className="px-4 py-2 text-center">負</th>
+                              <th className="px-4 py-2 text-center">勝点</th>
+                              <th className="px-4 py-2 text-center">R差</th>
+                              <th className="px-4 py-2 text-center">M差</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {blockTeams.map(([, team], rank) => (
+                              <tr key={rank} className="border-b last:border-0 hover:bg-muted/30">
+                                <td className="px-4 py-2 font-medium">{rank + 1}</td>
+                                <td className="px-4 py-2 font-medium">{team.team_name}</td>
+                                <td className="px-4 py-2 text-center">{team.matches_played}</td>
+                                <td className="px-4 py-2 text-center text-green-600">{team.wins}</td>
+                                <td className="px-4 py-2 text-center text-red-600">{team.losses}</td>
+                                <td className="px-4 py-2 text-center font-bold">{team.total_win_points}</td>
+                                <td className="px-4 py-2 text-center">{team.round_diff > 0 ? '+' : ''}{team.round_diff}</td>
+                                <td className="px-4 py-2 text-center">{team.match_diff > 0 ? '+' : ''}{team.match_diff}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                まだ試合結果がありません
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="tournaments">
@@ -163,6 +262,19 @@ export default async function SeriesDetailPage({ params }: Props) {
                   {t('detail.noTournaments')}
                 </p>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="overview">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('detail.description')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {series.description || t('detail.noDescription')}
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
