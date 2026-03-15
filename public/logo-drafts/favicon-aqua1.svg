@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #ffffff; }
+    .k-main { fill: #0e7490; }
+    .k-accent { fill: #06b6d4; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0c1929; }
+      .k-main { fill: #67e8f9; }
+      .k-accent { fill: #22d3ee; }
+    }
+  </style>
+
+  <rect class="bg" width="512" height="512" rx="102"/>
+
+  <!-- K: deep teal body + cyan accent leg -->
+  <rect class="k-main" x="128" y="96" width="64" height="320" rx="6"/>
+  <path class="k-main" d="M192 256 L192 218 L362 96 L362 154 Z"/>
+  <path class="k-accent" d="M192 256 L192 294 L362 416 L362 358 Z"/>
+</svg>

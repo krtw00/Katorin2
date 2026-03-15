@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Container -->
+  <rect width="512" height="512" rx="102" fill="#1e1b4b"/>
+
+  <!-- K - clean geometric, single color with accent lower leg -->
+  <!-- Vertical -->
+  <path d="M148 100 L148 412 Q148 420 156 420 L196 420 Q204 420 204 412 L204 100 Q204 92 196 92 L156 92 Q148 92 148 100 Z" fill="#e9e5ff"/>
+
+  <!-- Upper diagonal -->
+  <path d="M204 268 L340 108 Q348 100 358 108 L370 120 Q378 128 370 138 L228 268 Z" fill="#e9e5ff"/>
+
+  <!-- Lower diagonal - accent -->
+  <path d="M218 268 L362 404 Q370 414 360 420 L326 420 Q318 420 312 414 L204 280 Z" fill="#8b5cf6"/>
+</svg>

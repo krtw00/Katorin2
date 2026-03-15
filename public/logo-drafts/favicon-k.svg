@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1e1b4b; }
+    }
+  </style>
+
+  <!-- Container: rounded square -->
+  <rect class="bg" width="512" height="512" rx="102" fill="#2e1065"/>
+
+  <!-- K lettermark - geometric, extra bold -->
+  <!-- Vertical stroke -->
+  <rect x="128" y="96" width="64" height="320" rx="8" fill="#c4b5fd"/>
+
+  <!-- Upper diagonal -->
+  <polygon points="192,256 192,208 360,96 360,168" fill="#c4b5fd"/>
+
+  <!-- Lower diagonal (accent color) -->
+  <polygon points="192,256 192,304 360,416 360,344" fill="#a78bfa"/>
+</svg>

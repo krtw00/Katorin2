@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#0f172a"/>
+  <circle cx="256" cy="256" r="220" fill="url(#grad1)" stroke="#3b82f6" stroke-width="4"/>
+
+  <!-- Crown/Victory mark above K -->
+  <path d="M180 140 L210 100 L256 130 L302 100 L332 140"
+        stroke="#f59e0b" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="210" cy="100" r="6" fill="#f59e0b"/>
+  <circle cx="256" cy="130" r="6" fill="#f59e0b"/>
+  <circle cx="302" cy="100" r="6" fill="#f59e0b"/>
+
+  <!-- Stylized K -->
+  <path d="M190 170 L190 390" stroke="#f8fafc" stroke-width="28" stroke-linecap="round"/>
+  <path d="M200 280 L310 170" stroke="#f8fafc" stroke-width="24" stroke-linecap="round"/>
+  <path d="M230 280 L330 400" stroke="#3b82f6" stroke-width="24" stroke-linecap="round"/>
+
+  <!-- Small bracket lines -->
+  <path d="M340 200 L360 200 L360 260" stroke="#64748b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M340 320 L360 320 L360 260" stroke="#64748b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="370" cy="260" r="4" fill="#3b82f6"/>
+
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+</svg>

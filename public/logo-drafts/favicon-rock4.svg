@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #f5f5f4; }
+    .stone { fill: #292524; }
+    .vein { fill: #0f766e; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1c1917; }
+      .stone { fill: #e7e5e4; }
+      .vein { fill: #2dd4bf; }
+    }
+  </style>
+
+  <!-- Slightly warm stone-gray background -->
+  <rect class="bg" width="512" height="512" rx="102"/>
+
+  <!-- K: chunky, monolith feel. Almost-black stone -->
+  <rect class="stone" x="120" y="88" width="76" height="336" rx="2"/>
+  <path class="stone" d="M196 256 L196 210 L372 84 L372 150 Z"/>
+  <path class="stone" d="M196 256 L196 302 L372 428 L372 362 Z"/>
+
+  <!-- Mineral vein running through the K (the 秘石) -->
+  <path class="vein" d="M140 140 Q170 200 155 260 Q140 320 165 380" stroke-width="8" fill="none" stroke="#0f766e" stroke-linecap="round" opacity="0.7"/>
+  <path class="vein" d="M260 160 Q280 200 270 230" stroke-width="5" fill="none" stroke="#0f766e" stroke-linecap="round" opacity="0.5"/>
+  <path class="vein" d="M280 330 Q300 370 320 400" stroke-width="5" fill="none" stroke="#0f766e" stroke-linecap="round" opacity="0.5"/>
+</svg>

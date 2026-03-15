@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #f0fdfa; }
+    .k-dark { fill: #134e4a; }
+    .k-mid { fill: #0f766e; }
+    .k-light { fill: #14b8a6; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0a1a1a; }
+      .k-dark { fill: #99f6e4; }
+      .k-mid { fill: #5eead4; }
+      .k-light { fill: #2dd4bf; }
+    }
+  </style>
+
+  <!-- Very subtle mint tinted background -->
+  <rect class="bg" width="512" height="512" rx="102"/>
+
+  <!-- K: 3-tone aquamarine gradient feel (flat) -->
+  <!-- Vertical: darkest -->
+  <rect class="k-dark" x="128" y="96" width="68" height="320" rx="6"/>
+  <!-- Upper diagonal: mid -->
+  <path class="k-mid" d="M196 256 L196 216 L366 96 L366 156 Z"/>
+  <!-- Lower diagonal: lightest/brightest - the gem sparkle -->
+  <path class="k-light" d="M196 256 L196 296 L366 416 L366 356 Z"/>
+</svg>
