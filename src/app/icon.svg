@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #fafaf9; }
+    .stone { fill: #44403c; }
+    .gem { fill: #0d9488; }
+    .crack { stroke: #d6d3d1; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1c1917; }
+      .stone { fill: #d6d3d1; }
+      .gem { fill: #2dd4bf; }
+      .crack { stroke: #57534e; }
+    }
+  </style>
+
+  <rect class="bg" width="512" height="512" rx="102"/>
+
+  <!-- K: stone body with gem-colored lower leg (秘石=hidden gem in rock) -->
+  <!-- Vertical: rough stone -->
+  <polygon class="stone" points="128,84 200,90 204,96 204,412 198,420 126,416 120,408 120,92"/>
+
+  <!-- Upper diagonal: stone -->
+  <polygon class="stone" points="204,248 204,204 356,84 368,96 368,152 210,256"/>
+
+  <!-- Lower diagonal: THE GEM - teal/aquamarine peeking through -->
+  <polygon class="gem" points="210,264 204,272 204,308 356,428 368,416 368,358"/>
+
+  <!-- Rock texture cracks -->
+  <polyline class="crack" points="140,84 155,200 145,320 160,416" stroke-width="1.5" opacity="0.3"/>
+  <line class="crack" x1="240" y1="180" x2="310" y2="120" stroke-width="1.5" opacity="0.25"/>
+
+  <!-- Tiny sparkle on the gem part -->
+  <circle cx="310" cy="370" r="4" fill="#5eead4" opacity="0.6"/>
+  <circle cx="310" cy="370" r="8" fill="#5eead4" opacity="0.15"/>
+</svg>
