@@ -137,33 +137,122 @@ async function main() {
     await supabase.from('tournaments').delete().eq('is_demo', true)
   }
 
-  // デモユーザー削除
-  const { data: demoUsers } = await supabase.auth.admin.listUsers({ perPage: 200 })
-  for (const u of demoUsers?.users || []) {
-    if (u.email?.startsWith('demo_')) {
+  // デモユーザー削除（固定アカウントは保持）
+  const KEEP_EMAILS = ['demo@katorin2.codenica.dev', 'demo_leader@katorin2.codenica.dev']
+  // 全ユーザーをページネーションで取得
+  let allUsersForCleanup: { id: string; email?: string }[] = []
+  let cleanupPage = 1
+  while (true) {
+    const { data: pg } = await supabase.auth.admin.listUsers({ page: cleanupPage, perPage: 500 })
+    if (!pg?.users?.length) break
+    allUsersForCleanup = allUsersForCleanup.concat(pg.users)
+    if (pg.users.length < 500) break
+    cleanupPage++
+  }
+  for (const u of allUsersForCleanup) {
+    if (u.email?.startsWith('demo_') && !KEEP_EMAILS.includes(u.email || '')) {
       await supabase.from('team_members').delete().eq('user_id', u.id)
       await supabase.from('profiles').delete().eq('id', u.id)
       await supabase.auth.admin.deleteUser(u.id)
     }
   }
+  // 固定アカウントのチームメンバーシップだけ削除（再作成するため）
+  for (const email of KEEP_EMAILS) {
+    const keeper = allUsersForCleanup.find(u => u.email === email)
+    if (keeper) {
+      await supabase.from('team_members').delete().eq('user_id', keeper.id)
+    }
+  }
   console.log('  ✅ クリーンアップ完了')
 
-  // === ユーザー作成 ===
+  // === デモアカウント（主催者 + リーダー）===
+  console.log('\n📝 デモアカウント確認')
+  const DEMO_ORGANIZER_EMAIL = 'demo@katorin2.codenica.dev'
+  const DEMO_ORGANIZER_PASSWORD = 'KatorinDemo2026!'
+  const DEMO_LEADER_EMAIL = 'demo_leader@katorin2.codenica.dev'
+  const DEMO_LEADER_PASSWORD = 'KatorinDemo2026!'
+
+  // 主催者アカウント（既存 or 新規）
+  let organizerId: string
+  // listUsersはページネーションがあるので全ページ取得
+  let allExistingUsers: { id: string; email?: string }[] = []
+  let page = 1
+  while (true) {
+    const { data: pageData } = await supabase.auth.admin.listUsers({ page, perPage: 500 })
+    if (!pageData?.users?.length) break
+    allExistingUsers = allExistingUsers.concat(pageData.users)
+    if (pageData.users.length < 500) break
+    page++
+  }
+
+  async function getOrCreateUser(email: string, password: string, displayName: string): Promise<string> {
+    // まず作成を試みる
+    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+      email, password, email_confirm: true,
+      user_metadata: { display_name: displayName },
+    })
+    if (created?.user) {
+      console.log(`  ✅ ${displayName}: ${email} (新規作成)`)
+      return created.user.id
+    }
+    // 重複エラー → 全ユーザーから検索して既存IDを返す
+    if (createErr?.message?.includes('already been registered')) {
+      // ページネーションで全ユーザー取得
+      let all: { id: string; email?: string }[] = []
+      let p = 1
+      while (true) {
+        const { data: pg } = await supabase.auth.admin.listUsers({ page: p, perPage: 1000 })
+        if (!pg?.users?.length) break
+        all = all.concat(pg.users)
+        if (pg.users.length < 1000) break
+        p++
+      }
+      const found = all.find(u => u.email === email)
+      if (found) {
+        await supabase.from('profiles').upsert({ id: found.id, display_name: displayName })
+        console.log(`  ✅ ${displayName}: ${email} (既存)`)
+        return found.id
+      }
+      // listUsersで見つからない場合（db reset後のorphan）→ 別クライアントでsignInして取得
+      const tempClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
+      const { data: signInData } = await tempClient.auth.signInWithPassword({ email, password })
+      if (signInData?.user) {
+        await supabase.from('profiles').upsert({ id: signInData.user.id, display_name: displayName })
+        console.log(`  ✅ ${displayName}: ${email} (signIn経由)`)
+        return signInData.user.id
+      }
+    }
+    throw new Error(`Failed to get or create user ${email}: ${createErr?.message}`)
+  }
+
+  organizerId = await getOrCreateUser(DEMO_ORGANIZER_EMAIL, DEMO_ORGANIZER_PASSWORD, 'WMGP運営')
+
+  // リーダーアカウント（Team 0のリーダーとして使用）
+  const demoLeaderId = await getOrCreateUser(DEMO_LEADER_EMAIL, DEMO_LEADER_PASSWORD, 'デモリーダー')
+
+  // === チームメンバー作成 ===
   console.log('\n📝 16チーム × 6人 作成')
   const userIds: string[][] = []
   for (let t = 0; t < TEAMS_DATA.length; t++) {
     const td = TEAMS_DATA[t]
     const mids: string[] = []
-    for (let m = 0; m < td.members.length; m++) {
-      const { data } = await supabase.auth.admin.createUser({
-        email: `demo_t${t}_p${m}@katorin.dev`, password: 'demo1234', email_confirm: true,
-        user_metadata: { display_name: td.members[m] },
-      })
-      if (data?.user) mids.push(data.user.id)
+
+    if (t === 0) {
+      mids.push(demoLeaderId)
+      for (let m = 1; m < td.members.length; m++) {
+        const uid = await getOrCreateUser(`demo_t${t}_p${m}@katorin.dev`, 'demo1234', td.members[m])
+        mids.push(uid)
+      }
+    } else {
+      for (let m = 0; m < td.members.length; m++) {
+        const uid = await getOrCreateUser(`demo_t${t}_p${m}@katorin.dev`, 'demo1234', td.members[m])
+        mids.push(uid)
+      }
     }
     userIds.push(mids)
   }
-  const organizerId = userIds[0][0]
 
   // === シリーズ作成 ===
   console.log('\n📝 シリーズ作成: WMGP Season 8')
