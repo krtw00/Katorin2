@@ -30,54 +30,39 @@
 - Cloudflare R2 でファイルストレージ（署名付きURL方式）
 - next/og で画像出力API
 
+## データモデル
+- **シリーズ** (`series`): 複数節にまたがる長期イベント（WMGP, ロケットカップ等）
+- **大会** (`tournaments`): シリーズ内の1節、または単発イベント（将軍CS等）
+- **War** (`matches`): チーム対チームの試合全体
+- ルール設定は `series.series_config` (JSONB) でシリーズごとに柔軟に変更可能
+- 設定取得は `getTournamentConfig()` で統一（シリーズ/単発を自動判定）
+- 設計書: `docs/plan-series-refactor.md`
+
 ## 対応大会形式
-- 個人戦シングルエリミネーション（実装済み・テスト済み）
-- チーム戦スイスドロー（ロケットカップ形式、全層実装済み）
-- チーム戦ブロック別総当たり（WMGP形式、全層実装済み）
+- 個人戦シングルエリミネーション
+- チーム戦スイスドロー（ロケットカップ形式: Ban&Pick、デッキテーマ被り禁止）
+- チーム戦ブロック別総当たり（WMGP形式: 3v3星取戦BO3、6段階タイブレーカー）
+- ルールプリセット: `src/lib/schemas/series-config.ts` に `WMGP_CONFIG` / `ROCKET_CUP_CONFIG`
+
+## デモアカウント
+| 役割 | メール | パスワード | 用途 |
+|------|--------|-----------|------|
+| 主催者 | `demo@katorin2.codenica.dev` | `KatorinDemo2026!` | WMGPシリーズの主催者。管理画面・申請承認が可能 |
+| リーダー | `demo_leader@katorin2.codenica.dev` | `KatorinDemo2026!` | Tyrant Typhoonのチームリーダー。オーダー提出・エントリー申請が可能 |
+
+デモデータ投入: `npx tsx scripts/seed-demo-data.ts`（冪等、再実行可能）
 
 ## 注意事項
 - `pnpm db:types` 実行後、database.ts末尾のレガシーexport（TournamentFormat等）が消えるので手動で再追加が必要
+- ローカルでは `supabase gen types typescript --local` を使う（`--linked` はクラウドDB参照）
 - Discordトークンがgit履歴に残っている可能性あり（パスワード変更でトークン無効化済み前提）
 
-## セッションメモ（2026-03-15）
-
-### 完了した作業
-- 個人戦シングルエリミネーション致命バグ修正（BYE自動進出、UUID化）
-- 管理画面にステータス遷移UI・参加者除外機能追加
-- ビルドエラー修正（force-dynamic化、envフォールバック）
-- チーム大会データ層（マイグレーション011〜014）
-- スイスドロー/総当たり対戦カード生成ロジック
-- WMGP形式: ブロック別総当たり + 3v3星取戦(BO3) + 6段階タイブレーカー
-- 大会設定の可変化（order_size, players_per_round, win_point_value等）
-- テストスクリプト3本（個人戦54, チーム戦28, WMGP10, 全パス）
-- Vercelデプロイ + Cloudflare DNS設定（katorin2.codenica.dev）
-- Supabaseクラウドにマイグレーション適用
-- Cloudflare R2ストレージ統合（バケット: katorin2-assets）
-- supabase gen types 自動生成に移行
-- Zod + React Hook Form 導入
-- チーム大会管理UI（ブロック分け・対戦カード自動生成・進行管理）
-- オーダー提出フォーム（メイン+サブ×デッキ名/テーマ）
-- War一覧/詳細/結果入力ページ
-- ブロック順位表ページ（WMGP形式/スイスドロー両対応）
-- 画像出力API（War結果画像・順位表画像、theme_configでカスタマイズ可）
-- 大会作成フォームにチーム戦設定追加
-- ファビコン刷新（岩石+秘石カトリンモチーフ）
-- ヘッダー「Katorin2」+アイコン表示
-- 大会詳細ページをチーム戦/個人戦で分岐表示
-- WMGPのDiscordから実データ取得 → デモデータ投入（16チーム96人、14試合結果付き）
-- デモ管理者アカウント作成（demo@katorin2.codenica.dev / KatorinDemo2026!）
-
-### 判断・決定事項
+## 判断・決定事項
+- 「シリーズ」と「大会」は明確に分離（series/tournament）
 - Ban&PickはDiscord管理、Katorinは結果記録のみ
-- WMGP形式を本番運用ターゲット
-- 画像テーマはtournaments.theme_config (JSONB)で大会ごとにカスタマイズ
-- ストレージはSupabase Storage(1GB制限)からCloudflare R2(10GB無料)に移行
-- スタックは現状が最適解（変えるべきは開発体験レイヤーのみ）
+- チームはシリーズ所属 or 単発大会所属（排他）、未所属も可（申請前）
+- チームエントリーは申請→主催者承認フロー（team_applications テーブル）
+- チーム/メンバーの閲覧はシリーズ/大会の公開設定に連動（RLS）
+- 画像テーマはseries.theme_config or tournaments.theme_config (JSONB)
+- ストレージはCloudflare R2（バケット: katorin2-assets）
 - 元ネタ「水界の秘石カトリン」＋依頼者の岩石族コミュニティに合わせたデザイン
-
-### 次回の優先事項
-1. オーダー入力を管理者/チームリーダー両方から可能にする
-2. 管理者用War一括オーダー入力UI（両チーム分を一画面で）
-3. チームエントリーUI（チームリーダーが大会にエントリーするフォーム）
-4. 画像出力の改善（デッキ名表示、レイアウト調整）
-5. logo-drafts/の不要SVGファイルを整理
