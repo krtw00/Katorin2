@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:types": "supabase gen types typescript --linked | tail -n +2 > src/types/database.ts"
+    "db:types": "supabase gen types typescript --linked 2>/dev/null | grep -v '^Initialising' > src/types/database.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1009.0",

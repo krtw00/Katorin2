@@ -1,3 +1,4 @@
+export type Json =
   | string
   | number
   | boolean
@@ -1448,3 +1449,25 @@ export const Constants = {
     },
   },
 } as const
+
+export type InviteStatus = Database["public"]["Enums"]["invite_status"]
+
+// Legacy type exports for backwards compatibility
+export type TournamentStatus = Database['public']['Enums']['tournament_status']
+export type TournamentFormat = Database['public']['Enums']['tournament_format']
+export type MatchFormat = Database['public']['Enums']['match_format']
+export type Visibility = Database['public']['Enums']['visibility']
+export type EntryType = Database['public']['Enums']['entry_type']
+export type ResultReportMode = Database['public']['Enums']['result_report_mode']
+export type EntryLimitBehavior = Database['public']['Enums']['entry_limit_behavior']
+export type MatchStatus = Database['public']['Enums']['match_status']
+export type NotificationType = Database['public']['Enums']['notification_type']
+export type SeriesStatus = Database['public']['Enums']['series_status']
+export type PointSystem = Database['public']['Enums']['point_system']
+export type PointCalculationMode = Database['public']['Enums']['point_calculation_mode']
+export type TeamRole = Database['public']['Enums']['team_role']
+export type TeamBattleFormat = Database['public']['Enums']['team_battle_format']
+export type TeamCreationMode = Database['public']['Enums']['team_creation_mode']
+export type CheckInStatus = Database['public']['Enums']['check_in_status']
+export type BracketSide = Database['public']['Enums']['bracket_side']
+export type EntryMode = Database['public']['Enums']['entry_mode']

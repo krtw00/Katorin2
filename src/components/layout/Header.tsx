@@ -22,8 +22,10 @@ export function Header() {
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/tournaments">
-            <h1 className="text-xl font-bold cursor-pointer">Katorin</h1>
+          <Link href="/tournaments" className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" className="h-7 w-7" />
+            <h1 className="text-xl font-bold cursor-pointer">Katorin2</h1>
           </Link>
           <nav className="hidden md:flex gap-4">
             <Link
