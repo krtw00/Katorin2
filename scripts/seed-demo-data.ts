@@ -167,10 +167,9 @@ async function main() {
 
   // === デモアカウント（主催者 + リーダー）===
   console.log('\n📝 デモアカウント確認')
+  const DEMO_PASSWORD = 'KatorinDemo2026!'
   const DEMO_ORGANIZER_EMAIL = 'demo@katorin2.codenica.dev'
-  const DEMO_ORGANIZER_PASSWORD = 'KatorinDemo2026!'
   const DEMO_LEADER_EMAIL = 'demo_leader@katorin2.codenica.dev'
-  const DEMO_LEADER_PASSWORD = 'KatorinDemo2026!'
 
   // 主催者アカウント（既存 or 新規）
   let organizerId: string
@@ -227,10 +226,10 @@ async function main() {
     throw new Error(`Failed to get or create user ${email}: ${createErr?.message}`)
   }
 
-  organizerId = await getOrCreateUser(DEMO_ORGANIZER_EMAIL, DEMO_ORGANIZER_PASSWORD, 'WMGP運営')
+  organizerId = await getOrCreateUser(DEMO_ORGANIZER_EMAIL, DEMO_PASSWORD, 'WMGP運営')
 
   // リーダーアカウント（Team 0のリーダーとして使用）
-  const demoLeaderId = await getOrCreateUser(DEMO_LEADER_EMAIL, DEMO_LEADER_PASSWORD, 'デモリーダー')
+  const demoLeaderId = await getOrCreateUser(DEMO_LEADER_EMAIL, DEMO_PASSWORD, 'デモリーダー')
 
   // === チームメンバー作成 ===
   console.log('\n📝 16チーム × 6人 作成')
