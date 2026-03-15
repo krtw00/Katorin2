@@ -163,7 +163,7 @@ CREATE INDEX idx_individual_matches_match ON individual_matches(match_id);
 -- --------------------------------------------
 ALTER TABLE series_points ADD CONSTRAINT fk_series_points_team
   FOREIGN KEY (team_id) REFERENCES teams(id);
-CREATE INDEX idx_series_points_team ON series_points(team_id);
+CREATE INDEX IF NOT EXISTS idx_series_points_team ON series_points(team_id);
 
 -- --------------------------------------------
 -- series_rankingsビューを更新（チーム名対応）

@@ -164,6 +164,79 @@ export const checkInStatusLabels: Record<CheckInStatus, string> = {
   no_show: '欠席',
 }
 
+// War関連型
+export type WarOrder = {
+  id: string
+  match_id: string
+  team_id: string
+  slot: number
+  user_id: string
+  deck_name: string
+  deck_theme: string
+  is_picked: boolean
+  is_banned: boolean
+  created_at: string
+}
+
+export type WarOrderInsert = Omit<WarOrder, 'id' | 'created_at' | 'is_picked' | 'is_banned'> & {
+  id?: string
+  is_picked?: boolean
+  is_banned?: boolean
+}
+
+export type WarOrderWithUser = WarOrder & {
+  user: Profile
+}
+
+export type SwissStanding = {
+  id: string
+  tournament_id: string
+  team_id: string
+  round: number
+  team_points: number
+  win_points: number
+  is_bye: boolean
+  created_at: string
+}
+
+export type SwissStandingInsert = Omit<SwissStanding, 'id' | 'created_at'> & {
+  id?: string
+}
+
+export type SwissRanking = {
+  tournament_id: string
+  team_id: string
+  team_name: string
+  team_avatar_url: string | null
+  total_team_points: number
+  total_win_points: number
+  rounds_played: number
+  bye_count: number
+  rank: number
+}
+
+export type WarMatch = {
+  id: string
+  tournament_id: string
+  round: number
+  match_number: number
+  team1_id: string | null
+  team2_id: string | null
+  team1_wins: number
+  team2_wins: number
+  winner_team_id: string | null
+  status: string
+  scheduled_at: string | null
+  next_match_id: string | null
+  next_match_slot: number | null
+}
+
+export type WarMatchWithTeams = WarMatch & {
+  team1: Team | null
+  team2: Team | null
+  winner_team: Team | null
+}
+
 // フォーム型
 export type TeamFormData = {
   name: string
