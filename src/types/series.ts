@@ -83,16 +83,16 @@ export type SeriesWithTournaments = Series & {
 
 // ランキング型
 export type SeriesRanking = {
-  rank: number
-  series_id: string
+  rank: number | null
+  series_id: string | null
   user_id: string | null
   team_id: string | null
   name: string | null
-  total_points: number
-  tournaments_played: number
-  total_wins: number
-  total_losses: number
-  avatar_url?: string | null
+  total_points: number | null
+  tournaments_played: number | null
+  total_wins: number | null
+  total_losses: number | null
+  avatar_url: string | null
 }
 
 export type SeriesPointBreakdown = {

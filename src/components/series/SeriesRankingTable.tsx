@@ -53,7 +53,7 @@ export function SeriesRankingTable({ rankings, showDetails = false }: Props) {
         {rankings.map((ranking) => (
           <TableRow key={ranking.user_id || ranking.team_id}>
             <TableCell className="text-center font-medium">
-              {getRankDisplay(ranking.rank)}
+              {getRankDisplay(ranking.rank ?? 0)}
             </TableCell>
             <TableCell className="font-medium">{ranking.name}</TableCell>
             <TableCell className="text-right font-bold text-primary">

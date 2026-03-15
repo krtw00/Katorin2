@@ -255,7 +255,7 @@ export default function TeamInvitePage() {
           {/* Invite Info */}
           <div className="text-xs text-muted-foreground text-center space-y-1">
             <p>{t('expiresAtLabel')}: {new Date(invite.expires_at).toLocaleDateString('ja-JP')}</p>
-            <p>{t('remainingUses')}: {invite.max_uses - invite.use_count}</p>
+            <p>{t('remainingUses')}: {invite.max_uses != null ? invite.max_uses - invite.use_count : '∞'}</p>
           </div>
         </CardContent>
       </Card>
