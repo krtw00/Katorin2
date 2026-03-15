@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #ecfeff; }
+    .border { stroke: #a5f3fc; }
+    .k-main { fill: #155e75; }
+    .k-accent { fill: #0891b2; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0c1929; }
+      .border { stroke: #164e63; }
+      .k-main { fill: #cffafe; }
+      .k-accent { fill: #22d3ee; }
+    }
+  </style>
+
+  <!-- Faint cyan-tinted bg like water surface -->
+  <rect class="bg" width="512" height="512" rx="102"/>
+  <rect class="border" x="10" y="10" width="492" height="492" rx="96" fill="none" stroke-width="3"/>
+
+  <!-- K: rounded, aqua-toned -->
+  <line x1="176" y1="108" x2="176" y2="404" class="k-main" stroke="#155e75" stroke-width="56" stroke-linecap="round"/>
+  <line x1="200" y1="258" x2="348" y2="108" class="k-main" stroke="#155e75" stroke-width="48" stroke-linecap="round"/>
+  <line x1="216" y1="262" x2="356" y2="404" class="k-accent" stroke="#0891b2" stroke-width="48" stroke-linecap="round"/>
+</svg>

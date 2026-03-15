@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .bg { fill: #ffffff; }
+    .rock { fill: #57534e; }
+    .rock-face { fill: #78716c; }
+    .highlight { fill: #a8a29e; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1c1917; }
+      .rock { fill: #d6d3d1; }
+      .rock-face { fill: #a8a29e; }
+      .highlight { fill: #78716c; }
+    }
+  </style>
+
+  <rect class="bg" width="512" height="512" rx="102"/>
+
+  <!-- K: 3D stone block feel with visible faces -->
+  <!-- Vertical: front face -->
+  <polygon class="rock" points="132,92 196,92 196,420 132,420"/>
+  <!-- Vertical: top bevel -->
+  <polygon class="highlight" points="132,92 196,92 208,80 144,80"/>
+  <!-- Vertical: right bevel -->
+  <polygon class="rock-face" points="196,92 208,80 208,408 196,420"/>
+
+  <!-- Upper arm: front -->
+  <polygon class="rock" points="196,252 196,208 364,88 364,142"/>
+  <!-- Upper arm: top bevel -->
+  <polygon class="highlight" points="196,208 364,88 376,78 208,198"/>
+  <!-- Upper arm: bottom bevel -->
+  <polygon class="rock-face" points="364,88 376,78 376,132 364,142"/>
+
+  <!-- Lower arm: front (slightly lighter) -->
+  <polygon class="rock-face" points="196,260 196,300 364,424 364,372"/>
+  <!-- Lower arm: top bevel -->
+  <polygon class="rock" points="196,260 364,372 376,362 208,250"/>
+  <!-- Lower arm: bottom bevel -->
+  <polygon class="highlight" points="364,424 376,414 376,362 364,372"/>
+</svg>
