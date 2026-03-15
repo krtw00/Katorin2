@@ -105,6 +105,9 @@ export type Database = {
           team1_id: string | null
           team2_id: string | null
           bracket_side: Database["public"]["Enums"]["bracket_side"] | null
+          scheduled_at: string | null
+          team1_wins: number
+          team2_wins: number
         }
         Insert: {
           completed_at?: string | null
@@ -126,6 +129,9 @@ export type Database = {
           team1_id?: string | null
           team2_id?: string | null
           bracket_side?: Database["public"]["Enums"]["bracket_side"] | null
+          scheduled_at?: string | null
+          team1_wins?: number
+          team2_wins?: number
         }
         Update: {
           completed_at?: string | null
@@ -147,6 +153,9 @@ export type Database = {
           team1_id?: string | null
           team2_id?: string | null
           bracket_side?: Database["public"]["Enums"]["bracket_side"] | null
+          scheduled_at?: string | null
+          team1_wins?: number
+          team2_wins?: number
         }
         Relationships: [
           {
@@ -657,6 +666,115 @@ export type Database = {
           },
         ]
       }
+      war_orders: {
+        Row: {
+          id: string
+          match_id: string
+          team_id: string
+          slot: number
+          user_id: string
+          deck_name: string
+          deck_theme: string
+          is_picked: boolean
+          is_banned: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          match_id: string
+          team_id: string
+          slot: number
+          user_id: string
+          deck_name: string
+          deck_theme?: string
+          is_picked?: boolean
+          is_banned?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          match_id?: string
+          team_id?: string
+          slot?: number
+          user_id?: string
+          deck_name?: string
+          deck_theme?: string
+          is_picked?: boolean
+          is_banned?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "war_orders_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "war_orders_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "war_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swiss_standings: {
+        Row: {
+          id: string
+          tournament_id: string
+          team_id: string
+          round: number
+          team_points: number
+          win_points: number
+          is_bye: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          team_id: string
+          round: number
+          team_points?: number
+          win_points?: number
+          is_bye?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          team_id?: string
+          round?: number
+          team_points?: number
+          win_points?: number
+          is_bye?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swiss_standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swiss_standings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_invites: {
         Row: {
           id: string
@@ -740,6 +858,15 @@ export type Database = {
           team_size_min: number | null
           team_size_max: number | null
           team_creation_mode: Database["public"]["Enums"]["team_creation_mode"] | null
+          swiss_round_count: number | null
+          finals_bracket_size: number | null
+          block_count: number | null
+          rounds_to_win: number | null
+          order_size: number
+          sub_count: number
+          players_per_round: number
+          win_point_value: number
+          theme_config: Json
         }
         Insert: {
           cover_image_url?: string | null
@@ -768,6 +895,15 @@ export type Database = {
           team_size_min?: number | null
           team_size_max?: number | null
           team_creation_mode?: Database["public"]["Enums"]["team_creation_mode"] | null
+          swiss_round_count?: number | null
+          finals_bracket_size?: number | null
+          block_count?: number | null
+          rounds_to_win?: number | null
+          order_size?: number
+          sub_count?: number
+          players_per_round?: number
+          win_point_value?: number
+          theme_config?: Json
         }
         Update: {
           cover_image_url?: string | null
@@ -796,6 +932,15 @@ export type Database = {
           team_size_min?: number | null
           team_size_max?: number | null
           team_creation_mode?: Database["public"]["Enums"]["team_creation_mode"] | null
+          swiss_round_count?: number | null
+          finals_bracket_size?: number | null
+          block_count?: number | null
+          rounds_to_win?: number | null
+          order_size?: number
+          sub_count?: number
+          players_per_round?: number
+          win_point_value?: number
+          theme_config?: Json
         }
         Relationships: [
           {
@@ -816,6 +961,20 @@ export type Database = {
       }
     }
     Views: {
+      swiss_rankings: {
+        Row: {
+          tournament_id: string
+          team_id: string
+          team_name: string
+          team_avatar_url: string | null
+          total_team_points: number
+          total_win_points: number
+          rounds_played: number
+          bye_count: number
+          rank: number
+        }
+        Relationships: []
+      }
       series_rankings: {
         Row: {
           series_id: string

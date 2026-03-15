@@ -42,6 +42,7 @@ export default function TournamentManagePage({ params }: Props) {
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [checkingIn, setCheckingIn] = useState<Record<string, boolean>>({})
+  const [removing, setRemoving] = useState<Record<string, boolean>>({})
 
   // Invite related state
   const [searchQuery, setSearchQuery] = useState('')
@@ -354,6 +355,31 @@ export default function TournamentManagePage({ params }: Props) {
     }
   }
 
+  const handleRemoveParticipant = async (participantId: string) => {
+    if (!confirm('この参加者を除外しますか？')) return
+
+    setRemoving(prev => ({ ...prev, [participantId]: true }))
+    setError('')
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('participants')
+        .delete()
+        .eq('id', participantId)
+
+      if (deleteError) {
+        setError(deleteError.message)
+        return
+      }
+
+      setParticipants(prev => prev.filter(p => p.id !== participantId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '除外に失敗しました')
+    } finally {
+      setRemoving(prev => ({ ...prev, [participantId]: false }))
+    }
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -387,6 +413,77 @@ export default function TournamentManagePage({ params }: Props) {
         <div className="bg-destructive/15 text-destructive px-4 py-3 rounded">
           {error}
         </div>
+      )}
+
+      {/* Status Management */}
+      {tournament && (
+        <Card>
+          <CardHeader>
+            <CardTitle>ステータス管理</CardTitle>
+            <CardDescription>
+              現在のステータス: {tournamentStatusLabels[tournament.status]}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              {tournament.status === 'draft' && (
+                <Button
+                  onClick={async () => {
+                    setError('')
+                    const { error: updateError } = await supabase
+                      .from('tournaments')
+                      .update({ status: 'recruiting' })
+                      .eq('id', tournament.id)
+                    if (updateError) {
+                      setError(updateError.message)
+                    } else {
+                      setTournament({ ...tournament, status: 'recruiting' })
+                    }
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  募集を開始する
+                </Button>
+              )}
+              {tournament.status === 'in_progress' && (
+                <>
+                  <a href={`/tournaments/${tournament.id}/bracket`}>
+                    <Button variant="outline">
+                      トーナメント表を見る
+                    </Button>
+                  </a>
+                  <Button
+                    onClick={async () => {
+                      setError('')
+                      const { error: updateError } = await supabase
+                        .from('tournaments')
+                        .update({ status: 'completed' })
+                        .eq('id', tournament.id)
+                      if (updateError) {
+                        setError(updateError.message)
+                      } else {
+                        setTournament({ ...tournament, status: 'completed' })
+                      }
+                    }}
+                    variant="secondary"
+                  >
+                    大会を完了にする
+                  </Button>
+                </>
+              )}
+              {tournament.status === 'recruiting' && (
+                <a href={`/tournaments/${tournament.id}/edit`}>
+                  <Button variant="outline">
+                    大会設定を編集
+                  </Button>
+                </a>
+              )}
+              {tournament.status === 'completed' && (
+                <p className="text-sm text-muted-foreground">この大会は完了しています</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Participants */}
@@ -436,6 +533,16 @@ export default function TournamentManagePage({ params }: Props) {
                         disabled={checkingIn[participant.id]}
                       >
                         {checkingIn[participant.id] ? '処理中...' : 'チェックイン'}
+                      </Button>
+                    )}
+                    {tournament?.status === 'recruiting' && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveParticipant(participant.id)}
+                        disabled={removing[participant.id]}
+                      >
+                        {removing[participant.id] ? '...' : '除外'}
                       </Button>
                     )}
                   </div>
