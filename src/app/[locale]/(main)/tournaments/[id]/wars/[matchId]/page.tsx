@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { WarResultForm } from '@/components/tournament/WarResultForm'
+import { getTournamentConfig } from '@/lib/tournament-config'
 
 type Props = {
   params: Promise<{ id: string; matchId: string }>
@@ -21,16 +22,17 @@ export default async function WarDetailPage({ params }: Props) {
   const { id, matchId } = await params
   const supabase = await createClient()
 
-  // 大会情報
   const { data: tournament } = await supabase
     .from('tournaments')
-    .select('*')
+    .select('*, series:series(id, title)')
     .eq('id', id)
     .single()
 
   if (!tournament) notFound()
 
-  // War(match)情報
+  const config = await getTournamentConfig(supabase, id)
+  const seriesInfo = tournament.series as { id: string; title: string } | null
+
   const { data: match } = await supabase
     .from('matches')
     .select(`
@@ -43,28 +45,24 @@ export default async function WarDetailPage({ params }: Props) {
 
   if (!match) notFound()
 
-  // オーダー
   const { data: orders } = await supabase
     .from('war_orders')
     .select('*, user:profiles(*)')
     .eq('match_id', matchId)
     .order('slot', { ascending: true })
 
-  // ラウンド結果
   const { data: warRounds } = await supabase
     .from('war_rounds')
     .select('*')
     .eq('match_id', matchId)
     .order('round_number', { ascending: true })
 
-  // 個別試合結果
   const { data: individualMatches } = await supabase
     .from('individual_matches')
     .select('*, player1:profiles!individual_matches_player1_id_fkey(*), player2:profiles!individual_matches_player2_id_fkey(*)')
     .eq('match_id', matchId)
     .order('play_order', { ascending: true })
 
-  // 権限チェック
   const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user?.id === tournament.organizer_id
 
@@ -73,121 +71,127 @@ export default async function WarDetailPage({ params }: Props) {
   const team1Orders = orders?.filter(o => o.team_id === match.team1_id) || []
   const team2Orders = orders?.filter(o => o.team_id === match.team2_id) || []
 
+  const isCompleted = match.status === 'completed'
+  const team1Won = isCompleted && match.winner_team_id === match.team1_id
+  const team2Won = isCompleted && match.winner_team_id === match.team2_id
+
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* ヘッダー */}
-      <div>
-        <Link href={`/tournaments/${id}/wars`}>
-          <Button variant="ghost" size="sm">← War一覧</Button>
-        </Link>
-        <h1 className="text-2xl font-bold mt-2">
-          {team1?.name || 'TBD'} vs {team2?.name || 'TBD'}
-        </h1>
-        <p className="text-sm text-muted-foreground">{tournament.title} / Week {match.round}</p>
-        {match.status === 'completed' && (
-          <div className="mt-2">
-            <a href={`/api/images/war-result/${matchId}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm">結果画像を開く</Button>
-            </a>
-          </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+      {/* パンくず */}
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+        {seriesInfo && (
+          <>
+            <Link href={`/series/${seriesInfo.id}`} className="hover:text-foreground transition-colors">{seriesInfo.title}</Link>
+            <span>/</span>
+          </>
         )}
-      </div>
+        <Link href={`/tournaments/${id}/wars`} className="hover:text-foreground transition-colors">War一覧</Link>
+        <span>/</span>
+        <span className="text-foreground">{team1?.name} vs {team2?.name}</span>
+      </nav>
 
       {/* スコアカード */}
-      <Card>
-        <CardContent className="py-6">
-          <div className="flex items-center justify-center gap-8">
-            <div className="text-center">
-              <p className="text-lg font-bold">{team1?.name}</p>
-              {match.status === 'completed' && match.winner_team_id === match.team1_id && (
-                <Badge className="bg-green-600 mt-1">WIN</Badge>
-              )}
+      <Card className="overflow-hidden">
+        <div className={`h-1 ${isCompleted ? 'bg-green-500' : 'bg-yellow-500'}`} />
+        <CardContent className="py-8">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
+            {/* チーム1 */}
+            <div className="text-center space-y-2">
+              <p className={`text-xl font-bold ${team1Won ? 'text-green-600 dark:text-green-400' : ''}`}>
+                {team1?.name}
+              </p>
+              {team1Won && <Badge className="bg-green-600">WIN</Badge>}
             </div>
-            <div className="text-center">
-              {match.status === 'completed' ? (
-                <div>
-                  <p className="text-4xl font-bold">{match.team1_round_wins} - {match.team2_round_wins}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+
+            {/* スコア中央 */}
+            <div className="text-center px-6">
+              {isCompleted ? (
+                <div className="space-y-1">
+                  <p className="text-5xl font-black tracking-tight">
+                    {match.team1_round_wins}
+                    <span className="text-muted-foreground mx-2">-</span>
+                    {match.team2_round_wins}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
                     個人マッチ {match.team1_wins} - {match.team2_wins}
                   </p>
                 </div>
               ) : (
-                <p className="text-3xl font-bold text-muted-foreground">VS</p>
+                <div>
+                  <p className="text-4xl font-black text-muted-foreground/50">VS</p>
+                  <Badge variant="outline" className="mt-2">
+                    {match.status === 'pending' ? '未開始' : '進行中'}
+                  </Badge>
+                </div>
               )}
             </div>
-            <div className="text-center">
-              <p className="text-lg font-bold">{team2?.name}</p>
-              {match.status === 'completed' && match.winner_team_id === match.team2_id && (
-                <Badge className="bg-green-600 mt-1">WIN</Badge>
-              )}
+
+            {/* チーム2 */}
+            <div className="text-center space-y-2">
+              <p className={`text-xl font-bold ${team2Won ? 'text-green-600 dark:text-green-400' : ''}`}>
+                {team2?.name}
+              </p>
+              {team2Won && <Badge className="bg-green-600">WIN</Badge>}
             </div>
           </div>
         </CardContent>
+        {isCompleted && (
+          <div className="border-t px-6 py-3 flex justify-center">
+            <a href={`/api/images/war-result/${matchId}`} target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost" size="sm">結果画像を開く →</Button>
+            </a>
+          </div>
+        )}
       </Card>
 
       {/* オーダー提出ボタン */}
-      {match.status !== 'completed' && user && (
-        match.team1_id === user.id || match.team2_id === user.id || isOrganizer ||
-        team1Orders.length === 0 || team2Orders.length === 0
-      ) && (
+      {!isCompleted && user && (isOrganizer || team1Orders.length === 0 || team2Orders.length === 0) && (
         <div className="flex gap-2">
           <Link href={`/tournaments/${id}/wars/${matchId}/order`}>
-            <Button variant="outline">オーダー提出 / 編集</Button>
+            <Button>オーダー{team1Orders.length > 0 || team2Orders.length > 0 ? '編集' : '提出'}</Button>
           </Link>
-          {isOrganizer && match.status === 'pending' && (
-            <Link href={`/tournaments/${id}/wars/${matchId}/order`}>
-              <Button variant="secondary">オーダー確認</Button>
-            </Link>
-          )}
         </div>
       )}
 
       {/* オーダー */}
       {(team1Orders.length > 0 || team2Orders.length > 0) && (
         <Card>
-          <CardHeader>
-            <CardTitle>オーダー</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">オーダー</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              {/* チーム1 */}
-              <div>
-                <h3 className="font-medium text-sm text-muted-foreground mb-2">{team1?.name}</h3>
-                <div className="space-y-1">
-                  {team1Orders.map(o => {
-                    const user = o.user as { display_name: string } | null
-                    return (
-                      <div key={o.id} className={`flex items-center gap-2 p-2 rounded text-sm ${o.is_banned ? 'bg-red-50 dark:bg-red-900/20 line-through opacity-60' : o.is_picked ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
-                        <span className="font-mono text-xs text-muted-foreground w-4">{o.slot}</span>
-                        <span className="font-medium">{user?.display_name}</span>
-                        <span className="text-muted-foreground">{o.deck_name}</span>
-                        {o.is_banned && <Badge variant="destructive" className="text-xs h-5">Ban</Badge>}
-                        {o.is_picked && <Badge className="text-xs h-5 bg-green-600">Pick</Badge>}
-                        {o.is_sub && <Badge variant="outline" className="text-xs h-5">Sub</Badge>}
-                      </div>
-                    )
-                  })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { team: team1, orders: team1Orders },
+                { team: team2, orders: team2Orders },
+              ].map(({ team, orders: teamOrders }) => (
+                <div key={team?.id}>
+                  <h3 className="font-semibold text-sm mb-3 pb-2 border-b">{team?.name}</h3>
+                  <div className="space-y-1.5">
+                    {teamOrders.map(o => {
+                      const u = o.user as { display_name: string } | null
+                      const isBanned = o.is_banned
+                      const isPicked = o.is_picked
+                      return (
+                        <div key={o.id} className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                          isBanned ? 'bg-red-50 dark:bg-red-950/30 opacity-50 line-through' :
+                          isPicked ? 'bg-green-50 dark:bg-green-950/30' :
+                          'bg-muted/30'
+                        }`}>
+                          <span className="font-mono text-xs text-muted-foreground w-5 text-center">{o.slot}</span>
+                          <span className="font-medium flex-1">{u?.display_name}</span>
+                          <span className="text-muted-foreground text-xs">{o.deck_name}</span>
+                          <div className="flex gap-1">
+                            {isBanned && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">Ban</Badge>}
+                            {isPicked && <Badge className="text-[10px] h-4 px-1.5 bg-green-600">Pick</Badge>}
+                            {o.is_sub && <Badge variant="outline" className="text-[10px] h-4 px-1.5">Sub</Badge>}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-              {/* チーム2 */}
-              <div>
-                <h3 className="font-medium text-sm text-muted-foreground mb-2">{team2?.name}</h3>
-                <div className="space-y-1">
-                  {team2Orders.map(o => {
-                    const user = o.user as { display_name: string } | null
-                    return (
-                      <div key={o.id} className={`flex items-center gap-2 p-2 rounded text-sm ${o.is_banned ? 'bg-red-50 dark:bg-red-900/20 line-through opacity-60' : o.is_picked ? 'bg-green-50 dark:bg-green-900/20' : ''}`}>
-                        <span className="font-mono text-xs text-muted-foreground w-4">{o.slot}</span>
-                        <span className="font-medium">{user?.display_name}</span>
-                        <span className="text-muted-foreground">{o.deck_name}</span>
-                        {o.is_banned && <Badge variant="destructive" className="text-xs h-5">Ban</Badge>}
-                        {o.is_picked && <Badge className="text-xs h-5 bg-green-600">Pick</Badge>}
-                        {o.is_sub && <Badge variant="outline" className="text-xs h-5">Sub</Badge>}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -196,43 +200,42 @@ export default async function WarDetailPage({ params }: Props) {
       {/* ラウンド結果 */}
       {warRounds && warRounds.length > 0 && (
         <div className="space-y-4">
+          <h2 className="text-lg font-bold">ラウンド詳細</h2>
           {warRounds.map(wr => {
-            const roundMatches = individualMatches?.filter(im =>
-              im.war_round_id === wr.id
-            ) || []
-
+            const roundMatches = individualMatches?.filter(im => im.war_round_id === wr.id) || []
+            const roundWinner = wr.winner_team_id === match.team1_id ? team1 : team2
             return (
               <Card key={wr.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">Round {wr.round_number}</CardTitle>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono">
+                      <span className="text-sm font-mono font-bold">
                         {wr.team1_match_wins} - {wr.team2_match_wins}
                       </span>
                       {wr.status === 'completed' && wr.winner_team_id && (
                         <Badge variant="secondary" className="text-xs">
-                          {wr.winner_team_id === match.team1_id ? team1?.name : team2?.name} 勝利
+                          {roundWinner?.name}
                         </Badge>
                       )}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-1">
+                  <div className="divide-y">
                     {roundMatches.map(im => {
                       const p1 = im.player1 as { display_name: string } | null
                       const p2 = im.player2 as { display_name: string } | null
                       const p1Won = im.winner_id === im.player1_id
                       return (
-                        <div key={im.id} className="grid grid-cols-[1fr_auto_1fr] gap-2 p-2 rounded text-sm items-center">
-                          <div className={`text-right ${p1Won ? 'font-bold text-green-600 dark:text-green-400' : ''}`}>
+                        <div key={im.id} className="grid grid-cols-[1fr_auto_1fr] gap-3 py-2.5 items-center">
+                          <div className={`text-right text-sm ${p1Won ? 'font-bold text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                             {p1?.display_name}
                           </div>
-                          <div className="font-mono text-center min-w-[50px]">
+                          <div className="font-mono text-center text-sm font-bold min-w-[50px] bg-muted/50 rounded px-2 py-0.5">
                             {im.player1_score} - {im.player2_score}
                           </div>
-                          <div className={`${!p1Won ? 'font-bold text-green-600 dark:text-green-400' : ''}`}>
+                          <div className={`text-sm ${!p1Won ? 'font-bold text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
                             {p2?.display_name}
                           </div>
                         </div>
@@ -246,8 +249,8 @@ export default async function WarDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* 結果入力フォーム（主催者のみ、未完了時） */}
-      {isOrganizer && match.status !== 'completed' && (
+      {/* 結果入力フォーム */}
+      {isOrganizer && !isCompleted && (
         <WarResultForm
           matchId={matchId}
           tournamentId={id}
@@ -265,9 +268,9 @@ export default async function WarDetailPage({ params }: Props) {
             displayName: (o.user as { display_name: string } | null)?.display_name || '',
             deckName: o.deck_name,
           }))}
-          playersPerRound={tournament.players_per_round || 3}
-          roundsToWin={tournament.rounds_to_win || 2}
-          matchFormat={tournament.match_format}
+          playersPerRound={config.playersPerRound}
+          roundsToWin={config.roundsToWin ?? 2}
+          matchFormat={config.matchFormat as 'bo1' | 'bo3' | 'bo5'}
         />
       )}
     </div>

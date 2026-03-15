@@ -124,6 +124,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
             tournament_id: tournament.id,
             block_name: `Block ${blockNames[i] || i + 1}`,
             block_order: i + 1,
+            series_id: (tournament as Record<string, unknown>).series_id as string | null ?? null,
           })
           .select()
           .single()
