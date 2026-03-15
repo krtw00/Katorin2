@@ -13,6 +13,8 @@ import {
 } from '@/types/series'
 import { TournamentWithOrganizer } from '@/types/tournament'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
+import { TeamApplicationForm } from '@/components/series/TeamApplicationForm'
+import { ApplicationManage } from '@/components/series/ApplicationManage'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -120,6 +122,53 @@ export default async function SeriesDetailPage({ params }: Props) {
 
   const isOrganizer = user?.id === series.organizer_id
 
+  // 参加チーム一覧（シリーズに紐づくチーム）
+  const { data: seriesTeams } = await supabase
+    .from('teams')
+    .select('id, name, leader_id, avatar_url')
+    .eq('series_id', id)
+
+  // エントリー申請（主催者 or リーダーのみRLSで見える）
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let applications: any[] = []
+  if (isOrganizer || user) {
+    const { data: apps } = await supabase
+      .from('team_applications')
+      .select('*, team:teams(id, name, leader_id, leader:profiles!teams_leader_id_fkey(display_name))')
+      .eq('series_id', id)
+      .order('applied_at', { ascending: false })
+
+    // メンバー数を取得
+    if (apps?.length) {
+      const teamIds = apps.map(a => a.team_id)
+      const { data: memberCounts } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .in('team_id', teamIds)
+
+      const countMap = new Map<string, number>()
+      memberCounts?.forEach(m => {
+        countMap.set(m.team_id, (countMap.get(m.team_id) || 0) + 1)
+      })
+
+      applications = apps.map(a => {
+        const team = a.team as { id: string; name: string; leader_id: string; leader: { display_name: string } | { display_name: string }[] | null } | null
+        const leader = team?.leader
+        const leaderName = leader ? (Array.isArray(leader) ? leader[0]?.display_name : leader.display_name) : ''
+        return {
+          id: a.id,
+          team_id: a.team_id,
+          team_name: team?.name || '',
+          leader_name: leaderName,
+          member_count: countMap.get(a.team_id) || 0,
+          status: a.status,
+          message: a.message,
+          applied_at: a.applied_at,
+        }
+      })
+    }
+  }
+
   const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'outline' }> = {
     draft: { variant: 'outline' },
     registration: { variant: 'secondary' },
@@ -178,7 +227,13 @@ export default async function SeriesDetailPage({ params }: Props) {
       <Tabs defaultValue="standings">
         <TabsList className="mb-4">
           <TabsTrigger value="standings">順位表</TabsTrigger>
+          <TabsTrigger value="teams">チーム ({seriesTeams?.length || 0})</TabsTrigger>
           <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
+          {isOrganizer && (
+            <TabsTrigger value="applications">
+              申請管理 {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
         </TabsList>
 
@@ -243,6 +298,51 @@ export default async function SeriesDetailPage({ params }: Props) {
             </Card>
           )}
         </TabsContent>
+
+        <TabsContent value="teams">
+          <div className="space-y-4">
+            {/* エントリー申請フォーム（ログインユーザー向け） */}
+            {user && !isOrganizer && (
+              <TeamApplicationForm seriesId={id} />
+            )}
+
+            {/* 参加チーム一覧 */}
+            {seriesTeams && seriesTeams.length > 0 ? (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {seriesTeams.map(team => (
+                      <div key={team.id} className="flex items-center justify-between px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
+                            {team.name.charAt(0)}
+                          </div>
+                          <span className="font-medium">{team.name}</span>
+                        </div>
+                        <Link href={`/teams/${team.id}`}>
+                          <Button variant="ghost" size="sm">詳細</Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  参加チームはまだありません
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 申請管理（主催者のみ） */}
+        {isOrganizer && (
+          <TabsContent value="applications">
+            <ApplicationManage seriesId={id} applications={applications} />
+          </TabsContent>
+        )}
 
         <TabsContent value="tournaments">
           <Card>
