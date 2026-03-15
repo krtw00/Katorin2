@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Katorin - トーナメント運営システム',
+  title: 'Katorin2 - トーナメント運営システム',
   description: '遊戯王マスターデュエルのオンライントーナメント運営システム',
 }
 
