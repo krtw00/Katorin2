@@ -84,6 +84,13 @@ export default async function WarDetailPage({ params }: Props) {
           {team1?.name || 'TBD'} vs {team2?.name || 'TBD'}
         </h1>
         <p className="text-sm text-muted-foreground">{tournament.title} / Week {match.round}</p>
+        {match.status === 'completed' && (
+          <div className="mt-2">
+            <a href={`/api/images/war-result/${matchId}`} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm">結果画像を開く</Button>
+            </a>
+          </div>
+        )}
       </div>
 
       {/* スコアカード */}
@@ -117,6 +124,23 @@ export default async function WarDetailPage({ params }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* オーダー提出ボタン */}
+      {match.status !== 'completed' && user && (
+        match.team1_id === user.id || match.team2_id === user.id || isOrganizer ||
+        team1Orders.length === 0 || team2Orders.length === 0
+      ) && (
+        <div className="flex gap-2">
+          <Link href={`/tournaments/${id}/wars/${matchId}/order`}>
+            <Button variant="outline">オーダー提出 / 編集</Button>
+          </Link>
+          {isOrganizer && match.status === 'pending' && (
+            <Link href={`/tournaments/${id}/wars/${matchId}/order`}>
+              <Button variant="secondary">オーダー確認</Button>
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* オーダー */}
       {(team1Orders.length > 0 || team2Orders.length > 0) && (

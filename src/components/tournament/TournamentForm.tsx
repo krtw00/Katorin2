@@ -67,6 +67,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       return {
         title: initialData.title,
         description: initialData.description || '',
+        entry_type: initialData.entry_type || 'individual' as 'individual' | 'team',
         tournament_format: initialData.tournament_format,
         match_format: initialData.match_format,
         max_participants: initialData.max_participants,
@@ -77,12 +78,18 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         entry_start_at: formatDateTimeLocal(initialData.entry_start_at),
         entry_deadline: formatDateTimeLocal(initialData.entry_deadline),
         start_at: formatDateTimeLocal(initialData.start_at),
+        order_size: initialData.order_size || 3,
+        sub_count: initialData.sub_count || 1,
+        players_per_round: initialData.players_per_round || 3,
+        rounds_to_win: initialData.rounds_to_win || 2,
+        win_point_value: initialData.win_point_value || 3,
       }
     }
     const now = new Date()
     return {
       title: '',
       description: '',
+      entry_type: 'individual' as 'individual' | 'team',
       tournament_format: 'single_elimination' as TournamentFormat,
       match_format: 'bo3' as MatchFormat,
       max_participants: 32,
@@ -93,6 +100,11 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
       start_at: formatDateTimeLocal(now),
+      order_size: 3,
+      sub_count: 1,
+      players_per_round: 3,
+      rounds_to_win: 2,
+      win_point_value: 3,
     }
   })
 
@@ -210,6 +222,14 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
           ? new Date(formData.start_at).toISOString()
           : null,
         custom_fields: validCustomFields,
+        entry_type: formData.entry_type,
+        ...(formData.entry_type === 'team' ? {
+          order_size: formData.order_size,
+          sub_count: formData.sub_count,
+          players_per_round: formData.players_per_round,
+          rounds_to_win: formData.rounds_to_win,
+          win_point_value: formData.win_point_value,
+        } : {}),
       }
 
       if (mode === 'create') {
@@ -808,6 +828,93 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                   <span>🏆</span> {t('sections.tournament')}
                 </h2>
 
+                {/* Entry Type (Individual / Team) */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">参加形式</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { value: 'individual', label: '個人戦' },
+                      { value: 'team', label: 'チーム戦' },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`
+                          px-4 py-2 rounded-md border cursor-pointer text-sm transition-colors
+                          ${formData.entry_type === option.value
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'hover:bg-muted/50'
+                          }
+                        `}
+                      >
+                        <input
+                          type="radio"
+                          name="entry_type"
+                          value={option.value}
+                          checked={formData.entry_type === option.value}
+                          onChange={(e) => updateFormData('entry_type', e.target.value)}
+                          disabled={loading}
+                          className="sr-only"
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Team Battle Settings (only for team) */}
+                {formData.entry_type === 'team' && (
+                  <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                    <h3 className="text-sm font-medium">チーム戦設定</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">メインオーダー人数</label>
+                        <Input
+                          type="number" min="2" max="10"
+                          value={formData.order_size}
+                          onChange={(e) => updateFormData('order_size', parseInt(e.target.value) || 3)}
+                          disabled={loading} className="w-20"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">サブ人数</label>
+                        <Input
+                          type="number" min="0" max="5"
+                          value={formData.sub_count}
+                          onChange={(e) => updateFormData('sub_count', parseInt(e.target.value) || 0)}
+                          disabled={loading} className="w-20"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">1ラウンドの対戦数</label>
+                        <Input
+                          type="number" min="1" max="10"
+                          value={formData.players_per_round}
+                          onChange={(e) => updateFormData('players_per_round', parseInt(e.target.value) || 3)}
+                          disabled={loading} className="w-20"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">先取ラウンド数</label>
+                        <Input
+                          type="number" min="1" max="5"
+                          value={formData.rounds_to_win}
+                          onChange={(e) => updateFormData('rounds_to_win', parseInt(e.target.value) || 2)}
+                          disabled={loading} className="w-20"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">1勝あたりの勝ち点</label>
+                        <Input
+                          type="number" min="1" max="10"
+                          value={formData.win_point_value}
+                          onChange={(e) => updateFormData('win_point_value', parseInt(e.target.value) || 3)}
+                          disabled={loading} className="w-20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Tournament Format */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t('tournamentFormat.label')}</label>
@@ -815,8 +922,8 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                     {[
                       { value: 'single_elimination', label: t('tournamentFormat.singleElimination'), desc: t('tournamentFormat.singleEliminationDesc'), enabled: true },
                       { value: 'double_elimination', label: t('tournamentFormat.doubleElimination'), desc: t('tournamentFormat.doubleEliminationDesc'), enabled: false },
-                      { value: 'swiss', label: t('tournamentFormat.swiss'), desc: t('tournamentFormat.swissDesc'), enabled: false },
-                      { value: 'round_robin', label: t('tournamentFormat.roundRobin'), desc: t('tournamentFormat.roundRobinDesc'), enabled: false },
+                      { value: 'swiss', label: t('tournamentFormat.swiss'), desc: t('tournamentFormat.swissDesc'), enabled: true },
+                      { value: 'round_robin', label: t('tournamentFormat.roundRobin'), desc: t('tournamentFormat.roundRobinDesc'), enabled: true },
                     ].map((option) => (
                       <label
                         key={option.value}
