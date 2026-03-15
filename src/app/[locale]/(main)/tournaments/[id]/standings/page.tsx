@@ -93,14 +93,14 @@ export default async function StandingsPage({ params }: Props) {
                   </TableHeader>
                   <TableBody>
                     {standings.map(s => (
-                      <TableRow key={s.team_id} className={s.rank <= 2 ? 'bg-green-50 dark:bg-green-900/10' : ''}>
+                      <TableRow key={s.team_id} className={(s.rank ?? 999) <= 2 ? 'bg-green-50 dark:bg-green-900/10' : ''}>
                         <TableCell>
-                          {s.rank <= 1 ? (
+                          {(s.rank ?? 999) <= 1 ? (
                             <Badge className="bg-yellow-500">1</Badge>
-                          ) : s.rank <= 3 ? (
-                            <Badge variant="secondary">{s.rank}</Badge>
+                          ) : (s.rank ?? 999) <= 3 ? (
+                            <Badge variant="secondary">{(s.rank ?? 999)}</Badge>
                           ) : (
-                            <span className="text-muted-foreground">{s.rank}</span>
+                            <span className="text-muted-foreground">{(s.rank ?? 999)}</span>
                           )}
                         </TableCell>
                         <TableCell className="font-medium">{s.team_name}</TableCell>
@@ -108,13 +108,13 @@ export default async function StandingsPage({ params }: Props) {
                         <TableCell className="text-center font-mono">{s.losses}</TableCell>
                         <TableCell className="text-center font-bold">{s.total_win_points}</TableCell>
                         <TableCell className="text-center font-mono">
-                          <span className={s.round_diff > 0 ? 'text-green-600' : s.round_diff < 0 ? 'text-red-600' : ''}>
-                            {s.round_diff > 0 ? '+' : ''}{s.round_diff}
+                          <span className={(s.round_diff ?? 0) > 0 ? 'text-green-600' : (s.round_diff ?? 0) < 0 ? 'text-red-600' : ''}>
+                            {(s.round_diff ?? 0) > 0 ? '+' : ''}{(s.round_diff ?? 0)}
                           </span>
                         </TableCell>
                         <TableCell className="text-center font-mono">
-                          <span className={s.match_diff > 0 ? 'text-green-600' : s.match_diff < 0 ? 'text-red-600' : ''}>
-                            {s.match_diff > 0 ? '+' : ''}{s.match_diff}
+                          <span className={(s.match_diff ?? 0) > 0 ? 'text-green-600' : (s.match_diff ?? 0) < 0 ? 'text-red-600' : ''}>
+                            {(s.match_diff ?? 0) > 0 ? '+' : ''}{(s.match_diff ?? 0)}
                           </span>
                         </TableCell>
                       </TableRow>
@@ -143,10 +143,10 @@ export default async function StandingsPage({ params }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {swissRankings.sort((a, b) => a.rank - b.rank).map(s => (
-                  <TableRow key={s.team_id} className={s.rank <= 4 ? 'bg-green-50 dark:bg-green-900/10' : ''}>
+                {swissRankings.sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999)).map(s => (
+                  <TableRow key={s.team_id} className={(s.rank ?? 999) <= 4 ? 'bg-green-50 dark:bg-green-900/10' : ''}>
                     <TableCell>
-                      <Badge variant={s.rank <= 4 ? 'default' : 'outline'}>{s.rank}</Badge>
+                      <Badge variant={(s.rank ?? 999) <= 4 ? 'default' : 'outline'}>{(s.rank ?? 999)}</Badge>
                     </TableCell>
                     <TableCell className="font-medium">{s.team_name}</TableCell>
                     <TableCell className="text-center font-bold">{s.total_team_points}</TableCell>

@@ -44,7 +44,7 @@ export type TeamInvite = {
   team_id: string
   invite_token: string
   expires_at: string
-  max_uses: number
+  max_uses: number | null
   use_count: number
   created_by: string
   created_at: string
@@ -262,5 +262,5 @@ export function generateInviteToken(): string {
 export function isInviteValid(invite: TeamInvite): boolean {
   const now = new Date()
   const expiresAt = new Date(invite.expires_at)
-  return expiresAt > now && invite.use_count < invite.max_uses
+  return expiresAt > now && (invite.max_uses === null || invite.use_count < invite.max_uses)
 }
