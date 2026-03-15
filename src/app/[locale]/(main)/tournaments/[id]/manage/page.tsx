@@ -21,6 +21,7 @@ import {
 } from '@/types/tournament'
 import { Tables, InviteStatus } from '@/types/database'
 import { generateSingleEliminationBracket } from '@/lib/tournament/bracket-generator'
+import { TeamTournamentManage } from '@/components/tournament/TeamTournamentManage'
 
 type Profile = Tables<'profiles'>
 type TournamentInvite = Tables<'tournament_invites'> & {
@@ -641,6 +642,27 @@ export default function TournamentManagePage({ params }: Props) {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Team Tournament Management */}
+      {tournament?.entry_type === 'team' && (
+        <TeamTournamentManage
+          tournament={{
+            id: tournament.id,
+            title: tournament.title,
+            status: tournament.status,
+            entry_type: tournament.entry_type,
+            tournament_format: tournament.tournament_format,
+            block_count: tournament.block_count ?? null,
+            swiss_round_count: tournament.swiss_round_count ?? null,
+            rounds_to_win: tournament.rounds_to_win ?? null,
+            order_size: tournament.order_size ?? 3,
+            sub_count: tournament.sub_count ?? 1,
+            players_per_round: tournament.players_per_round ?? 3,
+            current_round: tournament.current_round,
+          }}
+          onUpdateAction={() => window.location.reload()}
+        />
       )}
 
       {/* Danger Zone - Only for draft tournaments */}
