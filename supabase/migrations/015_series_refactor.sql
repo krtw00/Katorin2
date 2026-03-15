@@ -100,11 +100,10 @@ ALTER TABLE teams
   ADD COLUMN series_id UUID REFERENCES series(id),
   ADD COLUMN tournament_id UUID REFERENCES tournaments(id);
 
--- 排他制約: シリーズ or 大会のどちらかに所属
+-- 排他制約: 両方同時は不可（両方NULLは許可 = 未所属チーム）
 ALTER TABLE teams
   ADD CONSTRAINT teams_belongs_to_one CHECK (
-    (series_id IS NOT NULL AND tournament_id IS NULL) OR
-    (series_id IS NULL AND tournament_id IS NOT NULL)
+    NOT (series_id IS NOT NULL AND tournament_id IS NOT NULL)
   );
 
 CREATE INDEX idx_teams_series ON teams(series_id);
