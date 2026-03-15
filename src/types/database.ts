@@ -27,6 +27,9 @@ export type Database = {
           player2_score: number
           winner_id: string | null
           status: Database["public"]["Enums"]["match_status"]
+          war_round_id: string | null
+          player1_duel_wins: number
+          player2_duel_wins: number
           created_at: string
         }
         Insert: {
@@ -39,6 +42,9 @@ export type Database = {
           player2_score?: number
           winner_id?: string | null
           status?: Database["public"]["Enums"]["match_status"]
+          war_round_id?: string | null
+          player1_duel_wins?: number
+          player2_duel_wins?: number
           created_at?: string
         }
         Update: {
@@ -51,6 +57,9 @@ export type Database = {
           player2_score?: number
           winner_id?: string | null
           status?: Database["public"]["Enums"]["match_status"]
+          war_round_id?: string | null
+          player1_duel_wins?: number
+          player2_duel_wins?: number
           created_at?: string
         }
         Relationships: [
@@ -108,6 +117,9 @@ export type Database = {
           scheduled_at: string | null
           team1_wins: number
           team2_wins: number
+          team1_round_wins: number
+          team2_round_wins: number
+          block_id: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -132,6 +144,9 @@ export type Database = {
           scheduled_at?: string | null
           team1_wins?: number
           team2_wins?: number
+          team1_round_wins?: number
+          team2_round_wins?: number
+          block_id?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -156,6 +171,9 @@ export type Database = {
           scheduled_at?: string | null
           team1_wins?: number
           team2_wins?: number
+          team1_round_wins?: number
+          team2_round_wins?: number
+          block_id?: string | null
         }
         Relationships: [
           {
@@ -666,6 +684,85 @@ export type Database = {
           },
         ]
       }
+      tournament_blocks: {
+        Row: {
+          id: string
+          tournament_id: string
+          block_name: string
+          block_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          block_name: string
+          block_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          block_name?: string
+          block_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_blocks_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      war_rounds: {
+        Row: {
+          id: string
+          match_id: string
+          round_number: number
+          team1_match_wins: number
+          team2_match_wins: number
+          winner_team_id: string | null
+          status: string
+          started_at: string | null
+          completed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          match_id: string
+          round_number: number
+          team1_match_wins?: number
+          team2_match_wins?: number
+          winner_team_id?: string | null
+          status?: string
+          started_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          match_id?: string
+          round_number?: number
+          team1_match_wins?: number
+          team2_match_wins?: number
+          winner_team_id?: string | null
+          status?: string
+          started_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "war_rounds_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       war_orders: {
         Row: {
           id: string
@@ -677,6 +774,7 @@ export type Database = {
           deck_theme: string
           is_picked: boolean
           is_banned: boolean
+          is_sub: boolean
           created_at: string
         }
         Insert: {
@@ -689,6 +787,7 @@ export type Database = {
           deck_theme?: string
           is_picked?: boolean
           is_banned?: boolean
+          is_sub?: boolean
           created_at?: string
         }
         Update: {
@@ -701,6 +800,7 @@ export type Database = {
           deck_theme?: string
           is_picked?: boolean
           is_banned?: boolean
+          is_sub?: boolean
           created_at?: string
         }
         Relationships: [
@@ -961,6 +1061,24 @@ export type Database = {
       }
     }
     Views: {
+      block_standings: {
+        Row: {
+          tournament_id: string
+          block_id: string | null
+          team_id: string
+          team_name: string
+          team_avatar_url: string | null
+          matches_played: number
+          wins: number
+          losses: number
+          total_win_points: number
+          round_diff: number
+          match_diff: number
+          total_rounds_won: number
+          rank: number
+        }
+        Relationships: []
+      }
       swiss_rankings: {
         Row: {
           tournament_id: string
