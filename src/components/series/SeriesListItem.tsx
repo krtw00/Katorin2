@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import {
-  SeriesWithOrganizer,
-  seriesStatusLabels,
-} from '@/types/series'
+import { Trophy, User, ChevronRight } from 'lucide-react'
+import { SeriesWithOrganizer } from '@/types/series'
+import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { MetaItem } from '@/components/common/MetaItem'
+import { BannerImage } from '@/components/common/BannerImage'
 import { useTranslations } from 'next-intl'
 
 type Props = {
@@ -13,14 +14,6 @@ type Props = {
   showManageLink?: boolean
 }
 
-const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { dot: '⚪', variant: 'outline' },
-  registration: { dot: '🔵', variant: 'secondary' },
-  in_progress: { dot: '🟢', variant: 'default' },
-  completed: { dot: '⚫', variant: 'outline' },
-  cancelled: { dot: '🔴', variant: 'destructive' },
-}
-
 export function SeriesListItem({
   series,
   tournamentCount = 0,
@@ -28,7 +21,6 @@ export function SeriesListItem({
   showManageLink = false,
 }: Props) {
   const t = useTranslations('series')
-  const config = statusConfig[series.status] ?? statusConfig.draft
   const href = showManageLink
     ? `/series/${series.id}/edit`
     : `/series/${series.id}`
@@ -38,39 +30,36 @@ export function SeriesListItem({
       href={href}
       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
     >
-      {/* Status dot */}
-      <span className="text-sm">{config.dot}</span>
+      <BannerImage
+        src={series.cover_image_url}
+        alt={series.title}
+        id={series.id}
+        variant="thumbnail"
+      />
 
-      {/* Main info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate group-hover:underline">
             {series.title}
           </span>
-          <Badge variant={config.variant} className="text-xs shrink-0">
-            {seriesStatusLabels[series.status]}
-          </Badge>
-          <Badge variant="outline" className="text-xs shrink-0">
+          <StatusIndicator status={series.status} showDot showIcon={false} />
+        </div>
+        <div className="flex items-center gap-3 mt-1">
+          <MetaItem icon={Trophy}>{tournamentCount}{t('list.tournamentUnit')}</MetaItem>
+          {showOrganizer && (
+            <MetaItem icon={User}>{series.organizer.display_name}</MetaItem>
+          )}
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
             {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
           </Badge>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-          <span>{tournamentCount}{t('list.tournamentUnit')}</span>
-          {showOrganizer && (
-            <span>{t('detail.organizer')}: {series.organizer.display_name}</span>
-          )}
-        </div>
       </div>
 
-      {/* Arrow indicator */}
-      <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-        →
-      </span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
     </Link>
   )
 }
 
-// Section header for grouped lists
 export function SeriesListSection({
   title,
   count,

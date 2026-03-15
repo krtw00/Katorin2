@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { Users, LayoutGrid, User, ChevronRight } from 'lucide-react'
 import {
   TournamentWithOrganizer,
-  tournamentStatusLabels,
   tournamentFormatLabels,
 } from '@/types/tournament'
+import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { MetaItem } from '@/components/common/MetaItem'
+import { BannerImage } from '@/components/common/BannerImage'
 
 type Props = {
   tournament: TournamentWithOrganizer
@@ -12,15 +15,6 @@ type Props = {
   showOrganizer?: boolean
   showManageLink?: boolean
   placement?: number | null
-}
-
-const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { dot: '⚪', variant: 'outline' },
-  published: { dot: '🟡', variant: 'secondary' },
-  recruiting: { dot: '🟢', variant: 'default' },
-  in_progress: { dot: '🔵', variant: 'secondary' },
-  completed: { dot: '⚫', variant: 'outline' },
-  cancelled: { dot: '🔴', variant: 'destructive' },
 }
 
 const placementLabel = (placement: number) => {
@@ -37,7 +31,6 @@ export function TournamentListItem({
   showManageLink = false,
   placement,
 }: Props) {
-  const config = statusConfig[tournament.status]
   const href = showManageLink
     ? `/tournaments/${tournament.id}/manage`
     : `/tournaments/${tournament.id}`
@@ -47,45 +40,42 @@ export function TournamentListItem({
       href={href}
       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
     >
-      {/* Status dot */}
-      <span className="text-sm">{config.dot}</span>
+      <BannerImage
+        src={tournament.cover_image_url}
+        alt={tournament.title}
+        id={tournament.id}
+        variant="thumbnail"
+      />
 
-      {/* Main info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate group-hover:underline">
             {tournament.title}
           </span>
-          <Badge variant={config.variant} className="text-xs shrink-0">
-            {tournamentStatusLabels[tournament.status]}
-          </Badge>
+          <StatusIndicator status={tournament.status} showDot showIcon={false} />
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-          <span>{tournamentFormatLabels[tournament.tournament_format]}</span>
-          <span>
-            {participantCount}/{tournament.max_participants}名
-          </span>
+        <div className="flex items-center gap-3 mt-1">
+          <MetaItem icon={LayoutGrid}>{tournamentFormatLabels[tournament.tournament_format]}</MetaItem>
+          <MetaItem icon={Users}>
+            {participantCount}/{tournament.max_participants}
+          </MetaItem>
           {showOrganizer && (
-            <span>主催: {tournament.organizer.display_name}</span>
+            <MetaItem icon={User}>{tournament.organizer.display_name}</MetaItem>
           )}
           {placement && (
-            <span className="text-primary font-medium">{placementLabel(placement)}</span>
+            <span className="text-xs text-primary font-medium">{placementLabel(placement)}</span>
           )}
           {tournament.status === 'in_progress' && tournament.current_round && (
-            <span className="text-primary">R{tournament.current_round}進行中</span>
+            <span className="text-xs text-primary">R{tournament.current_round}</span>
           )}
         </div>
       </div>
 
-      {/* Arrow indicator */}
-      <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-        →
-      </span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
     </Link>
   )
 }
 
-// Section header for grouped lists
 export function TournamentListSection({
   title,
   count,

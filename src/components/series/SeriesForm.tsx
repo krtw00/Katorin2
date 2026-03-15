@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ImageUpload } from '@/components/ui/image-upload'
 import {
   Series,
   SeriesFormData,
 } from '@/types/series'
 import { WMGP_CONFIG, ROCKET_CUP_CONFIG } from '@/lib/schemas/series-config'
+import { uploadTournamentCover, isUploadError } from '@/lib/supabase/storage'
 import { useTranslations } from 'next-intl'
 
 type Props = {
@@ -29,6 +31,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.cover_image_url || null)
 
   const [formData, setFormData] = useState<SeriesFormData>(() => {
     if (initialData) {
@@ -78,6 +81,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         entry_type: formData.entry_type as 'individual' | 'team',
         status: (asDraft ? 'draft' : 'in_progress') as 'draft' | 'in_progress',
         series_config: seriesConfig,
+        cover_image_url: coverUrl,
       }
 
       if (mode === 'create') {
@@ -165,6 +169,33 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       {/* Form */}
       <div className="container mx-auto px-4 py-6 max-w-2xl">
         <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+          {/* Cover Image */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">カバー画像</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ImageUpload
+                value={coverUrl}
+                onChange={(url) => setCoverUrl(url)}
+                onUpload={async (file) => {
+                  const { data: { user: u } } = await supabase.auth.getUser()
+                  if (!u) throw new Error('ログインが必要です')
+                  const result = await uploadTournamentCover(supabase, file, u.id)
+                  if (isUploadError(result)) throw new Error(result.message)
+                  return result.url
+                }}
+                shape="square"
+                size="lg"
+                accept="image/jpeg,image/png,image/gif"
+                maxSizeMB={5}
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                JPG, PNG, GIF形式、5MB以下、16:9推奨
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Basic Info */}
           <Card>
             <CardHeader>

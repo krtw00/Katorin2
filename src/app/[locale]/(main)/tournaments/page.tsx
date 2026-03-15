@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { TournamentWithOrganizer } from '@/types/tournament'
 import type { PostgrestError } from '@supabase/supabase-js'
@@ -12,6 +13,8 @@ import {
   TournamentListItem,
   TournamentListSection,
 } from '@/components/tournament/TournamentListItem'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
 import { getTranslations } from 'next-intl/server'
 
 type FilterStatus = 'all' | 'recruiting' | 'in_progress' | 'completed'
@@ -120,39 +123,38 @@ export default async function TournamentsPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        {user && (
+      <PageHeader
+        title={t('title')}
+        action={user ? (
           <Link href="/tournaments/new">
-            <Button>{t('create')}</Button>
+            <Button size="sm">{t('create')}</Button>
           </Link>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Search & Filters */}
       <div className="space-y-4 mb-6">
-        <form action="/tournaments" method="get" className="flex flex-wrap gap-2">
+        <form action="/tournaments" method="get" className="flex flex-col sm:flex-row flex-wrap gap-2">
           <Input
             name="q"
             placeholder={t('search')}
             defaultValue={query}
-            className="max-w-sm"
+            className="w-full sm:max-w-sm"
           />
           <div className="flex gap-2 items-center">
             <Input
               type="date"
               name="start_from"
               defaultValue={startFrom}
-              className="max-w-[150px]"
+              className="w-full sm:max-w-[150px]"
               placeholder={t('startFrom')}
             />
-            <span className="text-muted-foreground">〜</span>
+            <span className="text-muted-foreground shrink-0">〜</span>
             <Input
               type="date"
               name="start_to"
               defaultValue={startTo}
-              className="max-w-[150px]"
+              className="w-full sm:max-w-[150px]"
               placeholder={t('startTo')}
             />
           </div>
@@ -259,10 +261,11 @@ export default async function TournamentsPage({
         </Card>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              {query ? t('noResults') : t('empty')}
-            </p>
+          <CardContent className="p-0">
+            <EmptyState
+              icon={Trophy}
+              message={query ? t('noResults') : t('empty')}
+            />
           </CardContent>
         </Card>
       )}
