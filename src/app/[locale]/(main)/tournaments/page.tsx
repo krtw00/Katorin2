@@ -52,6 +52,7 @@ export default async function TournamentsPage({
     `
     )
     .eq('visibility', 'public')
+    .is('series_id', null)  // シリーズ配下の大会は除外（シリーズ詳細から辿る）
     .order('created_at', { ascending: false })
 
   // Apply search filter if query exists
