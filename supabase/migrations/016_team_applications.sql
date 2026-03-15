@@ -67,14 +67,7 @@ CREATE POLICY "team_applications_delete" ON team_applications
     )
   );
 
--- ============================================
--- 3. teams 排他制約の緩和（未所属チーム許可）
--- ============================================
-
-ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_belongs_to_one;
-ALTER TABLE teams ADD CONSTRAINT teams_belongs_to_one CHECK (
-  NOT (series_id IS NOT NULL AND tournament_id IS NOT NULL)
-);
+-- 排他制約は015で緩い形で定義済み（両方NULLも許可）
 
 -- ============================================
 -- 4. teams RLS 修正（公開設定連動）
