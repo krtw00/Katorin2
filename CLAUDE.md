@@ -66,3 +66,36 @@
 - 画像テーマはseries.theme_config or tournaments.theme_config (JSONB)
 - ストレージはCloudflare R2（バケット: katorin2-assets）
 - 元ネタ「水界の秘石カトリン」＋依頼者の岩石族コミュニティに合わせたデザイン
+- デモデータ（is_demo=true）は関係者のみ閲覧可能（RLS制限）
+- 大会一覧にはシリーズ配下の大会を表示しない（series_id IS NULLフィルタ）
+
+## セッションメモ（2026-03-15 #2）
+
+### 完了した作業
+- Series/Tournament分離リファクタ全Phase完了（015_series_refactor.sql）
+  - seriesテーブル新設、series_config (JSONB)でWMGP/ロケットカップ差異を吸収
+  - Zodスキーマ + getTournamentConfig()ヘルパー
+- 管理者用オーダー入力UI（AdminOrderForm: 両チーム並列）
+- シリーズ対応UI（順位表タブ、プリセット選択、round_number順ソート）
+- デモデータ再構築（新モデル: series→tournaments(Week1/2)→matches）
+- デモアカウント固定化（demo@katorin2.codenica.dev = 主催者、demo_leader = リーダー）
+- チームエントリー申請フロー（team_applications テーブル + UI）
+- チーム/メンバーRLSを公開設定連動に修正
+- デモデータのRLS制限（is_demo=true → 関係者のみ閲覧）
+- UI改善（パンくず、スコアカード、統計カード、情報密度改善）
+- クラウドDBにマイグレーション015〜018適用
+
+### 未解決の問題
+- **本番でシリーズ一覧にデモシリーズが表示されない**
+  - DBにはデータ存在（API検証済み）
+  - Vercelデプロイ済み（state: READY、sha: 1a1ec21）
+  - Cloudflare DNSプロキシ解除済み
+  - シークレットウィンドウでも再現
+  - 原因不明: サーバーコンポーネントのSupabaseセッションがデモユーザーのRLSを通していない可能性
+  - 調査方法: `pnpm dev` でローカル確認、またはRLSを一時的にデモ制限なしにして切り分け
+
+### 次回の優先事項
+1. **本番シリーズ表示問題の解決**（上記未解決問題の調査）
+2. テストスクリプト更新（新モデル対応）
+3. 画像出力APIのシリーズ対応
+4. logo-drafts/の不要SVGファイル整理
