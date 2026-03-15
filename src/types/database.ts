@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -404,122 +399,69 @@ export type Database = {
       }
       series: {
         Row: {
+          cover_image_url: string | null
           created_at: string
           description: string | null
-          end_date: string | null
           entry_type: Database["public"]["Enums"]["entry_type"]
           id: string
-          name: string
+          is_demo: boolean
           organizer_id: string
-          point_calculation_mode: Database["public"]["Enums"]["point_calculation_mode"]
-          point_config: Json
-          point_system: Database["public"]["Enums"]["point_system"]
-          start_date: string | null
-          status: Database["public"]["Enums"]["series_status"]
+          series_config: Json
+          status: Database["public"]["Enums"]["tournament_status"]
+          team_battle_format:
+            | Database["public"]["Enums"]["team_battle_format"]
+            | null
+          team_size_max: number | null
+          team_size_min: number | null
+          theme_config: Json
+          title: string
           updated_at: string
+          visibility: Database["public"]["Enums"]["visibility"]
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
-          end_date?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
-          name: string
+          is_demo?: boolean
           organizer_id: string
-          point_calculation_mode?: Database["public"]["Enums"]["point_calculation_mode"]
-          point_config?: Json
-          point_system?: Database["public"]["Enums"]["point_system"]
-          start_date?: string | null
-          status?: Database["public"]["Enums"]["series_status"]
+          series_config?: Json
+          status?: Database["public"]["Enums"]["tournament_status"]
+          team_battle_format?:
+            | Database["public"]["Enums"]["team_battle_format"]
+            | null
+          team_size_max?: number | null
+          team_size_min?: number | null
+          theme_config?: Json
+          title: string
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
-          end_date?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
-          name?: string
+          is_demo?: boolean
           organizer_id?: string
-          point_calculation_mode?: Database["public"]["Enums"]["point_calculation_mode"]
-          point_config?: Json
-          point_system?: Database["public"]["Enums"]["point_system"]
-          start_date?: string | null
-          status?: Database["public"]["Enums"]["series_status"]
+          series_config?: Json
+          status?: Database["public"]["Enums"]["tournament_status"]
+          team_battle_format?:
+            | Database["public"]["Enums"]["team_battle_format"]
+            | null
+          team_size_max?: number | null
+          team_size_min?: number | null
+          theme_config?: Json
+          title?: string
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["visibility"]
         }
         Relationships: [
           {
             foreignKeyName: "series_organizer_id_fkey"
             columns: ["organizer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      series_points: {
-        Row: {
-          created_at: string
-          id: string
-          losses: number | null
-          placement: number | null
-          points: number
-          series_id: string
-          team_id: string | null
-          tournament_id: string
-          user_id: string | null
-          wins: number | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          losses?: number | null
-          placement?: number | null
-          points?: number
-          series_id: string
-          team_id?: string | null
-          tournament_id: string
-          user_id?: string | null
-          wins?: number | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          losses?: number | null
-          placement?: number | null
-          points?: number
-          series_id?: string
-          team_id?: string | null
-          tournament_id?: string
-          user_id?: string | null
-          wins?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_series_points_team"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "series_points_series_id_fkey"
-            columns: ["series_id"]
-            isOneToOne: false
-            referencedRelation: "series"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "series_points_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "series_points_user_id_fkey"
-            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -766,6 +708,8 @@ export type Database = {
           id: string
           leader_id: string
           name: string
+          series_id: string | null
+          tournament_id: string | null
           updated_at: string
         }
         Insert: {
@@ -775,6 +719,8 @@ export type Database = {
           id?: string
           leader_id: string
           name: string
+          series_id?: string | null
+          tournament_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -784,6 +730,8 @@ export type Database = {
           id?: string
           leader_id?: string
           name?: string
+          series_id?: string | null
+          tournament_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -794,6 +742,20 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "teams_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tournament_blocks: {
@@ -802,6 +764,7 @@ export type Database = {
           block_order: number
           created_at: string
           id: string
+          series_id: string | null
           tournament_id: string
         }
         Insert: {
@@ -809,6 +772,7 @@ export type Database = {
           block_order?: number
           created_at?: string
           id?: string
+          series_id?: string | null
           tournament_id: string
         }
         Update: {
@@ -816,9 +780,17 @@ export type Database = {
           block_order?: number
           created_at?: string
           id?: string
+          series_id?: string | null
           tournament_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_blocks_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_blocks_tournament_id_fkey"
             columns: ["tournament_id"]
@@ -905,6 +877,7 @@ export type Database = {
           organizer_id: string
           players_per_round: number
           result_report_mode: Database["public"]["Enums"]["result_report_mode"]
+          round_number: number | null
           rounds_to_win: number | null
           series_id: string | null
           start_at: string | null
@@ -947,6 +920,7 @@ export type Database = {
           organizer_id: string
           players_per_round?: number
           result_report_mode?: Database["public"]["Enums"]["result_report_mode"]
+          round_number?: number | null
           rounds_to_win?: number | null
           series_id?: string | null
           start_at?: string | null
@@ -989,6 +963,7 @@ export type Database = {
           organizer_id?: string
           players_per_round?: number
           result_report_mode?: Database["public"]["Enums"]["result_report_mode"]
+          round_number?: number | null
           rounds_to_win?: number | null
           series_id?: string | null
           start_at?: string | null
@@ -1165,43 +1140,6 @@ export type Database = {
         }
         Relationships: []
       }
-      series_rankings: {
-        Row: {
-          avatar_url: string | null
-          name: string | null
-          rank: number | null
-          series_id: string | null
-          team_id: string | null
-          total_losses: number | null
-          total_points: number | null
-          total_wins: number | null
-          tournaments_played: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_series_points_team"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "series_points_series_id_fkey"
-            columns: ["series_id"]
-            isOneToOne: false
-            referencedRelation: "series"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "series_points_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       swiss_rankings: {
         Row: {
           bye_count: number | null
@@ -1233,17 +1171,9 @@ export type Database = {
       }
     }
     Functions: {
-      calculate_series_points: {
-        Args: { p_tournament_id: string }
-        Returns: undefined
-      }
       determine_match_winner_team: {
         Args: { p_match_id: string }
         Returns: string
-      }
-      get_points_for_placement: {
-        Args: { p_config: Json; p_placement: number }
-        Returns: number
       }
     }
     Enums: {
@@ -1260,10 +1190,7 @@ export type Database = {
         | "match_result"
         | "tournament_start"
         | "report_needed"
-      point_calculation_mode: "auto" | "manual"
-      point_system: "ranking" | "wins"
       result_report_mode: "organizer_only" | "participant"
-      series_status: "draft" | "active" | "completed" | "cancelled"
       team_battle_format: "knockout" | "point"
       team_creation_mode: "user" | "organizer"
       team_role: "leader" | "member"
@@ -1424,10 +1351,7 @@ export const Constants = {
         "tournament_start",
         "report_needed",
       ],
-      point_calculation_mode: ["auto", "manual"],
-      point_system: ["ranking", "wins"],
       result_report_mode: ["organizer_only", "participant"],
-      series_status: ["draft", "active", "completed", "cancelled"],
       team_battle_format: ["knockout", "point"],
       team_creation_mode: ["user", "organizer"],
       team_role: ["leader", "member"],
@@ -1462,9 +1386,6 @@ export type ResultReportMode = Database['public']['Enums']['result_report_mode']
 export type EntryLimitBehavior = Database['public']['Enums']['entry_limit_behavior']
 export type MatchStatus = Database['public']['Enums']['match_status']
 export type NotificationType = Database['public']['Enums']['notification_type']
-export type SeriesStatus = Database['public']['Enums']['series_status']
-export type PointSystem = Database['public']['Enums']['point_system']
-export type PointCalculationMode = Database['public']['Enums']['point_calculation_mode']
 export type TeamRole = Database['public']['Enums']['team_role']
 export type TeamBattleFormat = Database['public']['Enums']['team_battle_format']
 export type TeamCreationMode = Database['public']['Enums']['team_creation_mode']

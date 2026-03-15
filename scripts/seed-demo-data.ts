@@ -1,8 +1,9 @@
 /**
- * WMGP Season 8 実データベースのデモデータ投入
+ * WMGP Season 8 デモデータ投入（新モデル: Series/Tournament分離）
  *
  * Usage:
  *   SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=xxx npx tsx scripts/seed-demo-data.ts
+ *   # ローカル: SUPABASE_SERVICE_ROLE_KEY=<local key> npx tsx scripts/seed-demo-data.ts
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -15,12 +16,12 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
-// 実データから抽出した16チーム（Group A/B各8チーム）
+// 16チーム（Group A: 0-7, Group B: 8-15）
 const TEAMS_DATA = [
   // Group A
   { name: 'Tyrant Typhoon', members: ['じゃぱん', '胃の中のウツボ', 'Rei_', 'nia', 'winter', 'たいたい'] },
   { name: 'Canada + Enzo', members: ['Joey', 'Ryan', 'Mistilteinn', 'soulsmanic', 'Rehan S', 'Enzo'] },
-  { name: 'The Gentlemens\'s Club', members: ['Fláviofc', 'Sir Guaxinim', 'rafa', 'Nicezin', 'Justinian', 'mateusbra'] },
+  { name: 'The Gentlemen\'s Club', members: ['Fláviofc', 'Sir Guaxinim', 'rafa', 'Nicezin', 'Justinian', 'mateusbra'] },
   { name: 'Brotherhood of Shadow', members: ['ERMAC', 'DR,DOOM', 'omar', 'Hegazi', 'Thereal', 'Murad Adel'] },
   { name: 'Not Equal', members: ['黎明', 'Gupta', 'sai.1996', 'クロトワ', '有栖α', 'やまてぃー'] },
   { name: 'Espada', members: ['Ryuran', 'ペルセ', 'しらっくす', 'ギャグナ', 'トイタク', 'からふる'] },
@@ -37,26 +38,26 @@ const TEAMS_DATA = [
   { name: 'illusion of cactus', members: ['るし', 'おきなっとう', '銀マヨ', 'あおい', 'ただの信者', 'さいぱち'] },
 ]
 
-// 実際の試合結果（画像から読み取り）
-const MATCH_RESULTS = [
+// 試合結果（Week 1: 4+4=8試合, Week 2: 4+4=8試合 → 合計14試合分）
+const MATCH_RESULTS: { week: number; t1: number; t2: number; rounds: { t1w: number; t2w: number }[]; winner: number }[] = [
   // Group A - Week 1
-  { t1: 0, t2: 3, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 0 }, // Tyrant Typhoon 2-1 Brotherhood
-  { t1: 1, t2: 2, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 1 }, // Canada+Enzo 2-1 Gentlemens
-  { t1: 4, t2: 5, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 4 }, // Not Equal 2-0 Espada
-  { t1: 6, t2: 7, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 6 }, // Celebeast 2-1 exclusion
-  // Group A - Week 2
-  { t1: 0, t2: 2, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:1,t2w:2}], winner: 2 }, // Tyrant 1-2 Gentlemens
-  { t1: 1, t2: 3, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 1 }, // Canada 2-0 Brotherhood
-  { t1: 4, t2: 6, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:1,t2w:2}], winner: 6 }, // NotEqual 1-2 Celebeast
-  { t1: 5, t2: 7, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 5 }, // Espada 2-0 exclusion
+  { week: 1, t1: 0, t2: 3, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 0 },
+  { week: 1, t1: 1, t2: 2, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 1 },
+  { week: 1, t1: 4, t2: 5, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 4 },
+  { week: 1, t1: 6, t2: 7, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 6 },
   // Group B - Week 1
-  { t1: 8, t2: 9, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 8 }, // NightEdge 2-0 Bastardos
-  { t1: 10, t2: 11, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 10 }, // HX 2-1 VILLAIN
-  { t1: 12, t2: 13, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:1,t2w:2}], winner: 13 }, // Cat 1-2 RaidReign
-  { t1: 14, t2: 15, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 14 }, // Phoenix 2-0 cactus
+  { week: 1, t1: 8, t2: 9, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 8 },
+  { week: 1, t1: 10, t2: 11, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 10 },
+  { week: 1, t1: 12, t2: 13, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:1,t2w:2}], winner: 13 },
+  { week: 1, t1: 14, t2: 15, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 14 },
+  // Group A - Week 2
+  { week: 2, t1: 0, t2: 2, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:1,t2w:2}], winner: 2 },
+  { week: 2, t1: 1, t2: 3, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 1 },
+  { week: 2, t1: 4, t2: 6, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:1,t2w:2}], winner: 6 },
+  { week: 2, t1: 5, t2: 7, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 5 },
   // Group B - Week 2
-  { t1: 8, t2: 10, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 8 }, // NightEdge 2-1 HX
-  { t1: 9, t2: 11, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 9 }, // Bastardos 2-1 VILLAIN
+  { week: 2, t1: 8, t2: 10, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: 8 },
+  { week: 2, t1: 9, t2: 11, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: 9 },
 ]
 
 const DECKS = [
@@ -65,12 +66,61 @@ const DECKS = [
   'R-ACE', 'Voiceless Voice', 'Centurion', 'White Forest', 'Labrynth',
 ]
 
+const WMGP_SERIES_CONFIG = {
+  orderSize: 3,
+  subCount: 1,
+  playersPerRound: 3,
+  banPickEnabled: false,
+  duplicateThemeAllowed: true,
+  qualifierFormat: 'round_robin',
+  blockCount: 2,
+  roundsToWin: 2,
+  matchFormat: 'bo3',
+  scoring: {
+    winPoints: 3,
+    lossPoints: 0,
+    tiebreakers: ['totalRoundDiff', 'roundMatchDiff', 'duelDiff', 'totalRoundScore', 'headToHead'],
+  },
+  finals: { format: 'single_elimination', qualifiedPerBlock: [1, '2or3'] },
+  memberChangeAllowed: true,
+  maxMemberChanges: 2,
+}
+
 async function main() {
-  console.log('🎮 WMGP実データ デモ投入')
+  console.log('🎮 WMGP Season 8 デモ投入（新モデル）')
   console.log(`  URL: ${SUPABASE_URL}`)
 
-  // クリーンアップ
+  // === クリーンアップ ===
   console.log('\n🧹 既存デモデータ削除...')
+
+  // デモシリーズ配下の大会→match→関連データ削除
+  const { data: demoSeries } = await supabase.from('series').select('id').eq('is_demo', true)
+  if (demoSeries?.length) {
+    const seriesIds = demoSeries.map(s => s.id)
+    const { data: demoTs } = await supabase.from('tournaments').select('id').in('series_id', seriesIds)
+    if (demoTs?.length) {
+      const tids = demoTs.map(t => t.id)
+      const { data: matchIds } = await supabase.from('matches').select('id').in('tournament_id', tids)
+      const mIds = matchIds?.map(m => m.id) || []
+      if (mIds.length) {
+        await supabase.from('individual_matches').delete().in('match_id', mIds)
+        await supabase.from('war_rounds').delete().in('match_id', mIds)
+        await supabase.from('war_orders').delete().in('match_id', mIds)
+      }
+      await supabase.from('matches').delete().in('tournament_id', tids)
+      await supabase.from('team_entries').delete().in('tournament_id', tids)
+      await supabase.from('tournaments').delete().in('series_id', seriesIds)
+    }
+    await supabase.from('tournament_blocks').delete().in('series_id', seriesIds)
+    // チーム削除（series所属）
+    await supabase.from('team_members').delete().in('team_id',
+      ((await supabase.from('teams').select('id').in('series_id', seriesIds)).data || []).map(t => t.id)
+    )
+    await supabase.from('teams').delete().in('series_id', seriesIds)
+    await supabase.from('series').delete().eq('is_demo', true)
+  }
+
+  // デモ大会（series_id=null）もクリーンアップ
   const { data: demoT } = await supabase.from('tournaments').select('id').eq('is_demo', true)
   if (demoT?.length) {
     const ids = demoT.map(t => t.id)
@@ -82,11 +132,12 @@ async function main() {
       await supabase.from('war_orders').delete().in('match_id', mIds)
     }
     await supabase.from('matches').delete().in('tournament_id', ids)
-    await supabase.from('swiss_standings').delete().in('tournament_id', ids)
     await supabase.from('team_entries').delete().in('tournament_id', ids)
     await supabase.from('tournament_blocks').delete().in('tournament_id', ids)
     await supabase.from('tournaments').delete().eq('is_demo', true)
   }
+
+  // デモユーザー削除
   const { data: demoUsers } = await supabase.auth.admin.listUsers({ perPage: 200 })
   for (const u of demoUsers?.users || []) {
     if (u.email?.startsWith('demo_')) {
@@ -95,92 +146,148 @@ async function main() {
       await supabase.auth.admin.deleteUser(u.id)
     }
   }
+  console.log('  ✅ クリーンアップ完了')
 
-  // ユーザー&チーム作成
+  // === ユーザー作成 ===
   console.log('\n📝 16チーム × 6人 作成')
-  const teams: { id: string; name: string; memberIds: string[] }[] = []
+  const userIds: string[][] = []
   for (let t = 0; t < TEAMS_DATA.length; t++) {
     const td = TEAMS_DATA[t]
-    const memberIds: string[] = []
+    const mids: string[] = []
     for (let m = 0; m < td.members.length; m++) {
       const { data } = await supabase.auth.admin.createUser({
         email: `demo_t${t}_p${m}@katorin.dev`, password: 'demo1234', email_confirm: true,
         user_metadata: { display_name: td.members[m] },
       })
-      if (data?.user) memberIds.push(data.user.id)
+      if (data?.user) mids.push(data.user.id)
     }
+    userIds.push(mids)
+  }
+  const organizerId = userIds[0][0]
+
+  // === シリーズ作成 ===
+  console.log('\n📝 シリーズ作成: WMGP Season 8')
+  const { data: series } = await supabase.from('series').insert({
+    title: 'WMGP Season 8 - Demo',
+    description: 'World Master Grand Prix Season 8\n16チーム・2グループ総当たり → 決勝トーナメント\n\n※ 実データに基づくデモ',
+    organizer_id: organizerId,
+    visibility: 'public',
+    status: 'in_progress',
+    entry_type: 'team',
+    team_battle_format: 'point',
+    team_size_min: 6,
+    team_size_max: 15,
+    series_config: WMGP_SERIES_CONFIG,
+    theme_config: {
+      primaryColor: '#1e40af', secondaryColor: '#0f172a', accentColor: '#f59e0b',
+      bgColor: '#0f172a', textColor: '#f8fafc', fontFamily: 'sans-serif',
+    },
+    is_demo: true,
+  }).select().single()
+  const seriesId = series!.id
+
+  // === チーム作成（シリーズ所属）===
+  console.log('\n📝 チーム作成（シリーズ所属）')
+  const teams: { id: string; name: string; memberIds: string[] }[] = []
+  for (let t = 0; t < TEAMS_DATA.length; t++) {
+    const td = TEAMS_DATA[t]
+    const mids = userIds[t]
     const { data: team } = await supabase.from('teams')
-      .insert({ name: td.name, leader_id: memberIds[0] }).select().single()
+      .insert({ name: td.name, leader_id: mids[0], series_id: seriesId })
+      .select().single()
     await supabase.from('team_members').insert(
-      memberIds.map((uid, i) => ({ team_id: team!.id, user_id: uid, role: i === 0 ? 'leader' as const : 'member' as const }))
+      mids.map((uid, i) => ({ team_id: team!.id, user_id: uid, role: i === 0 ? 'leader' as const : 'member' as const }))
     )
-    teams.push({ id: team!.id, name: td.name, memberIds })
+    teams.push({ id: team!.id, name: td.name, memberIds: mids })
     console.log(`  ✅ ${td.name}`)
   }
 
-  // 大会作成
-  console.log('\n📝 大会作成')
-  const { data: tournament } = await supabase.from('tournaments').insert({
-    title: 'WMGP Season 8 - Demo',
-    description: 'World Master Grand Prix Season 8\n16チーム・2グループ総当たり → 決勝トーナメント\n\n※ 実データに基づくデモ',
-    organizer_id: teams[0].memberIds[0],
-    tournament_format: 'round_robin', match_format: 'bo3', entry_type: 'team',
-    max_participants: 64, visibility: 'public', status: 'in_progress', entry_mode: 'open',
-    block_count: 2, rounds_to_win: 2, order_size: 3, sub_count: 1,
-    players_per_round: 3, win_point_value: 3, is_demo: true,
-    theme_config: { primaryColor: '#1e40af', secondaryColor: '#0f172a', accentColor: '#f59e0b', bgColor: '#0f172a', textColor: '#f8fafc', fontFamily: 'sans-serif', backgroundImage: null, logoUrl: null },
-  }).select().single()
-  const tid = tournament!.id
+  // === ブロック作成（シリーズ所属）===
+  // tournament_blocks.tournament_id は NOT NULL なので、ダミー大会が必要
+  // → ブロックは最初の大会(Week 1)に紐づけつつ、series_id も設定
 
-  const { data: gA } = await supabase.from('tournament_blocks').insert({ tournament_id: tid, block_name: 'Group A', block_order: 1 }).select().single()
-  const { data: gB } = await supabase.from('tournament_blocks').insert({ tournament_id: tid, block_name: 'Group B', block_order: 2 }).select().single()
-
-  for (let i = 0; i < 16; i++) {
-    await supabase.from('team_entries').insert({ tournament_id: tid, team_id: teams[i].id, block_id: i < 8 ? gA!.id : gB!.id })
+  // === 大会作成（Week 1, Week 2）===
+  console.log('\n📝 大会（節）作成')
+  const tournamentIds: string[] = []
+  for (let week = 1; week <= 2; week++) {
+    const { data: t } = await supabase.from('tournaments').insert({
+      title: `WMGP S8 - Week ${week}`,
+      description: `第${week}節`,
+      organizer_id: organizerId,
+      tournament_format: 'round_robin',
+      match_format: 'bo3',
+      entry_type: 'team',
+      max_participants: 64,
+      visibility: 'public',
+      status: week <= 2 ? 'completed' : 'draft',
+      entry_mode: 'open',
+      series_id: seriesId,
+      round_number: week,
+      order_size: 3,
+      sub_count: 1,
+      players_per_round: 3,
+      win_point_value: 3,
+      is_demo: true,
+    }).select().single()
+    tournamentIds.push(t!.id)
+    console.log(`  ✅ Week ${week}: ${t!.id}`)
   }
 
-  // 総当たりカード全生成
-  console.log('\n📝 対戦カード生成')
-  let mc = 0
-  const matchMap = new Map<string, string>()
+  // ブロック作成（Week 1の大会に紐づけ + series_id）
+  const { data: gA } = await supabase.from('tournament_blocks').insert({
+    tournament_id: tournamentIds[0], block_name: 'Group A', block_order: 1, series_id: seriesId,
+  }).select().single()
+  const { data: gB } = await supabase.from('tournament_blocks').insert({
+    tournament_id: tournamentIds[0], block_name: 'Group B', block_order: 2, series_id: seriesId,
+  }).select().single()
 
-  async function genPairings(blockTeams: typeof teams, blockId: string) {
-    const ts = blockTeams.map(t => t.id)
-    if (ts.length % 2 === 1) ts.push('BYE')
-    const n = ts.length
-    for (let w = 0; w < n - 1; w++) {
-      for (let i = 0; i < n / 2; i++) {
-        const a = ts[i], b = ts[n - 1 - i]
-        if (a === 'BYE' || b === 'BYE') continue
-        mc++
-        const { data: m } = await supabase.from('matches').insert({
-          tournament_id: tid, round: w + 1, match_number: mc,
-          team1_id: a, team2_id: b, block_id: blockId, status: 'pending',
-        }).select().single()
-        matchMap.set(`${a}:${b}`, m!.id)
-        matchMap.set(`${b}:${a}`, m!.id)
-      }
-      const last = ts.pop()!; ts.splice(1, 0, last)
+  // 各大会にチームエントリー
+  for (const tid of tournamentIds) {
+    for (let i = 0; i < 16; i++) {
+      await supabase.from('team_entries').insert({
+        tournament_id: tid, team_id: teams[i].id, block_id: i < 8 ? gA!.id : gB!.id,
+      })
     }
   }
-  await genPairings(teams.slice(0, 8), gA!.id)
-  await genPairings(teams.slice(8), gB!.id)
-  console.log(`  ✅ ${mc} 試合`)
 
-  // 結果入力
+  // === 対戦カード生成（各Weekの大会に紐づけ）===
+  console.log('\n📝 対戦カード生成')
+  const matchMap = new Map<string, string>()
+
+  // Weekごとに試合結果からマッチを作成
+  for (let week = 1; week <= 2; week++) {
+    const tid = tournamentIds[week - 1]
+    const weekResults = MATCH_RESULTS.filter(r => r.week === week)
+    let mc = 0
+    for (const r of weekResults) {
+      mc++
+      const t1 = teams[r.t1], t2 = teams[r.t2]
+      const blockId = r.t1 < 8 ? gA!.id : gB!.id
+      const { data: m } = await supabase.from('matches').insert({
+        tournament_id: tid, round: 1, match_number: mc,
+        team1_id: t1.id, team2_id: t2.id, block_id: blockId, status: 'pending',
+      }).select().single()
+      matchMap.set(`${r.t1}:${r.t2}`, m!.id)
+    }
+    console.log(`  ✅ Week ${week}: ${mc} 試合`)
+  }
+
+  // === 試合結果入力 ===
   console.log('\n📝 試合結果入力')
   for (const r of MATCH_RESULTS) {
     const t1 = teams[r.t1], t2 = teams[r.t2]
-    const matchId = matchMap.get(`${t1.id}:${t2.id}`)
+    const matchId = matchMap.get(`${r.t1}:${r.t2}`)
     if (!matchId) { console.error(`  ⚠️ Not found: ${t1.name} vs ${t2.name}`); continue }
 
     // オーダー
     for (const team of [t1, t2]) {
-      const off = teams.indexOf(team) * 2
+      const tIdx = teams.indexOf(team)
+      const off = tIdx * 2
       await supabase.from('war_orders').insert(
         team.memberIds.slice(0, 4).map((uid, i) => ({
           match_id: matchId, team_id: team.id, slot: i + 1, user_id: uid,
-          deck_name: DECKS[(off + i) % DECKS.length], deck_theme: DECKS[(off + i) % DECKS.length],
+          deck_name: DECKS[(off + i) % DECKS.length],
+          deck_theme: DECKS[(off + i) % DECKS.length],
           is_sub: i === 3, is_picked: i < 3,
         }))
       )
@@ -221,21 +328,25 @@ async function main() {
     console.log(`  ✅ ${t1.name} ${t1rw}-${t2rw} ${t2.name}`)
   }
 
-  // 順位確認
-  const { data: standings } = await supabase.from('block_standings').select('*').eq('tournament_id', tid)
-  if (standings) {
-    for (const gid of [gA!.id, gB!.id]) {
-      const g = standings.filter(s => s.block_id === gid).sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
-      const gname = gid === gA!.id ? 'A' : 'B'
-      console.log(`\n📊 Group ${gname}:`)
-      g.forEach(s => console.log(`  ${s.rank}. ${String(s.team_name).padEnd(25)} ${s.wins}W ${s.losses}L  勝点:${s.total_win_points}  R差:${s.round_diff}`))
+  // === 順位確認 ===
+  // block_standings は tournament_id 単位なので、各Weekの結果を表示
+  for (const [wi, tid] of tournamentIds.entries()) {
+    const { data: standings } = await supabase.from('block_standings').select('*').eq('tournament_id', tid)
+    if (standings?.length) {
+      for (const gid of [gA!.id, gB!.id]) {
+        const g = standings.filter(s => s.block_id === gid).sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
+        const gname = gid === gA!.id ? 'A' : 'B'
+        console.log(`\n📊 Week ${wi + 1} - Group ${gname}:`)
+        g.forEach(s => console.log(`  ${s.rank}. ${String(s.team_name).padEnd(25)} ${s.wins}W ${s.losses}L  勝点:${s.total_win_points}  R差:${s.round_diff}`))
+      }
     }
   }
 
   console.log(`\n✅ デモデータ投入完了`)
-  console.log(`  ${SUPABASE_URL.replace('https://', 'https://katorin2.codenica.dev')}/tournaments/${tid}`)
-  console.log(`  War: /tournaments/${tid}/wars`)
-  console.log(`  順位: /tournaments/${tid}/standings`)
+  console.log(`  シリーズ: /series/${seriesId}`)
+  for (const [wi, tid] of tournamentIds.entries()) {
+    console.log(`  Week ${wi + 1}: /tournaments/${tid}`)
+  }
 }
 
 main().catch(err => { console.error('💥', err); process.exit(1) })

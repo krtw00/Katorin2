@@ -1,3 +1,6 @@
+// TODO: Phase 3 で再実装予定（series_rankings ビュー削除済み）
+// 現在は未使用コンポーネント
+
 import {
   Table,
   TableBody,
@@ -6,11 +9,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { SeriesRanking } from '@/types/series'
 import { useTranslations } from 'next-intl'
 
+type RankingEntry = {
+  rank: number | null
+  user_id: string | null
+  team_id: string | null
+  name: string | null
+  total_points: number | null
+  tournaments_played: number | null
+  total_wins: number | null
+  total_losses: number | null
+}
+
 type Props = {
-  rankings: SeriesRanking[]
+  rankings: RankingEntry[]
   pointSystem?: string
   showDetails?: boolean
 }

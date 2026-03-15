@@ -10,7 +10,7 @@ import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesLis
 import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
 import { getTranslations } from 'next-intl/server'
 
-type FilterStatus = 'all' | 'active' | 'completed'
+type FilterStatus = 'all' | 'in_progress' | 'completed'
 
 export default async function SeriesPage({
   searchParams,
@@ -37,15 +37,15 @@ export default async function SeriesPage({
 
   // Apply search filter if query exists
   if (query) {
-    seriesQuery = seriesQuery.ilike('name', `%${query}%`)
+    seriesQuery = seriesQuery.ilike('title', `%${query}%`)
   }
 
   // Apply status filter - exclude draft/cancelled from public list
   if (statusFilter !== 'all') {
     seriesQuery = seriesQuery.eq('status', statusFilter)
   } else {
-    // Show only active and completed for "all"
-    seriesQuery = seriesQuery.in('status', ['active', 'completed'])
+    // Show only in_progress and completed for "all"
+    seriesQuery = seriesQuery.in('status', ['in_progress', 'completed'])
   }
 
   const { data: seriesList, error: seriesError } =
@@ -78,11 +78,11 @@ export default async function SeriesPage({
   // Group series by status when showing all
   const groupByStatus = (list: SeriesWithOrganizer[]) => {
     const groups: Record<string, SeriesWithOrganizer[]> = {
-      active: [],
+      in_progress: [],
       completed: [],
     }
     list.forEach((s) => {
-      if (s.status === 'active') groups.active.push(s)
+      if (s.status === 'in_progress') groups.in_progress.push(s)
       else if (s.status === 'completed') groups.completed.push(s)
     })
     return groups
@@ -114,12 +114,12 @@ export default async function SeriesPage({
             {statusFilter === 'all' && grouped ? (
               // Grouped view when showing all
               <div className="space-y-4">
-                {grouped.active.length > 0 && (
+                {grouped.in_progress.length > 0 && (
                   <SeriesListSection
                     title={t('status.active')}
-                    count={grouped.active.length}
+                    count={grouped.in_progress.length}
                   >
-                    {grouped.active.map((series) => (
+                    {grouped.in_progress.map((series) => (
                       <SeriesListItem
                         key={series.id}
                         series={series}
