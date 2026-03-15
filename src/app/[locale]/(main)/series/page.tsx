@@ -4,10 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { Layers } from 'lucide-react'
 import { SeriesWithOrganizer } from '@/types/series'
 import type { PostgrestError } from '@supabase/supabase-js'
 import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesListItem'
 import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
+import { PageHeader } from '@/components/common/PageHeader'
+import { EmptyState } from '@/components/common/EmptyState'
 import { getTranslations } from 'next-intl/server'
 
 type FilterStatus = 'all' | 'in_progress' | 'completed'
@@ -92,15 +95,14 @@ export default async function SeriesPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        {user && (
+      <PageHeader
+        title={t('title')}
+        action={user ? (
           <Link href="/series/new">
-            <Button>{t('create')}</Button>
+            <Button size="sm">{t('create')}</Button>
           </Link>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Search & Filters */}
       <div className="mb-6">
@@ -163,12 +165,11 @@ export default async function SeriesPage({
         </Card>
       ) : (
         <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              {query
-                ? t('searchEmpty')
-                : t('empty')}
-            </p>
+          <CardContent className="p-0">
+            <EmptyState
+              icon={Layers}
+              message={query ? t('searchEmpty') : t('empty')}
+            />
           </CardContent>
         </Card>
       )}

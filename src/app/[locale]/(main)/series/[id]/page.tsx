@@ -3,10 +3,12 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Trophy, Users, User, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   SeriesWithOrganizer,
   seriesStatusLabels,
@@ -15,6 +17,10 @@ import { TournamentWithOrganizer } from '@/types/tournament'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
 import { TeamApplicationForm } from '@/components/series/TeamApplicationForm'
 import { ApplicationManage } from '@/components/series/ApplicationManage'
+import { BannerImage } from '@/components/common/BannerImage'
+import { StatusIndicator } from '@/components/common/StatusIndicator'
+import { MetaItem } from '@/components/common/MetaItem'
+import { EmptyState } from '@/components/common/EmptyState'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -169,63 +175,76 @@ export default async function SeriesDetailPage({ params }: Props) {
     }
   }
 
-  const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'outline' }> = {
-    draft: { variant: 'outline' },
-    registration: { variant: 'secondary' },
-    in_progress: { variant: 'default' },
-    completed: { variant: 'outline' },
-    cancelled: { variant: 'outline' },
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
+      {/* Hero Banner */}
+      <BannerImage
+        src={series.cover_image_url}
+        alt={series.title}
+        id={series.id}
+        variant="hero"
+        priority
+        className="mb-4"
+      />
+
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-bold">{series.title}</h1>
-            <Badge variant={statusConfig[series.status]?.variant ?? 'outline'}>
-              {seriesStatusLabels[series.status]}
-            </Badge>
-            <Badge variant="outline">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h1 className="text-xl font-bold sm:text-2xl">{series.title}</h1>
+            <StatusIndicator status={series.status} label={seriesStatusLabels[series.status]} size="md" />
+            <Badge variant="outline" className="text-xs">
               {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
             </Badge>
           </div>
-          <p className="text-muted-foreground">
-            {t('detail.organizer')}: {series.organizer.display_name}
-          </p>
+          <MetaItem icon={User} className="text-sm">{series.organizer.display_name}</MetaItem>
         </div>
         {isOrganizer && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Link href={`/series/${id}/edit`}>
-              <Button variant="outline">{t('detail.edit')}</Button>
+              <Button variant="outline" size="sm">{t('detail.edit')}</Button>
             </Link>
             <Link href={`/tournaments/new?series_id=${id}`}>
-              <Button>{t('detail.addTournament')}</Button>
+              <Button size="sm">{t('detail.addTournament')}</Button>
             </Link>
           </div>
         )}
       </div>
 
       {/* Info Cards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{tournaments?.length || 0}</div>
-            <div className="text-sm text-muted-foreground">{t('detail.tournamentCount')}</div>
+          <CardContent className="p-3 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div>
+              <div className="text-lg font-bold leading-none">{tournaments?.length || 0}</div>
+              <div className="text-xs text-muted-foreground">{t('detail.tournamentCount')}</div>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{seriesStatusLabels[series.status]}</div>
-            <div className="text-sm text-muted-foreground">{t('detail.status')}</div>
+          <CardContent className="p-3 flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div>
+              <div className="text-lg font-bold leading-none">{seriesTeams?.length || 0}</div>
+              <div className="text-xs text-muted-foreground">チーム</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex items-center gap-2">
+            <StatusIndicator status={series.status} showIcon showDot={false} className="shrink-0" />
+            <div>
+              <div className="text-lg font-bold leading-none">{seriesStatusLabels[series.status]}</div>
+              <div className="text-xs text-muted-foreground">状態</div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="standings">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 w-full overflow-x-auto justify-start">
           <TabsTrigger value="standings">順位表</TabsTrigger>
           <TabsTrigger value="teams">チーム ({seriesTeams?.length || 0})</TabsTrigger>
           <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
@@ -259,27 +278,27 @@ export default async function SeriesDetailPage({ params }: Props) {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b bg-muted/50">
-                              <th className="px-4 py-2 text-left">#</th>
-                              <th className="px-4 py-2 text-left">チーム</th>
-                              <th className="px-4 py-2 text-center">試合</th>
-                              <th className="px-4 py-2 text-center">勝</th>
-                              <th className="px-4 py-2 text-center">負</th>
-                              <th className="px-4 py-2 text-center">勝点</th>
-                              <th className="px-4 py-2 text-center">R差</th>
-                              <th className="px-4 py-2 text-center">M差</th>
+                              <th className="px-3 py-2 text-left w-8">#</th>
+                              <th className="px-3 py-2 text-left">チーム</th>
+                              <th className="px-3 py-2 text-center hidden sm:table-cell">試合</th>
+                              <th className="px-3 py-2 text-center">勝</th>
+                              <th className="px-3 py-2 text-center">負</th>
+                              <th className="px-3 py-2 text-center">勝点</th>
+                              <th className="px-3 py-2 text-center hidden md:table-cell">R差</th>
+                              <th className="px-3 py-2 text-center hidden md:table-cell">M差</th>
                             </tr>
                           </thead>
                           <tbody>
                             {blockTeams.map(([, team], rank) => (
                               <tr key={rank} className="border-b last:border-0 hover:bg-muted/30">
-                                <td className="px-4 py-2 font-medium">{rank + 1}</td>
-                                <td className="px-4 py-2 font-medium">{team.team_name}</td>
-                                <td className="px-4 py-2 text-center">{team.matches_played}</td>
-                                <td className="px-4 py-2 text-center text-green-600">{team.wins}</td>
-                                <td className="px-4 py-2 text-center text-red-600">{team.losses}</td>
-                                <td className="px-4 py-2 text-center font-bold">{team.total_win_points}</td>
-                                <td className="px-4 py-2 text-center">{team.round_diff > 0 ? '+' : ''}{team.round_diff}</td>
-                                <td className="px-4 py-2 text-center">{team.match_diff > 0 ? '+' : ''}{team.match_diff}</td>
+                                <td className="px-3 py-2 font-medium">{rank + 1}</td>
+                                <td className="px-3 py-2 font-medium truncate max-w-[120px] sm:max-w-none">{team.team_name}</td>
+                                <td className="px-3 py-2 text-center hidden sm:table-cell">{team.matches_played}</td>
+                                <td className="px-3 py-2 text-center text-green-600">{team.wins}</td>
+                                <td className="px-3 py-2 text-center text-red-600">{team.losses}</td>
+                                <td className="px-3 py-2 text-center font-bold">{team.total_win_points}</td>
+                                <td className="px-3 py-2 text-center hidden md:table-cell">{team.round_diff > 0 ? '+' : ''}{team.round_diff}</td>
+                                <td className="px-3 py-2 text-center hidden md:table-cell">{team.match_diff > 0 ? '+' : ''}{team.match_diff}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -312,25 +331,26 @@ export default async function SeriesDetailPage({ params }: Props) {
                 <CardContent className="p-0">
                   <div className="divide-y">
                     {seriesTeams.map(team => (
-                      <div key={team.id} className="flex items-center justify-between px-4 py-3">
+                      <Link key={team.id} href={`/teams/${team.id}`} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
-                            {team.name.charAt(0)}
-                          </div>
-                          <span className="font-medium">{team.name}</span>
+                          <Avatar className="h-8 w-8">
+                            {team.avatar_url && <AvatarImage src={team.avatar_url} alt="" />}
+                            <AvatarFallback className="text-xs font-bold">
+                              {team.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm">{team.name}</span>
                         </div>
-                        <Link href={`/teams/${team.id}`}>
-                          <Button variant="ghost" size="sm">詳細</Button>
-                        </Link>
-                      </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </Link>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             ) : (
               <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  参加チームはまだありません
+                <CardContent className="p-0">
+                  <EmptyState icon={Users} message="参加チームはまだありません" />
                 </CardContent>
               </Card>
             )}
