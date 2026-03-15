@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   SeriesWithOrganizer,
   seriesStatusLabels,
-  pointSystemLabels,
 } from '@/types/series'
 import { useTranslations } from 'next-intl'
 
@@ -16,25 +15,10 @@ type Props = {
 
 const statusConfig: Record<string, { dot: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   draft: { dot: '⚪', variant: 'outline' },
-  active: { dot: '🟢', variant: 'default' },
+  registration: { dot: '🔵', variant: 'secondary' },
+  in_progress: { dot: '🟢', variant: 'default' },
   completed: { dot: '⚫', variant: 'outline' },
   cancelled: { dot: '🔴', variant: 'destructive' },
-}
-
-function formatDateRange(startDate: string | null, endDate: string | null, notSetLabel: string): string {
-  if (!startDate && !endDate) return notSetLabel
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return `${date.getMonth() + 1}/${date.getDate()}`
-  }
-
-  if (startDate && endDate) {
-    return `${formatDate(startDate)} - ${formatDate(endDate)}`
-  }
-  if (startDate) return `${formatDate(startDate)} -`
-  if (endDate) return `- ${formatDate(endDate)}`
-  return ''
 }
 
 export function SeriesListItem({
@@ -44,7 +28,7 @@ export function SeriesListItem({
   showManageLink = false,
 }: Props) {
   const t = useTranslations('series')
-  const config = statusConfig[series.status]
+  const config = statusConfig[series.status] ?? statusConfig.draft
   const href = showManageLink
     ? `/series/${series.id}/edit`
     : `/series/${series.id}`
@@ -61,7 +45,7 @@ export function SeriesListItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate group-hover:underline">
-            {series.name}
+            {series.title}
           </span>
           <Badge variant={config.variant} className="text-xs shrink-0">
             {seriesStatusLabels[series.status]}
@@ -71,9 +55,7 @@ export function SeriesListItem({
           </Badge>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-          <span>{pointSystemLabels[series.point_system]}</span>
           <span>{tournamentCount}{t('list.tournamentUnit')}</span>
-          <span>{formatDateRange(series.start_date, series.end_date, t('list.periodNotSet'))}</span>
           {showOrganizer && (
             <span>{t('detail.organizer')}: {series.organizer.display_name}</span>
           )}

@@ -122,7 +122,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         .from('series')
         .select('*')
         .eq('organizer_id', user.id)
-        .in('status', ['draft', 'active'])
+        .in('status', ['draft', 'in_progress'])
         .order('created_at', { ascending: false })
 
       if (data) {
@@ -456,7 +456,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                       <option value="">{t('series.none')}</option>
                       {series.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name}
+                          {s.title}
                         </option>
                       ))}
                     </select>

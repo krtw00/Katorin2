@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SeriesWithOrganizer, seriesStatusLabels } from '@/types/series'
-import { SeriesRankingTable } from '@/components/series/SeriesRankingTable'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -35,13 +34,6 @@ export default async function SeriesRankingPage({ params }: Props) {
     notFound()
   }
 
-  // Fetch all rankings
-  const { data: rankings } = await supabase
-    .from('series_rankings')
-    .select('*')
-    .eq('series_id', id)
-    .order('rank', { ascending: true })
-
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
@@ -52,7 +44,7 @@ export default async function SeriesRankingPage({ params }: Props) {
           </Button>
         </Link>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{series.name}</h1>
+          <h1 className="text-2xl font-bold">{series.title}</h1>
           <Badge variant="outline">
             {seriesStatusLabels[series.status]}
           </Badge>
@@ -60,17 +52,15 @@ export default async function SeriesRankingPage({ params }: Props) {
         <p className="text-muted-foreground mt-1">{t('detail.ranking')}</p>
       </div>
 
-      {/* Ranking Table */}
+      {/* Ranking - placeholder until Phase 3 */}
       <Card>
         <CardHeader>
           <CardTitle>{t('detail.overallRanking')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <SeriesRankingTable
-            rankings={rankings || []}
-            pointSystem={series.point_system}
-            showDetails
-          />
+          <p className="text-center text-muted-foreground py-8">
+            {t('ranking.empty')}
+          </p>
         </CardContent>
       </Card>
     </div>
