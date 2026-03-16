@@ -30,7 +30,8 @@ export function BottomNav() {
       >
         {NAV_ITEMS.map(({ href, icon: Icon, labelKey }) => {
           const isActive = normalizedPath.startsWith(href)
-          const actualHref = labelKey === 'mypage' && !isAuthenticated ? '/login' : href
+          const needsAuth = labelKey === 'mypage' || labelKey === 'teams'
+          const actualHref = needsAuth && !isAuthenticated ? '/login' : href
 
           return (
             <Link
