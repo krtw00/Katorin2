@@ -46,5 +46,4 @@ export const seriesStatusLabels: Record<SeriesStatus, string> = {
 export type SeriesFormData = {
   title: string
   description: string
-  entry_type: 'individual' | 'team'
 }
