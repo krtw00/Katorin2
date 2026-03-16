@@ -877,57 +877,21 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                   </div>
                 </div>
 
-                {/* Team Battle Settings (only for team) */}
-                {formData.entry_type === 'team' && (
-                  <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                    <h3 className="text-sm font-medium">チーム戦設定</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">メインオーダー人数</label>
-                        <Input
-                          type="number" min="2" max="10"
-                          value={formData.order_size}
-                          onChange={(e) => updateFormData('order_size', parseInt(e.target.value) || 3)}
-                          disabled={loading} className="w-20"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">サブ人数</label>
-                        <Input
-                          type="number" min="0" max="5"
-                          value={formData.sub_count}
-                          onChange={(e) => updateFormData('sub_count', parseInt(e.target.value) || 0)}
-                          disabled={loading} className="w-20"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">1ラウンドの対戦数</label>
-                        <Input
-                          type="number" min="1" max="10"
-                          value={formData.players_per_round}
-                          onChange={(e) => updateFormData('players_per_round', parseInt(e.target.value) || 3)}
-                          disabled={loading} className="w-20"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">先取ラウンド数</label>
-                        <Input
-                          type="number" min="1" max="5"
-                          value={formData.rounds_to_win}
-                          onChange={(e) => updateFormData('rounds_to_win', parseInt(e.target.value) || 2)}
-                          disabled={loading} className="w-20"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">1勝あたりの勝ち点</label>
-                        <Input
-                          type="number" min="1" max="10"
-                          value={formData.win_point_value}
-                          onChange={(e) => updateFormData('win_point_value', parseInt(e.target.value) || 3)}
-                          disabled={loading} className="w-20"
-                        />
-                      </div>
-                    </div>
+                {/* チーム戦: チーム人数上限のみ（詳細ルールはシリーズ側で管理） */}
+                {formData.entry_type === 'team' && !defaultSeriesId && (
+                  <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+                    <label className="text-sm font-medium">チーム人数上限</label>
+                    <p className="text-xs text-muted-foreground">1チームあたりの最大メンバー数</p>
+                    <Input
+                      type="number" min="2" max="20"
+                      value={formData.order_size + formData.sub_count}
+                      onChange={(e) => {
+                        const total = parseInt(e.target.value) || 5
+                        updateFormData('order_size', total)
+                        updateFormData('sub_count', 0)
+                      }}
+                      disabled={loading} className="w-24"
+                    />
                   </div>
                 )}
 
@@ -937,7 +901,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                   <div className="space-y-2">
                     {[
                       { value: 'single_elimination', label: t('tournamentFormat.singleElimination'), desc: t('tournamentFormat.singleEliminationDesc'), enabled: true },
-                      { value: 'double_elimination', label: t('tournamentFormat.doubleElimination'), desc: t('tournamentFormat.doubleEliminationDesc'), enabled: false },
+                      { value: 'double_elimination', label: t('tournamentFormat.doubleElimination'), desc: t('tournamentFormat.doubleEliminationDesc'), enabled: true },
                       { value: 'swiss', label: t('tournamentFormat.swiss'), desc: t('tournamentFormat.swissDesc'), enabled: true },
                       { value: 'round_robin', label: t('tournamentFormat.roundRobin'), desc: t('tournamentFormat.roundRobinDesc'), enabled: true },
                     ].map((option) => (
