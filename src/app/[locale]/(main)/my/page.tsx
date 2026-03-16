@@ -95,8 +95,117 @@ export default async function MyPage() {
     countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
   })
 
+  // Get user's team IDs (for team matches)
+  const { data: teamMemberships } = await supabase
+    .from('team_members')
+    .select('team_id, team:teams(id, name)')
+    .eq('user_id', user.id)
+
+  const userTeamIds = teamMemberships?.map((tm: { team_id: string }) => tm.team_id) || []
+  const teamNameMap = new Map<string, string>()
+  teamMemberships?.forEach((tm: { team_id: string; team: { id: string; name: string } | null }) => {
+    if (tm.team) teamNameMap.set(tm.team.id, tm.team.name)
+  })
+
+  // Get in_progress matches (individual: user is player1/player2)
+  const [{ data: individualInProgress }, { data: teamInProgress }, { data: individualPendingReport }, { data: teamPendingReport }] = await Promise.all([
+    supabase
+      .from('matches')
+      .select('id, match_number, round, tournament_id, player1_id, player2_id, status, tournament:tournaments(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
+      .eq('status', 'in_progress')
+      .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`),
+    // Get in_progress matches (team: user's team is team1/team2)
+    userTeamIds.length > 0
+      ? supabase
+          .from('matches')
+          .select('id, match_number, round, tournament_id, team1_id, team2_id, status, tournament:tournaments(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
+          .eq('status', 'in_progress')
+          .or(userTeamIds.map(id => `team1_id.eq.${id},team2_id.eq.${id}`).join(','))
+      : Promise.resolve({ data: null }),
+    // Get completed matches with pending result report (individual)
+    supabase
+      .from('matches')
+      .select('id, match_number, round, tournament_id, player1_id, player2_id, status, winner_id, report_status, tournament:tournaments(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
+      .eq('status', 'completed')
+      .is('winner_id', null)
+      .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`),
+    // Get completed matches with pending result report (team)
+    userTeamIds.length > 0
+      ? supabase
+          .from('matches')
+          .select('id, match_number, round, tournament_id, team1_id, team2_id, status, winner_team_id, report_status, tournament:tournaments(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
+          .eq('status', 'completed')
+          .is('winner_team_id', null)
+          .or(userTeamIds.map(id => `team1_id.eq.${id},team2_id.eq.${id}`).join(','))
+      : Promise.resolve({ data: null }),
+  ])
+
   // Build action items
   const actions: ActionItem[] = []
+
+  // Add next_match actions (individual)
+  individualInProgress?.forEach((match) => {
+    const tournament = match.tournament as { id: string; title: string } | null
+    if (!tournament) return
+    const isPlayer1 = match.player1_id === user.id
+    const opponent = isPlayer1
+      ? (match.player2 as { display_name: string } | null)?.display_name ?? '?'
+      : (match.player1 as { display_name: string } | null)?.display_name ?? '?'
+    actions.push({
+      type: 'next_match',
+      tournamentId: tournament.id,
+      tournamentTitle: tournament.title,
+      description: t('actions.nextMatch', { opponent }),
+      actionLabel: t('actions.goToMatch'),
+      actionHref: `/tournaments/${tournament.id}`,
+    })
+  })
+
+  // Add next_match actions (team)
+  teamInProgress?.forEach((match) => {
+    const tournament = match.tournament as { id: string; title: string } | null
+    if (!tournament) return
+    const isTeam1 = userTeamIds.includes(match.team1_id!)
+    const opponent = isTeam1
+      ? (match.team2 as { name: string } | null)?.name ?? '?'
+      : (match.team1 as { name: string } | null)?.name ?? '?'
+    actions.push({
+      type: 'next_match',
+      tournamentId: tournament.id,
+      tournamentTitle: tournament.title,
+      description: t('actions.nextMatch', { opponent }),
+      actionLabel: t('actions.goToMatch'),
+      actionHref: `/tournaments/${tournament.id}`,
+    })
+  })
+
+  // Add result_pending actions (individual)
+  individualPendingReport?.forEach((match) => {
+    const tournament = match.tournament as { id: string; title: string } | null
+    if (!tournament) return
+    actions.push({
+      type: 'result_pending',
+      tournamentId: tournament.id,
+      tournamentTitle: tournament.title,
+      description: t('actions.resultPending'),
+      actionLabel: t('actions.reportResult'),
+      actionHref: `/tournaments/${tournament.id}`,
+    })
+  })
+
+  // Add result_pending actions (team)
+  teamPendingReport?.forEach((match) => {
+    const tournament = match.tournament as { id: string; title: string } | null
+    if (!tournament) return
+    actions.push({
+      type: 'result_pending',
+      tournamentId: tournament.id,
+      tournamentTitle: tournament.title,
+      description: t('actions.resultPending'),
+      actionLabel: t('actions.reportResult'),
+      actionHref: `/tournaments/${tournament.id}`,
+    })
+  })
 
   // Check for tournaments that need bracket generation (organizer)
   organizedTournaments?.forEach((tournament) => {
@@ -123,8 +232,6 @@ export default async function MyPage() {
       }
     }
   })
-
-  // TODO: Add next_match and result_pending actions when match data is available
 
   // Group tournaments by status
   const groupByStatus = (tournaments: TournamentWithOrganizer[]) => {

@@ -831,7 +831,11 @@
       "bracketReady": "{count} participants - Bracket ready",
       "entryOpen": "{count}/{max} participants - Entry open",
       "goToManage": "Go to Management",
-      "viewDetails": "View Details"
+      "viewDetails": "View Details",
+      "nextMatch": "In Progress: vs {opponent}",
+      "resultPending": "Result pending",
+      "goToMatch": "View Match",
+      "reportResult": "Report Result"
     },
     "tabs": {
       "participating": "Participating",
