@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getTranslations } from 'next-intl/server'
 
 export type MatchReport = {
   winner_id: string
@@ -20,10 +21,11 @@ export async function reportMatchResult(
   report: MatchReport
 ): Promise<ReportMatchResultState> {
   const supabase = await createClient()
+  const t = await getTranslations('tournament.actions')
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    return { success: false, error: 'ログインが必要です' }
+    return { success: false, error: t('loginRequired') }
   }
 
   // 試合データ取得
@@ -34,19 +36,19 @@ export async function reportMatchResult(
     .single()
 
   if (fetchError || !match) {
-    return { success: false, error: '試合が見つかりません' }
+    return { success: false, error: t('matchNotFound') }
   }
 
   // 完了済みチェック
   if (match.status === 'completed') {
-    return { success: false, error: 'この試合は既に確定しています' }
+    return { success: false, error: t('matchAlreadyConfirmed') }
   }
 
   // 対戦者かどうか確認
   const isPlayer1 = match.player1_id === user.id
   const isPlayer2 = match.player2_id === user.id
   if (!isPlayer1 && !isPlayer2) {
-    return { success: false, error: 'この試合の対戦者ではありません' }
+    return { success: false, error: t('notParticipant') }
   }
 
   // 報告データ構築

@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PieChart } from '@/components/common/PieChart'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -25,6 +26,9 @@ type WeekDeckData = {
 }
 
 export default async function SeriesMetaPage({ params }: Props) {
+  const t = await getTranslations('series.meta')
+  const tNav = await getTranslations('nav')
+  const ts = await getTranslations('series.detail')
   const { id } = await params
   const supabase = await createClient()
 
@@ -129,7 +133,7 @@ export default async function SeriesMetaPage({ params }: Props) {
     if (!tid) continue
     const wd = weekDataMap.get(tid)
     if (!wd) continue
-    const theme = o.deck_theme?.trim() || o.deck_name?.trim() || '不明'
+    const theme = o.deck_theme?.trim() || o.deck_name?.trim() || t('unknown')
     wd.decks.set(theme, (wd.decks.get(theme) || 0) + 1)
     wd.total++
   }
@@ -198,7 +202,7 @@ export default async function SeriesMetaPage({ params }: Props) {
       case 'up': return <TrendingUp className="h-4 w-4 text-green-500" />
       case 'down': return <TrendingDown className="h-4 w-4 text-red-500" />
       case 'new': return <Badge variant="default" className="text-[10px] px-1 py-0">NEW</Badge>
-      case 'gone': return <Badge variant="outline" className="text-[10px] px-1 py-0 text-muted-foreground">消滅</Badge>
+      case 'gone': return <Badge variant="outline" className="text-[10px] px-1 py-0 text-muted-foreground">{t('disappeared')}</Badge>
       default: return <Minus className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -207,36 +211,36 @@ export default async function SeriesMetaPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/series" className="hover:text-foreground transition-colors">シリーズ</Link>
+        <Link href="/series" className="hover:text-foreground transition-colors">{tNav('series')}</Link>
         <span>/</span>
         <Link href={`/series/${id}`} className="hover:text-foreground transition-colors">{series.title}</Link>
         <span>/</span>
-        <span className="text-foreground">メタ分析</span>
+        <span className="text-foreground">{t('title')}</span>
       </nav>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BarChart3 className="h-6 w-6 text-muted-foreground" />
-          <h1 className="text-xl font-bold sm:text-2xl">メタ分析</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">{t('title')}</h1>
         </div>
         <Link href={`/series/${id}`}>
           <button className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            シリーズに戻る
+            {t('backToSeries')}
           </button>
         </Link>
       </div>
 
       {trendData.length === 0 ? (
-        <EmptyState icon={BarChart3} message="デッキデータがありません" />
+        <EmptyState icon={BarChart3} message={t('noData')} />
       ) : (
         <>
           {/* シリーズ全体の円グラフ */}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">デッキ使用分布</CardTitle>
-                <Badge variant="outline">{grandTotal}件</Badge>
+                <CardTitle className="text-lg">{t('deckDistribution')}</CardTitle>
+                <Badge variant="outline">{t('count', { count: grandTotal })}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -251,8 +255,8 @@ export default async function SeriesMetaPage({ params }: Props) {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">デッキ使用率ランキング</CardTitle>
-                <Badge variant="outline">{grandTotal}件</Badge>
+                <CardTitle className="text-lg">{t('deckRanking')}</CardTitle>
+                <Badge variant="outline">{t('count', { count: grandTotal })}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -266,7 +270,7 @@ export default async function SeriesMetaPage({ params }: Props) {
                         <TrendIcon trend={d.trend} />
                       </div>
                       <span className="text-muted-foreground tabular-nums">
-                        {d.totalCount}回 ({d.totalRate}%)
+                        {t('usage', { count: d.totalCount, rate: d.totalRate })}
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
@@ -284,23 +288,23 @@ export default async function SeriesMetaPage({ params }: Props) {
           {/* Week別メタ変遷テーブル */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Week別メタ変遷</CardTitle>
+              <CardTitle className="text-lg">{t('metaTrend')}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="px-3 py-2 text-left sticky left-0 bg-muted/50">デッキ</th>
-                      <th className="px-3 py-2 text-center w-10">変動</th>
+                      <th className="px-3 py-2 text-left sticky left-0 bg-muted/50">{t('deck')}</th>
+                      <th className="px-3 py-2 text-center w-10">{t('trend')}</th>
                       {weekData.map((wd, i) => (
                         <th key={wd.tournamentId} className="px-3 py-2 text-center whitespace-nowrap">
                           <Link href={`/tournaments/${wd.tournamentId}/deck-stats`} className="hover:text-primary transition-colors">
-                            Week {i + 1}
+                            {t('week')} {i + 1}
                           </Link>
                         </th>
                       ))}
-                      <th className="px-3 py-2 text-center font-bold">累計</th>
+                      <th className="px-3 py-2 text-center font-bold">{t('total')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -347,10 +351,10 @@ export default async function SeriesMetaPage({ params }: Props) {
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">
                         <Link href={`/tournaments/${wd.tournamentId}/deck-stats`} className="hover:text-primary transition-colors">
-                          Week {i + 1}
+                          {t('week')} {i + 1}
                         </Link>
                       </CardTitle>
-                      <Badge variant="outline" className="text-xs">{wd.total}件</Badge>
+                      <Badge variant="outline" className="text-xs">{t('count', { count: wd.total })}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">{wd.tournamentTitle}</p>
                   </CardHeader>
@@ -370,9 +374,9 @@ export default async function SeriesMetaPage({ params }: Props) {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">オーダー提出状況</CardTitle>
+                  <CardTitle className="text-lg">{t('orderStatus')}</CardTitle>
                   {missingCount > 0 && (
-                    <Badge variant="destructive">{missingCount}件未提出</Badge>
+                    <Badge variant="destructive">{t('notSubmitted', { count: missingCount })}</Badge>
                   )}
                 </div>
               </CardHeader>
@@ -381,9 +385,9 @@ export default async function SeriesMetaPage({ params }: Props) {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/50">
-                        <th className="px-3 py-2 text-left sticky left-0 bg-muted/50">チーム</th>
+                        <th className="px-3 py-2 text-left sticky left-0 bg-muted/50">{ts('standingsTable.team')}</th>
                         {weekData.map((_, i) => (
-                          <th key={i} className="px-3 py-2 text-center whitespace-nowrap">Week {i + 1}</th>
+                          <th key={i} className="px-3 py-2 text-center whitespace-nowrap">{t('week')} {i + 1}</th>
                         ))}
                       </tr>
                     </thead>

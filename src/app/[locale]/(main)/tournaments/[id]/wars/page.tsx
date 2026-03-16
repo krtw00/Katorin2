@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { tournamentStatusLabels } from '@/types/tournament'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -19,6 +19,7 @@ type Props = {
 export default async function WarsPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const t = await getTranslations()
 
   // tournament, matches, user を並列取得
   const [{ data: tournament }, { data: matches }, { data: { user } }] = await Promise.all([
@@ -97,20 +98,20 @@ export default async function WarsPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <Link href={`/tournaments/${id}`}>
-          <Button variant="ghost" size="sm">← 大会詳細</Button>
+          <Button variant="ghost" size="sm">{t('tournament.bracket.backToDetail')}</Button>
         </Link>
         <h1 className="text-2xl font-bold mt-2">{tournament.title}</h1>
         <p className="text-sm text-muted-foreground">
-          War一覧 / {tournamentStatusLabels[tournament.status]}
+          {t('tournament.detail.warList')} / {t('labels.tournamentStatus.' + tournament.status)}
         </p>
         <div className="flex gap-2 mt-3">
           {isOrganizer && (
             <Link href={`/tournaments/${id}/manage`}>
-              <Button variant="outline" size="sm">管理画面</Button>
+              <Button variant="outline" size="sm">{t('tournament.detail.manageButton')}</Button>
             </Link>
           )}
           <Link href={`/tournaments/${id}/standings`}>
-            <Button variant="outline" size="sm">順位表</Button>
+            <Button variant="outline" size="sm">{t('tournament.detail.standings')}</Button>
           </Link>
         </div>
       </div>

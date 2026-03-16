@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 type Application = {
   id: string
@@ -27,6 +28,7 @@ type Props = {
 }
 
 export function ApplicationManage({ seriesId, applications: initialApps }: Props) {
+  const t = useTranslations('series.application')
   const [apps, setApps] = useState(initialApps)
   const [processing, setProcessing] = useState<string | null>(null)
   const router = useRouter()
@@ -89,9 +91,9 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'approved': return <Badge className="bg-green-600">承認</Badge>
-      case 'rejected': return <Badge variant="destructive">却下</Badge>
-      default: return <Badge variant="outline">審査中</Badge>
+      case 'approved': return <Badge className="bg-green-600">{t('approved')}</Badge>
+      case 'rejected': return <Badge variant="destructive">{t('rejected')}</Badge>
+      default: return <Badge variant="outline">{t('pending')}</Badge>
     }
   }
 
@@ -102,7 +104,7 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          エントリー申請はまだありません
+          {t('empty')}
         </CardContent>
       </Card>
     )
@@ -123,7 +125,7 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
                       <span className="text-xs text-muted-foreground">{app.member_count}名</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      リーダー: {app.leader_name} / {formatDate(app.applied_at)}
+                      {t('leader')} {app.leader_name} / {formatDate(app.applied_at)}
                     </p>
                     {app.message && (
                       <p className="text-sm text-muted-foreground bg-muted/50 rounded px-2 py-1 mt-1">
@@ -138,7 +140,7 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
                       onClick={() => handleAction(app.id, app.team_id, 'rejected')}
                       disabled={processing === app.id}
                     >
-                      却下
+                      {t('reject')}
                     </Button>
                     <Button
                       size="sm"
@@ -146,7 +148,7 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
                       onClick={() => handleAction(app.id, app.team_id, 'approved')}
                       disabled={processing === app.id}
                     >
-                      {processing === app.id ? '処理中...' : '承認'}
+                      {processing === app.id ? t('approving') : t('approve')}
                     </Button>
                   </div>
                 </div>

@@ -31,6 +31,7 @@ type Props = {
 
 export default function TournamentEntryPage({ params }: Props) {
   const t = useTranslations('tournament.entry')
+  const tc = useTranslations('common')
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [customFields, setCustomFields] = useState<CustomField[]>([])
   const [loading, setLoading] = useState(true)
@@ -88,7 +89,7 @@ export default function TournamentEntryPage({ params }: Props) {
 
     try {
       if (!user || !tournament) {
-        setError('ログインが必要です')
+        setError(t('loginRequiredError'))
         return
       }
 
@@ -100,7 +101,7 @@ export default function TournamentEntryPage({ params }: Props) {
       // Validate required custom fields
       for (const field of customFields) {
         if (field.required && !customData[field.key]?.trim()) {
-          setError(`${field.label}を入力してください`)
+          setError(t('fieldRequired', { field: field.label }))
           return
         }
       }
@@ -125,7 +126,7 @@ export default function TournamentEntryPage({ params }: Props) {
         .eq('tournament_id', tournament.id)
 
       if (count && count >= tournament.max_participants) {
-        setError('定員に達しています')
+        setError(t('capacityFull'))
         return
       }
 
@@ -144,7 +145,7 @@ export default function TournamentEntryPage({ params }: Props) {
           )
 
           if (isUploadError(result)) {
-            setError(`画像のアップロードに失敗しました: ${result.message}`)
+            setError(t('uploadFailed', { error: result.message }))
             setUploadingImages(false)
             return
           }
@@ -183,7 +184,7 @@ export default function TournamentEntryPage({ params }: Props) {
       <div className="container mx-auto px-4 py-8 max-w-md">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">読み込み中...</p>
+            <p className="text-center text-muted-foreground">{tc('loading')}</p>
           </CardContent>
         </Card>
       </div>
@@ -209,12 +210,12 @@ export default function TournamentEntryPage({ params }: Props) {
           <CardHeader>
             <CardTitle>{t('loginRequired')}</CardTitle>
             <CardDescription>
-              トーナメントにエントリーするにはログインしてください
+              {t('loginRequired')}
             </CardDescription>
           </CardHeader>
           <CardFooter>
             <Link href="/login" className="w-full">
-              <Button className="w-full">ログイン</Button>
+              <Button className="w-full">{tc('login')}</Button>
             </Link>
           </CardFooter>
         </Card>
@@ -239,7 +240,7 @@ export default function TournamentEntryPage({ params }: Props) {
 
             <div className="space-y-2">
               <label htmlFor="display_name" className="text-sm font-medium">
-                表示名 <span className="text-destructive">*</span>
+                {t('displayNameLabel')} <span className="text-destructive">*</span>
               </label>
               <Input
                 id="display_name"
@@ -250,7 +251,7 @@ export default function TournamentEntryPage({ params }: Props) {
                 maxLength={50}
               />
               <p className="text-xs text-muted-foreground">
-                この大会で使用する表示名を入力してください
+                {t('displayNameHint')}
               </p>
             </div>
 
@@ -314,7 +315,7 @@ export default function TournamentEntryPage({ params }: Props) {
                         if (file) {
                           // Validate file size (3MB max)
                           if (file.size > 3 * 1024 * 1024) {
-                            setError('画像サイズは3MB以下にしてください')
+                            setError(t('imageSizeError'))
                             return
                           }
                           // Create preview URL
@@ -340,7 +341,7 @@ export default function TournamentEntryPage({ params }: Props) {
                           className="max-w-[200px] max-h-[200px] rounded border object-cover"
                         />
                         <p className="text-xs text-muted-foreground">
-                          選択: {customData[field.key]}
+                          {t('selected', { value: customData[field.key] })}
                         </p>
                       </div>
                     )}
@@ -356,10 +357,10 @@ export default function TournamentEntryPage({ params }: Props) {
               onClick={() => router.back()}
               disabled={submitting}
             >
-              キャンセル
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={submitting || uploadingImages} className="flex-1">
-              {uploadingImages ? '画像アップロード中...' : submitting ? 'エントリー中...' : 'エントリーする'}
+              {uploadingImages ? t('uploadingImage') : submitting ? t('submitting') : t('submit')}
             </Button>
           </CardFooter>
         </form>

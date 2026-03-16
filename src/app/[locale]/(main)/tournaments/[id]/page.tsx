@@ -10,13 +10,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
-import {
-  tournamentStatusLabels,
-  tournamentFormatLabels,
-  matchFormatLabels,
-} from '@/types/tournament'
 import { getTournamentConfig } from '@/lib/tournament-config'
 import { CheckInButton } from '@/components/tournament/CheckInButton'
+import { getTranslations } from 'next-intl/server'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -25,6 +21,7 @@ type Props = {
 export default async function TournamentDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
+  const t = await getTranslations()
 
   // tournament と user を並列取得
   const [{ data: tournament, error }, { data: { user } }] = await Promise.all([
@@ -119,7 +116,7 @@ export default async function TournamentDetailPage({ params }: Props) {
   const organizer = tournament.organizer as { display_name: string } | { display_name: string }[] | null
   const organizerName = organizer
     ? (Array.isArray(organizer) ? organizer[0]?.display_name : organizer.display_name)
-    : '不明'
+    : t('tournament.detail.unknown')
 
   const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
     draft: 'outline', published: 'outline', recruiting: 'default',
@@ -141,7 +138,7 @@ export default async function TournamentDetailPage({ params }: Props) {
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         {seriesInfo ? (
           <>
-            <Link href="/series" className="hover:text-foreground transition-colors">シリーズ</Link>
+            <Link href="/series" className="hover:text-foreground transition-colors">{t('nav.series')}</Link>
             <span>/</span>
             <Link href={`/series/${seriesInfo.id}`} className="hover:text-foreground transition-colors">{seriesInfo.title}</Link>
             <span>/</span>
@@ -149,7 +146,7 @@ export default async function TournamentDetailPage({ params }: Props) {
           </>
         ) : (
           <>
-            <Link href="/tournaments" className="hover:text-foreground transition-colors">大会</Link>
+            <Link href="/tournaments" className="hover:text-foreground transition-colors">{t('nav.tournaments')}</Link>
             <span>/</span>
             <span className="text-foreground">{tournament.title}</span>
           </>
@@ -163,15 +160,15 @@ export default async function TournamentDetailPage({ params }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
               <Badge variant={statusVariant[tournament.status] || 'outline'}>
-                {tournamentStatusLabels[tournament.status]}
+                {t('labels.tournamentStatus.' + tournament.status)}
               </Badge>
               <Badge variant="outline">
-                {isTeam ? 'チーム戦' : '個人戦'}
+                {isTeam ? t('tournament.detail.teamBattle') : t('tournament.detail.individualBattle')}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              主催: {organizerName}
-              {tournament.round_number && ` / 第${tournament.round_number}節`}
+              {t('tournament.detail.organizer')}: {organizerName}
+              {tournament.round_number && ` / ${t('tournament.detail.roundLabel', { n: tournament.round_number })}`}
             </p>
           </div>
         </CardHeader>
@@ -181,28 +178,28 @@ export default async function TournamentDetailPage({ params }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-muted/50 rounded-lg p-3 text-center">
               <p className="text-2xl font-bold">{isTeam ? teamEntryCount : participantCount}</p>
-              <p className="text-xs text-muted-foreground">{isTeam ? 'チーム' : '参加者'}</p>
+              <p className="text-xs text-muted-foreground">{isTeam ? t('tournament.detail.teams') : t('tournament.detail.participantsLabel')}</p>
             </div>
             {isTeam && (
               <>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold">{matchStats.completed}<span className="text-sm text-muted-foreground">/{matchStats.total}</span></p>
-                  <p className="text-xs text-muted-foreground">試合進行</p>
+                  <p className="text-xs text-muted-foreground">{t('tournament.detail.matchProgress')}</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold">{config.orderSize}v{config.orderSize}</p>
-                  <p className="text-xs text-muted-foreground">対戦形式</p>
+                  <p className="text-xs text-muted-foreground">{t('tournament.detail.matchFormat')}</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold">{config.roundsToWin ? `BO${(config.roundsToWin * 2) - 1}` : `${config.roundCount || 3}R`}</p>
-                  <p className="text-xs text-muted-foreground">ラウンド</p>
+                  <p className="text-xs text-muted-foreground">{t('tournament.detail.rounds')}</p>
                 </div>
               </>
             )}
             {!isTeam && (
               <div className="bg-muted/50 rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold">{tournament.max_participants}</p>
-                <p className="text-xs text-muted-foreground">定員</p>
+                <p className="text-xs text-muted-foreground">{t('tournament.detail.capacity')}</p>
               </div>
             )}
           </div>
@@ -211,7 +208,7 @@ export default async function TournamentDetailPage({ params }: Props) {
           {isTeam && matchStats.total > 0 && (
             <div>
               <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>進行状況</span>
+                <span>{t('tournament.detail.progress')}</span>
                 <span>{progressPct}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
@@ -226,18 +223,18 @@ export default async function TournamentDetailPage({ params }: Props) {
           {/* 大会情報テーブル */}
           <div className="border rounded-lg divide-y text-sm">
             <div className="flex justify-between px-4 py-2.5">
-              <span className="text-muted-foreground">形式</span>
-              <span>{tournamentFormatLabels[tournament.tournament_format]}</span>
+              <span className="text-muted-foreground">{t('tournament.detail.format')}</span>
+              <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
             </div>
             <div className="flex justify-between px-4 py-2.5">
-              <span className="text-muted-foreground">マッチ形式</span>
-              <span>{matchFormatLabels[config.matchFormat as 'bo1' | 'bo3' | 'bo5']}</span>
+              <span className="text-muted-foreground">{t('tournament.detail.matchFormat')}</span>
+              <span>{t('labels.matchFormat.' + config.matchFormat)}</span>
             </div>
             {isTeam && (
               <>
                 <div className="flex justify-between px-4 py-2.5">
-                  <span className="text-muted-foreground">オーダー</span>
-                  <span>メイン{config.orderSize}名{config.subCount > 0 ? ` + サブ${config.subCount}名` : ''}</span>
+                  <span className="text-muted-foreground">{t('tournament.detail.order')}</span>
+                  <span>{config.subCount > 0 ? t('tournament.detail.orderDetail', { main: config.orderSize, sub: config.subCount }) : t('tournament.detail.orderDetailNoSub', { main: config.orderSize })}</span>
                 </div>
                 {config.banPickEnabled && (
                   <div className="flex justify-between px-4 py-2.5">
@@ -247,14 +244,14 @@ export default async function TournamentDetailPage({ params }: Props) {
                 )}
                 {blocks.length > 0 && (
                   <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-muted-foreground">ブロック</span>
+                    <span className="text-muted-foreground">{t('tournament.detail.blocks')}</span>
                     <span>{blocks.map(b => b.block_name).join(', ')}</span>
                   </div>
                 )}
               </>
             )}
             <div className="flex justify-between px-4 py-2.5">
-              <span className="text-muted-foreground">開催日</span>
+              <span className="text-muted-foreground">{t('tournament.detail.startDate')}</span>
               <span>{formatDate(tournament.start_at)}</span>
             </div>
           </div>
@@ -272,9 +269,9 @@ export default async function TournamentDetailPage({ params }: Props) {
         {disputedCount > 0 && (
           <CardContent>
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
-              {disputedCount}件の試合で結果報告が不一致です。
+              {t('tournament.detail.conflictNotice', { count: disputedCount })}
               <Link href={`/tournaments/${id}/bracket`} className="underline ml-1">
-                トーナメント表で確認
+                {t('tournament.detail.checkBracket')}
               </Link>
             </div>
           </CardContent>
@@ -284,13 +281,13 @@ export default async function TournamentDetailPage({ params }: Props) {
           {isTeam && (
             <>
               <Link href={`/tournaments/${id}/wars`}>
-                <Button>War一覧</Button>
+                <Button>{t('tournament.detail.warList')}</Button>
               </Link>
               <Link href={`/tournaments/${id}/standings`}>
-                <Button variant="outline">順位表</Button>
+                <Button variant="outline">{t('tournament.detail.standings')}</Button>
               </Link>
               <Link href={`/tournaments/${id}/deck-stats`}>
-                <Button variant="outline">デッキ統計</Button>
+                <Button variant="outline">{t('tournament.detail.deckStats')}</Button>
               </Link>
             </>
           )}
@@ -298,7 +295,7 @@ export default async function TournamentDetailPage({ params }: Props) {
             <>
               {tournament.status === 'recruiting' && user && !isParticipant && (
                 <Link href={`/tournaments/${id}/entry`}>
-                  <Button>エントリーする</Button>
+                  <Button>{t('tournament.detail.entry')}</Button>
                 </Link>
               )}
               {myParticipant && (
@@ -310,14 +307,14 @@ export default async function TournamentDetailPage({ params }: Props) {
               )}
               <Link href={`/tournaments/${id}/bracket`}>
                 <Button variant={isParticipant && tournament.status === 'in_progress' ? 'default' : 'outline'}>
-                  {isParticipant && tournament.status === 'in_progress' ? 'トーナメント表 / 結果報告' : 'トーナメント表'}
+                  {isParticipant && tournament.status === 'in_progress' ? t('tournament.detail.bracketAndReport') : t('tournament.detail.bracket')}
                 </Button>
               </Link>
             </>
           )}
           {isOrganizer && (
             <Link href={`/tournaments/${id}/manage`}>
-              <Button variant="secondary">管理画面</Button>
+              <Button variant="secondary">{t('tournament.detail.manageButton')}</Button>
             </Link>
           )}
         </CardFooter>

@@ -32,16 +32,6 @@ export type SeriesWithTournaments = Series & {
   })[]
 }
 
-// ステータスラベル
-export const seriesStatusLabels: Record<SeriesStatus, string> = {
-  draft: '下書き',
-  published: '公開',
-  recruiting: '募集中',
-  in_progress: '進行中',
-  completed: '終了',
-  cancelled: 'キャンセル',
-}
-
 // フォーム型（新スキーマ用）
 export type SeriesFormData = {
   title: string

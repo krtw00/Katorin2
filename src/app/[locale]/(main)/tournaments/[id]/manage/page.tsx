@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   Tournament,
   ParticipantWithUser,
-  tournamentStatusLabels,
 } from '@/types/tournament'
 import { Tables, InviteStatus } from '@/types/database'
 import { generateSingleEliminationBracket, generateDoubleEliminationBracket } from '@/lib/tournament/bracket-generator'
@@ -34,6 +33,9 @@ type Props = {
 
 export default function TournamentManagePage({ params }: Props) {
   const t = useTranslations('tournament.manage')
+  const tl = useTranslations('labels')
+  const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [participants, setParticipants] = useState<ParticipantWithUser[]>([])
   const [invites, setInvites] = useState<TournamentInvite[]>([])
@@ -80,7 +82,7 @@ export default function TournamentManagePage({ params }: Props) {
         .single()
 
       if (tournamentError || !tournamentData) {
-        setError('大会が見つかりませんでした')
+        setError(t('notFound'))
         setLoading(false)
         return
       }
@@ -88,7 +90,7 @@ export default function TournamentManagePage({ params }: Props) {
       // Check if user is organizer
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || user.id !== tournamentData.organizer_id) {
-        setError('管理権限がありません')
+        setError(t('noManagePermission'))
         setLoading(false)
         return
       }
@@ -166,7 +168,7 @@ export default function TournamentManagePage({ params }: Props) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setError('ログインが必要です')
+        setError(te('unauthorized'))
         return
       }
 
@@ -192,7 +194,7 @@ export default function TournamentManagePage({ params }: Props) {
       setInvites(prev => [invite as TournamentInvite, ...prev])
       setSearchResults(prev => prev.filter(u => u.id !== userId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : '招待に失敗しました')
+      setError(err instanceof Error ? err.message : t('invites.invite'))
     } finally {
       setInviting(prev => ({ ...prev, [userId]: false }))
     }
@@ -217,7 +219,7 @@ export default function TournamentManagePage({ params }: Props) {
       // Update state
       setInvites(prev => prev.filter(i => i.id !== inviteId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : '招待の取消に失敗しました')
+      setError(err instanceof Error ? err.message : t('invites.cancel'))
     } finally {
       setCancelling(prev => ({ ...prev, [inviteId]: false }))
     }
@@ -257,8 +259,8 @@ export default function TournamentManagePage({ params }: Props) {
 
       if (eligibleParticipants.length < 2) {
         setError(checkedInOnly
-          ? 'チェックイン済みの参加者が2名以上必要です'
-          : '参加者が2名以上必要です'
+          ? t('minParticipantsCheckedIn')
+          : t('minParticipants')
         )
         setGenerating(false)
         return
@@ -295,7 +297,7 @@ export default function TournamentManagePage({ params }: Props) {
       // Reload page
       window.location.reload()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'ブラケット生成に失敗しました')
+      setError(err instanceof Error ? err.message : t('bracketFailed'))
     } finally {
       setGenerating(false)
     }
@@ -321,7 +323,7 @@ export default function TournamentManagePage({ params }: Props) {
 
       router.push('/tournaments')
     } catch {
-      setError('削除に失敗しました')
+      setError(t('deleteFailed'))
       setDeleting(false)
     }
   }
@@ -350,7 +352,7 @@ export default function TournamentManagePage({ params }: Props) {
         )
       )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'チェックインに失敗しました')
+      setError(err instanceof Error ? err.message : t('checkInFailed'))
     } finally {
       setCheckingIn(prev => ({ ...prev, [participantId]: false }))
     }
@@ -378,14 +380,14 @@ export default function TournamentManagePage({ params }: Props) {
         )
       )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'チェックイン取消に失敗しました')
+      setError(err instanceof Error ? err.message : t('undoCheckInFailed'))
     } finally {
       setCheckingIn(prev => ({ ...prev, [participantId]: false }))
     }
   }
 
   const handleRemoveParticipant = async (participantId: string) => {
-    if (!confirm('この参加者を除外しますか？')) return
+    if (!confirm(t('exclude') + '?')) return
 
     setRemoving(prev => ({ ...prev, [participantId]: true }))
     setError('')
@@ -403,7 +405,7 @@ export default function TournamentManagePage({ params }: Props) {
 
       setParticipants(prev => prev.filter(p => p.id !== participantId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : '除外に失敗しました')
+      setError(err instanceof Error ? err.message : t('excludeFailed'))
     } finally {
       setRemoving(prev => ({ ...prev, [participantId]: false }))
     }
@@ -412,7 +414,7 @@ export default function TournamentManagePage({ params }: Props) {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p>読み込み中...</p>
+        <p>{tc('loading')}</p>
       </div>
     )
   }
@@ -432,9 +434,9 @@ export default function TournamentManagePage({ params }: Props) {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">大会管理</h1>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
         {tournament && (
-          <Badge>{tournamentStatusLabels[tournament.status]}</Badge>
+          <Badge>{tl('tournamentStatus.' + tournament.status)}</Badge>
         )}
       </div>
 
@@ -448,9 +450,9 @@ export default function TournamentManagePage({ params }: Props) {
       {tournament && (
         <Card>
           <CardHeader>
-            <CardTitle>ステータス管理</CardTitle>
+            <CardTitle>{t('statusManage')}</CardTitle>
             <CardDescription>
-              現在のステータス: {tournamentStatusLabels[tournament.status]}
+              {t('currentStatus', { status: tl('tournamentStatus.' + tournament.status) })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -472,19 +474,19 @@ export default function TournamentManagePage({ params }: Props) {
                   }}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  募集を開始する
+                  {t('startRecruiting')}
                 </Button>
               )}
               {tournament.status === 'in_progress' && (
                 <>
                   <a href={`/tournaments/${tournament.id}/bracket`}>
                     <Button variant="outline">
-                      トーナメント表を見る
+                      {t('viewBracket')}
                     </Button>
                   </a>
                   <Button
                     onClick={async () => {
-                      if (!confirm('大会を完了にしますか？シリーズに所属している場合、ポイントが自動計算されます。')) return
+                      if (!confirm(t('completeConfirm'))) return
                       setError('')
                       const { error: updateError } = await supabase
                         .from('tournaments')
@@ -499,22 +501,22 @@ export default function TournamentManagePage({ params }: Props) {
                     }}
                     variant="secondary"
                   >
-                    大会を完了にする
+                    {t('completeTournament')}
                   </Button>
                 </>
               )}
               {tournament.status === 'recruiting' && (
                 <a href={`/tournaments/${tournament.id}/edit`}>
                   <Button variant="outline">
-                    大会設定を編集
+                    {t('editSettings')}
                   </Button>
                 </a>
               )}
               {tournament.status === 'completed' && (
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">この大会は完了しています</p>
+                  <p className="text-sm text-muted-foreground">{t('tournamentCompleted')}</p>
                   {tournament.series_id && (
-                    <p className="text-sm text-green-600">シリーズポイントが自動計算されました</p>
+                    <p className="text-sm text-green-600">{t('pointsCalculated')}</p>
                   )}
                 </div>
               )}
@@ -526,11 +528,11 @@ export default function TournamentManagePage({ params }: Props) {
       {/* Participants */}
       <Card>
         <CardHeader>
-          <CardTitle>参加者一覧</CardTitle>
+          <CardTitle>{t('participants.title')}</CardTitle>
           <CardDescription>
-            {participants.length}名が参加しています
+            {t('participantCount', { count: participants.length })}
             {participants.filter(p => p.checked_in_at).length > 0 && (
-              <> （チェックイン済み: {participants.filter(p => p.checked_in_at).length}名）</>
+              <> {t('checkedInCount', { count: participants.filter(p => p.checked_in_at).length })}</>
             )}
           </CardDescription>
         </CardHeader>
@@ -548,7 +550,7 @@ export default function TournamentManagePage({ params }: Props) {
                     )}
                     {participant.checked_in_at && (
                       <Badge variant="secondary" className="ml-2">
-                        チェックイン済み
+                        {t('checkedInLabel')}
                       </Badge>
                     )}
                   </div>
@@ -560,7 +562,7 @@ export default function TournamentManagePage({ params }: Props) {
                         onClick={() => handleUndoCheckIn(participant.id)}
                         disabled={checkingIn[participant.id]}
                       >
-                        {checkingIn[participant.id] ? '処理中...' : '取消'}
+                        {checkingIn[participant.id] ? t('participants.processing') : t('participants.undoCheckIn')}
                       </Button>
                     ) : (
                       <Button
@@ -569,7 +571,7 @@ export default function TournamentManagePage({ params }: Props) {
                         onClick={() => handleCheckIn(participant.id)}
                         disabled={checkingIn[participant.id]}
                       >
-                        {checkingIn[participant.id] ? '処理中...' : 'チェックイン'}
+                        {checkingIn[participant.id] ? t('participants.processing') : t('participants.checkIn')}
                       </Button>
                     )}
                     {tournament?.status === 'recruiting' && (
@@ -579,7 +581,7 @@ export default function TournamentManagePage({ params }: Props) {
                         onClick={() => handleRemoveParticipant(participant.id)}
                         disabled={removing[participant.id]}
                       >
-                        {removing[participant.id] ? '...' : '除外'}
+                        {removing[participant.id] ? '...' : t('exclude')}
                       </Button>
                     )}
                   </div>
@@ -587,7 +589,7 @@ export default function TournamentManagePage({ params }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">参加者がいません</p>
+            <p className="text-muted-foreground">{t('participants.empty')}</p>
           )}
         </CardContent>
       </Card>
@@ -609,7 +611,7 @@ export default function TournamentManagePage({ params }: Props) {
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
               <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
-                {searching ? '...' : '検索'}
+                {searching ? '...' : tc('search')}
               </Button>
             </div>
 
@@ -634,7 +636,7 @@ export default function TournamentManagePage({ params }: Props) {
             {/* Invite List */}
             {invites.length > 0 ? (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">招待一覧</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">{t('inviteList')}</h4>
                 <div className="border rounded-lg divide-y">
                   {invites.map((invite) => (
                     <div key={invite.id} className="flex items-center justify-between p-3">
@@ -681,9 +683,9 @@ export default function TournamentManagePage({ params }: Props) {
                   onChange={(e) => setCheckedInOnly(e.target.checked)}
                   className="rounded"
                 />
-                チェックイン済みの参加者のみでブラケットを生成
+                {t('checkedInOnly')}
                 <span className="text-muted-foreground">
-                  ({participants.filter(p => p.checked_in_at).length}/{participants.length}名)
+                  ({t('checkedInRatio', { checked: participants.filter(p => p.checked_in_at).length, total: participants.length })})
                 </span>
               </label>
             )}
@@ -719,9 +721,9 @@ export default function TournamentManagePage({ params }: Props) {
       {tournament?.status === 'draft' && (
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">危険な操作</CardTitle>
+            <CardTitle className="text-destructive">{t('dangerZone.title')}</CardTitle>
             <CardDescription>
-              これらの操作は取り消すことができません
+              {t('dangerZone.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -730,12 +732,12 @@ export default function TournamentManagePage({ params }: Props) {
                 variant="destructive"
                 onClick={() => setShowDeleteConfirm(true)}
               >
-                大会を削除
+                {t('dangerZone.delete')}
               </Button>
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  本当に「{tournament.title}」を削除しますか？この操作は取り消せません。
+                  {t('dangerZone.deleteConfirm', { title: tournament.title })}
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -743,14 +745,14 @@ export default function TournamentManagePage({ params }: Props) {
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={deleting}
                   >
-                    キャンセル
+                    {tc('cancel')}
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={handleDeleteTournament}
                     disabled={deleting}
                   >
-                    {deleting ? '削除中...' : '削除する'}
+                    {deleting ? t('dangerZone.deleting') : tc('delete')}
                   </Button>
                 </div>
               </div>

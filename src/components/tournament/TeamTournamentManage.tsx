@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,6 +62,8 @@ type Props = {
 }
 
 export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
+  const t = useTranslations('tournament.teamManage')
+  const tc = useTranslations('common')
   const [entries, setEntries] = useState<TeamEntry[]>([])
   const [blocks, setBlocks] = useState<Block[]>([])
   const [matches, setMatches] = useState<Match[]>([])
@@ -107,7 +110,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
     try {
       if (entries.length < 2) {
-        setError('エントリーが2チーム以上必要です')
+        setError(t('minTeams'))
         return
       }
 
@@ -149,7 +152,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       await loadData()
     } catch {
-      setError('ブロック作成に失敗しました')
+      setError(t('createBlocksFailed'))
     } finally {
       setGenerating(false)
     }
@@ -205,7 +208,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       await loadData()
       onUpdateAction()
     } catch {
-      setError('対戦カード生成に失敗しました')
+      setError(t('generateFailed'))
     } finally {
       setGenerating(false)
     }
@@ -224,7 +227,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       // 未完了の試合がないか確認
       const pendingMatches = matches.filter(m => m.round === currentRound && m.status !== 'completed')
       if (currentRound > 0 && pendingMatches.length > 0) {
-        setError(`Round ${currentRound} に未完了の試合が ${pendingMatches.length} 件あります`)
+        setError(t('pendingMatches', { round: currentRound, count: pendingMatches.length }))
         return
       }
 
@@ -318,13 +321,13 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       await loadData()
       onUpdateAction()
     } catch {
-      setError('マッチメイキングに失敗しました')
+      setError(t('matchmakingFailed'))
     } finally {
       setGenerating(false)
     }
   }
 
-  if (loading) return <p>読み込み中...</p>
+  if (loading) return <p>{tc('loading')}</p>
 
   const completedMatchCount = matches.filter(m => m.status === 'completed').length
   const totalMatchCount = matches.length
@@ -339,8 +342,8 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       {/* エントリーチーム */}
       <Card>
         <CardHeader>
-          <CardTitle>エントリーチーム</CardTitle>
-          <CardDescription>{entries.length} チーム</CardDescription>
+          <CardTitle>{t('entryTeams')}</CardTitle>
+          <CardDescription>{entries.length}</CardDescription>
         </CardHeader>
         <CardContent>
           {blocks.length > 0 ? (
@@ -377,12 +380,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       {isRoundRobin && tournament.status === 'recruiting' && (
         <Card>
           <CardHeader>
-            <CardTitle>ブロック分け</CardTitle>
-            <CardDescription>チームをブロックに振り分けます</CardDescription>
+            <CardTitle>{t('blockDivision')}</CardTitle>
+            <CardDescription>{t('blockDivisionDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
-              <label className="text-sm font-medium">ブロック数:</label>
+              <label className="text-sm font-medium">{t('blockCount')}</label>
               <Input
                 type="number"
                 min="1"
@@ -392,11 +395,11 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
                 className="w-20"
               />
               <span className="text-sm text-muted-foreground">
-                ({Math.ceil(entries.length / blockCount)}チーム/ブロック)
+                {t('teamsPerBlock', { count: Math.ceil(entries.length / blockCount) })}
               </span>
             </div>
             <Button onClick={handleCreateBlocks} disabled={generating || entries.length < 2}>
-              {generating ? '作成中...' : blocks.length > 0 ? 'ブロックを再作成' : 'ブロックを作成'}
+              {generating ? t('creating') : blocks.length > 0 ? t('recreateBlocks') : t('createBlocks')}
             </Button>
           </CardContent>
         </Card>
@@ -406,12 +409,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       {isRoundRobin && blocks.length > 0 && matches.length === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>対戦カード生成</CardTitle>
-            <CardDescription>ブロック内総当たりの対戦カードを自動生成します</CardDescription>
+            <CardTitle>{t('generateMatches')}</CardTitle>
+            <CardDescription>{t('generateMatchesDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleGenerateRoundRobin} disabled={generating}>
-              {generating ? '生成中...' : '対戦カードを生成して大会開始'}
+              {generating ? tc('generating') : t('generateAndStart')}
             </Button>
           </CardContent>
         </Card>
@@ -421,20 +424,20 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       {isSwiss && (
         <Card>
           <CardHeader>
-            <CardTitle>スイスドロー進行</CardTitle>
+            <CardTitle>{t('swissProgress')}</CardTitle>
             <CardDescription>
               {currentRound > 0
-                ? `Round ${currentRound} / ${tournament.swiss_round_count || '?'} （${completedMatchCount}/${totalMatchCount} 完了）`
-                : 'まだ開始していません'}
+                ? t('swissRoundStatus', { current: currentRound, total: tournament.swiss_round_count || '?', completed: completedMatchCount, matches: totalMatchCount })
+                : t('notStarted')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleGenerateSwissRound} disabled={generating}>
               {generating
-                ? '生成中...'
+                ? tc('generating')
                 : currentRound === 0
-                  ? 'Round 1 対戦カードを生成'
-                  : `Round ${currentRound + 1} 対戦カードを生成`}
+                  ? t('generateRound1')
+                  : t('generateNextRound', { n: currentRound + 1 })}
             </Button>
           </CardContent>
         </Card>
@@ -444,8 +447,8 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       {matches.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>試合進行</CardTitle>
-            <CardDescription>{completedMatchCount} / {totalMatchCount} 完了</CardDescription>
+            <CardTitle>{t('matchProgress')}</CardTitle>
+            <CardDescription>{t('matchCount', { completed: completedMatchCount, total: totalMatchCount })}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -460,10 +463,10 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
                         <span className="font-mono">{m.team1_round_wins}-{m.team2_round_wins}</span>
                       )}
                       <Badge variant={m.status === 'completed' ? 'secondary' : 'outline'}>
-                        {m.status === 'completed' ? '完了' : '未実施'}
+                        {m.status === 'completed' ? t('matchCompleted') : t('matchPending')}
                       </Badge>
                       <a href={`/tournaments/${tournament.id}/wars/${m.id}`}>
-                        <Button variant="ghost" size="sm">詳細</Button>
+                        <Button variant="ghost" size="sm">{t('matchDetail')}</Button>
                       </a>
                     </div>
                   </div>
@@ -472,10 +475,10 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
             </div>
             <div className="mt-4 flex gap-2">
               <a href={`/tournaments/${tournament.id}/wars`}>
-                <Button variant="outline">War一覧</Button>
+                <Button variant="outline">{t('warList')}</Button>
               </a>
               <a href={`/tournaments/${tournament.id}/standings`}>
-                <Button variant="outline">順位表</Button>
+                <Button variant="outline">{t('standings')}</Button>
               </a>
             </div>
           </CardContent>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,7 @@ function TeamOrderSection({
   onUpdateSlot: (index: number, field: keyof OrderSlot, value: string | boolean) => void
   submitting: boolean
 }) {
+  const t = useTranslations('tournament.order')
   const usedPlayerIds = slots.map(s => s.userId).filter(Boolean)
 
   return (
@@ -72,7 +74,7 @@ function TeamOrderSection({
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">{team.teamName}</CardTitle>
         <CardDescription>
-          メイン{orderSize}名{subCount > 0 ? ` + サブ${subCount}名` : ''}
+          {subCount > 0 ? t('description', { main: orderSize, sub: subCount }) : t('descriptionNoSub', { main: orderSize })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -85,7 +87,7 @@ function TeamOrderSection({
                 <Badge>{index + 1}</Badge>
               )}
               <span className="text-sm font-medium">
-                {slot.isSub ? `サブ ${index - orderSize + 1}` : `メイン ${index + 1}`}
+                {slot.isSub ? t('subPlayer', { n: index - orderSize + 1 }) : t('mainPlayer', { n: index + 1 })}
               </span>
             </div>
 
@@ -95,7 +97,7 @@ function TeamOrderSection({
               className="w-full px-3 py-2 border rounded-md bg-background text-sm"
               disabled={submitting}
             >
-              <option value="">プレイヤー選択</option>
+              <option value="">{t('adminPlayerSelect')}</option>
               {team.members.map(m => (
                 <option
                   key={m.userId}
@@ -111,13 +113,13 @@ function TeamOrderSection({
               <Input
                 value={slot.deckName}
                 onChange={(e) => onUpdateSlot(index, 'deckName', e.target.value)}
-                placeholder="デッキ名"
+                placeholder={t('deckName')}
                 disabled={submitting}
               />
               <Input
                 value={slot.deckTheme}
                 onChange={(e) => onUpdateSlot(index, 'deckTheme', e.target.value)}
-                placeholder="テーマ"
+                placeholder={t('theme')}
                 disabled={submitting}
               />
             </div>
@@ -173,6 +175,8 @@ export function AdminOrderForm({
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('tournament.order')
+  const tc = useTranslations('common')
 
   const updateTeam1Slot = (index: number, field: keyof OrderSlot, value: string | boolean) => {
     const updated = [...team1Slots]
@@ -189,15 +193,15 @@ export function AdminOrderForm({
   const validateSlots = (slots: OrderSlot[], teamName: string): string | null => {
     for (let i = 0; i < orderSize; i++) {
       if (!slots[i].userId) {
-        return `${teamName}: メインプレイヤー ${i + 1} を選択してください`
+        return t('teamSelectMainPlayer', { team: teamName, n: i + 1 })
       }
       if (!slots[i].deckName.trim()) {
-        return `${teamName}: メインプレイヤー ${i + 1} のデッキ名を入力してください`
+        return t('teamDeckRequired', { team: teamName, n: i + 1 })
       }
     }
     const playerIds = slots.filter(s => s.userId).map(s => s.userId)
     if (new Set(playerIds).size !== playerIds.length) {
-      return `${teamName}: 同じプレイヤーが重複しています`
+      return t('teamDuplicatePlayer', { team: teamName })
     }
     return null
   }
@@ -243,7 +247,7 @@ export function AdminOrderForm({
 
       router.push(`/tournaments/${tournamentId}/wars/${matchId}`)
     } catch {
-      setError('オーダー提出に失敗しました')
+      setError(t('submitFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -254,7 +258,7 @@ export function AdminOrderForm({
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <h1 className="text-2xl font-bold mb-6">
-        {isEdit ? 'オーダー編集' : 'オーダー入力'}（管理者）
+        {isEdit ? t('adminEdit') : t('adminSubmit')}
       </h1>
 
       {error && (
@@ -286,14 +290,14 @@ export function AdminOrderForm({
           onClick={() => router.back()}
           disabled={submitting}
         >
-          キャンセル
+          {tc('cancel')}
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={submitting}
           className="flex-1 bg-green-600 hover:bg-green-700"
         >
-          {submitting ? '提出中...' : isEdit ? '両チームのオーダーを更新' : '両チームのオーダーを提出'}
+          {submitting ? t('submitting') : isEdit ? t('adminUpdateBoth') : t('adminSubmitBoth')}
         </Button>
       </div>
     </div>

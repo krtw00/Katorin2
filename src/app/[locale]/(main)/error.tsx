@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { TournamentError, ErrorCode, errorMessages } from '@/lib/errors/TournamentError'
+import { TournamentError, ErrorCode, errorMessageKeys } from '@/lib/errors/TournamentError'
 import { AlertCircle, Home, RefreshCw } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function Error({
   error,
@@ -12,6 +13,9 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useTranslations('errorPage')
+  const te = useTranslations('errors')
+
   useEffect(() => {
     // エラーログを出力（本番環境では外部サービスに送信）
     console.error('Error boundary caught:', error)
@@ -24,8 +28,8 @@ export default function Error({
 
   const isTournamentError = error instanceof TournamentError
   const errorMessage = isTournamentError
-    ? errorMessages[error.code]
-    : 'エラーが発生しました'
+    ? te(errorMessageKeys[error.code])
+    : t('title')
 
   const errorCode = isTournamentError ? error.code : ErrorCode.UNKNOWN_ERROR
   const isServerError =
@@ -45,7 +49,7 @@ export default function Error({
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight">
-              エラーが発生しました
+              {t('title')}
             </h1>
             <p className="text-muted-foreground">{errorMessage}</p>
           </div>
@@ -55,7 +59,7 @@ export default function Error({
         {isTournamentError && (
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              エラーコード: {error.code}
+              {t('code', { code: error.code })}
             </p>
           </div>
         )}
@@ -64,18 +68,18 @@ export default function Error({
         {process.env.NODE_ENV === 'development' && (
           <details className="bg-muted rounded-lg p-4">
             <summary className="cursor-pointer text-sm font-medium mb-2">
-              詳細情報（開発モードのみ）
+              {t('devInfo')}
             </summary>
             <div className="space-y-2">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">エラーメッセージ:</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('message')}</p>
                 <pre className="text-xs bg-background p-2 rounded overflow-auto">
                   {error.message}
                 </pre>
               </div>
               {error.stack && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">スタックトレース:</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t('stackTrace')}</p>
                   <pre className="text-xs bg-background p-2 rounded overflow-auto max-h-40">
                     {error.stack}
                   </pre>
@@ -83,7 +87,7 @@ export default function Error({
               )}
               {isTournamentError && error.details ? (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">詳細:</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t('details')}</p>
                   <pre className="text-xs bg-background p-2 rounded overflow-auto">
                     {JSON.stringify(error.details, null, 2)}
                   </pre>
@@ -97,7 +101,7 @@ export default function Error({
         <div className="flex flex-col gap-3">
           <Button onClick={reset} className="w-full" size="lg">
             <RefreshCw className="mr-2 h-4 w-4" />
-            再試行
+            {t('retry')}
           </Button>
           <Button
             variant="outline"
@@ -106,17 +110,17 @@ export default function Error({
             size="lg"
           >
             <Home className="mr-2 h-4 w-4" />
-            トップページに戻る
+            {t('backToHome')}
           </Button>
         </div>
 
         {/* サポート情報 */}
         {isServerError && (
           <div className="text-center text-sm text-muted-foreground">
-            <p>問題が解決しない場合は、サポートにお問い合わせください。</p>
+            <p>{t('support')}</p>
             {error.digest && (
               <p className="text-xs mt-2">
-                エラーID: <code className="bg-muted px-1 py-0.5 rounded">{error.digest}</code>
+                {t('errorId', { id: error.digest })}
               </p>
             )}
           </div>

@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   seriesId: string
@@ -24,6 +25,7 @@ type MyTeam = {
 }
 
 export function TeamApplicationForm({ seriesId }: Props) {
+  const t = useTranslations('series.application')
   const [teams, setTeams] = useState<MyTeam[]>([])
   const [selectedTeamId, setSelectedTeamId] = useState('')
   const [message, setMessage] = useState('')
@@ -67,7 +69,7 @@ export function TeamApplicationForm({ seriesId }: Props) {
   const availableTeams = teams.filter(t => !t.alreadyApplied && !t.alreadyInSeries)
 
   const handleSubmit = async () => {
-    if (!selectedTeamId) { setError('チームを選択してください'); return }
+    if (!selectedTeamId) { setError(t('selectTeamError')); return }
     setError('')
     setSubmitting(true)
 
@@ -95,8 +97,8 @@ export function TeamApplicationForm({ seriesId }: Props) {
     return (
       <Card>
         <CardContent className="py-6 text-center">
-          <p className="text-green-600 font-medium">エントリー申請を送信しました</p>
-          <p className="text-sm text-muted-foreground mt-1">主催者の承認をお待ちください</p>
+          <p className="text-green-600 font-medium">{t('success')}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t('successHint')}</p>
         </CardContent>
       </Card>
     )
@@ -106,8 +108,8 @@ export function TeamApplicationForm({ seriesId }: Props) {
     return (
       <Card>
         <CardContent className="py-6 text-center text-muted-foreground">
-          <p>リーダーを務めるチームがありません</p>
-          <p className="text-sm mt-1">先にチームを作成してください</p>
+          <p>{t('noTeams')}</p>
+          <p className="text-sm mt-1">{t('noTeamsHint')}</p>
         </CardContent>
       </Card>
     )
@@ -117,8 +119,8 @@ export function TeamApplicationForm({ seriesId }: Props) {
     return (
       <Card>
         <CardContent className="py-6 text-center text-muted-foreground">
-          <p>申請可能なチームがありません</p>
-          <p className="text-sm mt-1">全チームが申請済みまたは参加済みです</p>
+          <p>{t('noAvailable')}</p>
+          <p className="text-sm mt-1">{t('noAvailableHint')}</p>
         </CardContent>
       </Card>
     )
@@ -127,7 +129,7 @@ export function TeamApplicationForm({ seriesId }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">エントリー申請</CardTitle>
+        <CardTitle className="text-lg">{t('title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
@@ -135,14 +137,14 @@ export function TeamApplicationForm({ seriesId }: Props) {
         )}
 
         <div>
-          <label className="text-sm font-medium mb-1 block">チーム選択</label>
+          <label className="text-sm font-medium mb-1 block">{t('selectTeam')}</label>
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
             className="w-full px-3 py-2 border rounded-md bg-background text-sm"
             disabled={submitting}
           >
-            <option value="">チームを選択</option>
+            <option value="">{t('selectTeamPlaceholder')}</option>
             {availableTeams.map(t => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
@@ -150,11 +152,11 @@ export function TeamApplicationForm({ seriesId }: Props) {
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1 block">メッセージ（任意）</label>
+          <label className="text-sm font-medium mb-1 block">{t('message')}</label>
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="主催者へのメッセージ"
+            placeholder={t('messagePlaceholder')}
             rows={2}
             disabled={submitting}
           />
@@ -165,7 +167,7 @@ export function TeamApplicationForm({ seriesId }: Props) {
           disabled={submitting || !selectedTeamId}
           className="w-full"
         >
-          {submitting ? '送信中...' : '申請する'}
+          {submitting ? t('submitting') : t('submit')}
         </Button>
       </CardContent>
     </Card>

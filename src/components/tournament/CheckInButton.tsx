@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,7 @@ type Props = {
 }
 
 export function CheckInButton({ participantId, checkedInAt, tournamentStatus }: Props) {
+  const t = useTranslations('tournament.checkin')
   const [isCheckedIn, setIsCheckedIn] = useState(!!checkedInAt)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -29,7 +31,7 @@ export function CheckInButton({ participantId, checkedInAt, tournamentStatus }: 
       .eq('id', participantId)
 
     if (updateError) {
-      setError('チェックインに失敗しました')
+      setError(t('failed'))
       setLoading(false)
       return
     }
@@ -44,14 +46,14 @@ export function CheckInButton({ participantId, checkedInAt, tournamentStatus }: 
 
   if (isCheckedIn) {
     return (
-      <Badge variant="secondary">チェックイン済み</Badge>
+      <Badge variant="secondary">{t('success')}</Badge>
     )
   }
 
   return (
     <div className="space-y-2">
       <Button onClick={handleCheckIn} disabled={loading}>
-        {loading ? 'チェックイン中...' : 'チェックインする'}
+        {loading ? t('submitting') : t('submit')}
       </Button>
       {error && (
         <p className="text-sm text-destructive">{error}</p>

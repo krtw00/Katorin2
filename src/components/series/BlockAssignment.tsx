@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Save, Plus, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { useTranslations } from 'next-intl'
 
 type Team = { id: string; name: string; avatar_url: string | null }
 type Block = { id: string; block_name: string; block_order: number }
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBlockMap: initialMap, tournamentIds }: Props) {
+  const t = useTranslations('series.blocks')
   const supabase = createClient()
   const [blocks, setBlocks] = useState(initialBlocks)
   const [assignments, setAssignments] = useState<Record<string, string | null>>(initialMap)
@@ -55,7 +57,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
     // ブロックに所属するチームがいないか確認
     const hasTeams = Object.values(assignments).some(bid => bid === blockId)
     if (hasTeams) {
-      alert('このブロックにチームが割り当てられています。先にチームを移動してください。')
+      alert(t('moveFirst'))
       return
     }
 
@@ -101,7 +103,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
       {/* ブロック管理 */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">ブロック管理</CardTitle>
+          <CardTitle className="text-base">{t('title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
@@ -125,12 +127,12 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
             <Input
               value={newBlockName}
               onChange={e => setNewBlockName(e.target.value)}
-              placeholder="新しいブロック名（例: Group C）"
+              placeholder={t('newBlockPlaceholder')}
               className="max-w-[200px]"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddBlock())}
             />
             <Button type="button" variant="outline" size="sm" onClick={handleAddBlock} disabled={!newBlockName.trim()}>
-              <Plus className="h-4 w-4 mr-1" />追加
+              <Plus className="h-4 w-4 mr-1" />{t('add')}
             </Button>
           </div>
         </CardContent>
@@ -141,7 +143,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
         <Card className="border-yellow-500/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              未割り当て
+              {t('unassigned')}
               <Badge variant="destructive" className="text-xs">{unassigned.length}</Badge>
             </CardTitle>
           </CardHeader>
@@ -161,7 +163,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
                     value=""
                     onChange={e => setAssignments(prev => ({ ...prev, [team.id]: e.target.value || null }))}
                   >
-                    <option value="">選択...</option>
+                    <option value="">{t('selectPlaceholder')}</option>
                     {blocks.map(b => (
                       <option key={b.id} value={b.id}>{b.block_name}</option>
                     ))}
@@ -179,7 +181,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               {block.block_name}
-              <Badge variant="secondary" className="text-xs">{blockTeams.length}チーム</Badge>
+              <Badge variant="secondary" className="text-xs">{blockTeams.length} {t('teams')}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -199,7 +201,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
                       value={block.id}
                       onChange={e => setAssignments(prev => ({ ...prev, [team.id]: e.target.value || null }))}
                     >
-                      <option value="">未割り当て</option>
+                      <option value="">{t('unassigned')}</option>
                       {blocks.map(b => (
                         <option key={b.id} value={b.id}>{b.block_name}</option>
                       ))}
@@ -208,7 +210,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-2">チームがありません</p>
+              <p className="text-sm text-muted-foreground py-2">{t('noTeams')}</p>
             )}
           </CardContent>
         </Card>
@@ -218,9 +220,9 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4 mr-1.5" />
-          {saving ? '保存中...' : 'ブロック割り当てを保存'}
+          {saving ? t('saving') : t('save')}
         </Button>
-        {saved && <span className="text-sm text-green-600">保存しました</span>}
+        {saved && <span className="text-sm text-green-600">{t('saved')}</span>}
       </div>
     </div>
   )

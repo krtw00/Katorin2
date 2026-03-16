@@ -86,27 +86,21 @@ export class TournamentError extends Error {
 }
 
 /**
- * エラーメッセージの国際化（日本語）
+ * エラーコードからi18nキー名へのマッピング
+ * 表示側で t(errorMessageKeys[code]) として使用する
  */
-export const errorMessages: Record<ErrorCode, string> = {
-  [ErrorCode.UNAUTHORIZED]: 'ログインが必要です',
-  [ErrorCode.FORBIDDEN]: 'この操作を実行する権限がありません',
-  [ErrorCode.VALIDATION_ERROR]: '入力内容に誤りがあります',
-  [ErrorCode.INVALID_INPUT]: '無効な入力です',
-  [ErrorCode.DATABASE_ERROR]: 'データベースエラーが発生しました',
-  [ErrorCode.NOT_FOUND]: 'データが見つかりません',
-  [ErrorCode.DUPLICATE_ENTRY]: 'すでに登録されています',
-  [ErrorCode.TOURNAMENT_FULL]: '大会の定員に達しています',
-  [ErrorCode.BRACKET_ALREADY_GENERATED]: 'ブラケットは既に生成されています',
-  [ErrorCode.INSUFFICIENT_PARTICIPANTS]: '参加者が不足しています（最低2名必要）',
-  [ErrorCode.INVALID_TOURNAMENT_STATUS]: '現在の大会状態ではこの操作を実行できません',
-  [ErrorCode.NETWORK_ERROR]: 'ネットワークエラーが発生しました',
-  [ErrorCode.UNKNOWN_ERROR]: '予期しないエラーが発生しました',
-}
-
-/**
- * エラーコードに対応するユーザーメッセージを取得
- */
-export function getErrorMessage(code: ErrorCode): string {
-  return errorMessages[code] || errorMessages[ErrorCode.UNKNOWN_ERROR]
+export const errorMessageKeys: Record<ErrorCode, string> = {
+  [ErrorCode.UNAUTHORIZED]: 'unauthorized',
+  [ErrorCode.FORBIDDEN]: 'forbidden',
+  [ErrorCode.VALIDATION_ERROR]: 'validationError',
+  [ErrorCode.INVALID_INPUT]: 'invalidInput',
+  [ErrorCode.DATABASE_ERROR]: 'databaseError',
+  [ErrorCode.NOT_FOUND]: 'notFound',
+  [ErrorCode.DUPLICATE_ENTRY]: 'duplicateEntry',
+  [ErrorCode.TOURNAMENT_FULL]: 'tournamentFull',
+  [ErrorCode.BRACKET_ALREADY_GENERATED]: 'bracketAlreadyGenerated',
+  [ErrorCode.INSUFFICIENT_PARTICIPANTS]: 'insufficientParticipants',
+  [ErrorCode.INVALID_TOURNAMENT_STATUS]: 'invalidTournamentStatus',
+  [ErrorCode.NETWORK_ERROR]: 'networkError',
+  [ErrorCode.UNKNOWN_ERROR]: 'unknownError',
 }
