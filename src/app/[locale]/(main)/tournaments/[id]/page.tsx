@@ -53,22 +53,16 @@ export default async function TournamentDetailPage({ params }: Props) {
   let matchStats = { total: 0, completed: 0 }
 
   if (isTeam) {
+    // ブロック取得（tournament_id OR series_id で1クエリ）
+    const blockFilter = tournament.series_id
+      ? `tournament_id.eq.${id},series_id.eq.${tournament.series_id}`
+      : `tournament_id.eq.${id}`
     const { data: b } = await supabase
       .from('tournament_blocks')
       .select('id, block_name')
-      .eq('tournament_id', id)
+      .or(blockFilter)
       .order('block_order')
     blocks = b || []
-
-    // シリーズ配下ならシリーズのブロックも取得
-    if (blocks.length === 0 && tournament.series_id) {
-      const { data: sb } = await supabase
-        .from('tournament_blocks')
-        .select('id, block_name')
-        .eq('series_id', tournament.series_id)
-        .order('block_order')
-      blocks = sb || []
-    }
 
     const { count: tc } = await supabase
       .from('team_entries')
