@@ -25,7 +25,6 @@ type Props = {
 
 export function SeriesForm({ mode, initialData, onSuccess }: Props) {
   const t = useTranslations('series.form')
-  const tEntryType = useTranslations('series.entryType')
   const router = useRouter()
   const supabase = createClient()
 
@@ -62,13 +61,11 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       return {
         title: initialData.title,
         description: initialData.description || '',
-        entry_type: initialData.entry_type,
       }
     }
     return {
       title: '',
       description: '',
-      entry_type: 'team',
     }
   })
 
@@ -94,7 +91,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         return
       }
 
-      const seriesConfig = formData.entry_type === 'team' ? {
+      const seriesConfig = {
         qualifierFormat: customConfig.qualifierFormat,
         orderSize: customConfig.orderSize,
         subCount: customConfig.subCount,
@@ -105,7 +102,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         banPickEnabled: customConfig.banPickEnabled,
         duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
         scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: [] },
-      } : {}
+      }
 
       // Webhook URL validation
       const trimmedWebhookUrl = discordWebhookUrl.trim()
@@ -119,7 +116,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       const seriesData = {
         title: formData.title.trim(),
         description: formData.description.trim() || null,
-        entry_type: formData.entry_type as 'individual' | 'team',
+        entry_type: 'team' as const,
+        visibility: 'public' as const,
         status: (asDraft ? 'draft' : 'in_progress') as 'draft' | 'in_progress',
         series_config: seriesConfig,
         cover_image_url: coverUrl,
@@ -267,41 +265,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
             </CardContent>
           </Card>
 
-          {/* Entry Type */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('entryTypeLabel')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="entry_type"
-                    value="individual"
-                    checked={formData.entry_type === 'individual'}
-                    onChange={() => updateFormData('entry_type', 'individual')}
-                    className="w-4 h-4"
-                  />
-                  <span>{tEntryType('individual')}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="entry_type"
-                    value="team"
-                    checked={formData.entry_type === 'team'}
-                    onChange={() => updateFormData('entry_type', 'team')}
-                    className="w-4 h-4"
-                  />
-                  <span>{tEntryType('team')}</span>
-                </label>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* ルール設定（チーム戦のみ） */}
-          {formData.entry_type === 'team' && (
+          {/* ルール設定 */}
+          {(
             <>
               {/* ロック警告 */}
               {isRuleLocked && (
