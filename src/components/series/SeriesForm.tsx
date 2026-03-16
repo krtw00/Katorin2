@@ -13,7 +13,7 @@ import {
   Series,
   SeriesFormData,
 } from '@/types/series'
-import { WMGP_CONFIG, ROCKET_CUP_CONFIG, type SeriesConfig } from '@/lib/schemas/series-config'
+import { type SeriesConfig } from '@/lib/schemas/series-config'
 import { uploadTournamentCover, isUploadError } from '@/lib/supabase/storage'
 import { useTranslations } from 'next-intl'
 
@@ -57,14 +57,12 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         title: initialData.title,
         description: initialData.description || '',
         entry_type: initialData.entry_type,
-        config_preset: 'custom',
       }
     }
     return {
       title: '',
       description: '',
       entry_type: 'team',
-      config_preset: 'wmgp',
     }
   })
 
@@ -90,24 +88,18 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         return
       }
 
-      const configPresets = { wmgp: WMGP_CONFIG, rocket_cup: ROCKET_CUP_CONFIG }
-      let seriesConfig
-      if (formData.config_preset === 'custom') {
-        seriesConfig = {
-          qualifierFormat: customConfig.qualifierFormat,
-          orderSize: customConfig.orderSize,
-          subCount: customConfig.subCount,
-          playersPerRound: customConfig.playersPerRound,
-          matchFormat: customConfig.matchFormat,
-          blockCount: customConfig.blockCount,
-          roundsToWin: customConfig.roundsToWin,
-          banPickEnabled: customConfig.banPickEnabled,
-          duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
-          scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: [] },
-        }
-      } else {
-        seriesConfig = configPresets[formData.config_preset] || {}
-      }
+      const seriesConfig = formData.entry_type === 'team' ? {
+        qualifierFormat: customConfig.qualifierFormat,
+        orderSize: customConfig.orderSize,
+        subCount: customConfig.subCount,
+        playersPerRound: customConfig.playersPerRound,
+        matchFormat: customConfig.matchFormat,
+        blockCount: customConfig.blockCount,
+        roundsToWin: customConfig.roundsToWin,
+        banPickEnabled: customConfig.banPickEnabled,
+        duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
+        scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: [] },
+      } : {}
 
       // Webhook URL validation
       const trimmedWebhookUrl = discordWebhookUrl.trim()
@@ -302,39 +294,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
             </CardContent>
           </Card>
 
-          {/* Config Preset (チーム戦のみ) */}
+          {/* ルール設定（チーム戦のみ） */}
           {formData.entry_type === 'team' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">ルール設定</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { value: 'wmgp' as const, label: '総当たり星取戦', desc: '3v3 BO3 / ブロック別総当たり / メイン3名+サブ1名' },
-                  { value: 'rocket_cup' as const, label: 'Ban&Pickスイスドロー', desc: '5名→Ban2Pick3で3v3 / スイスドロー / デッキテーマ被り禁止' },
-                  { value: 'custom' as const, label: 'カスタム', desc: '各要素を個別に設定' },
-                ].map(opt => (
-                  <label key={opt.value} className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                    <input
-                      type="radio"
-                      name="config_preset"
-                      value={opt.value}
-                      checked={formData.config_preset === opt.value}
-                      onChange={() => updateFormData('config_preset', opt.value)}
-                      className="w-4 h-4 mt-0.5"
-                    />
-                    <div>
-                      <div className="font-medium">{opt.label}</div>
-                      <div className="text-sm text-muted-foreground">{opt.desc}</div>
-                    </div>
-                  </label>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* カスタムルール詳細設定 */}
-          {formData.entry_type === 'team' && formData.config_preset === 'custom' && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">詳細ルール設定</CardTitle>

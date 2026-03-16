@@ -47,5 +47,4 @@ export type SeriesFormData = {
   title: string
   description: string
   entry_type: 'individual' | 'team'
-  config_preset: 'wmgp' | 'rocket_cup' | 'custom'
 }
