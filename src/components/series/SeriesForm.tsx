@@ -296,92 +296,147 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
 
           {/* ルール設定（チーム戦のみ） */}
           {formData.entry_type === 'team' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">詳細ルール設定</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            <>
+              {/* 大会形式 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">大会形式</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
                   <div className="space-y-2">
-                    <Label>予選形式</Label>
-                    <select
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={customConfig.qualifierFormat}
-                      onChange={e => setCustomConfig(c => ({ ...c, qualifierFormat: e.target.value as 'round_robin' | 'swiss' }))}
-                    >
-                      <option value="round_robin">総当たり</option>
-                      <option value="swiss">スイスドロー</option>
-                    </select>
+                    <Label>予選フォーマット</Label>
+                    <p className="text-xs text-muted-foreground">チーム間の対戦方式を選択します</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { value: 'round_robin', label: '総当たり', desc: 'ブロック内の全チームと対戦' },
+                        { value: 'swiss', label: 'スイスドロー', desc: '勝敗が近いチーム同士をマッチング' },
+                      ].map(opt => (
+                        <label key={opt.value} className={`flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${customConfig.qualifierFormat === opt.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                          <div className="flex items-center gap-2">
+                            <input type="radio" name="qualifierFormat" value={opt.value}
+                              checked={customConfig.qualifierFormat === opt.value}
+                              onChange={() => setCustomConfig(c => ({ ...c, qualifierFormat: opt.value as 'round_robin' | 'swiss' }))}
+                              className="w-4 h-4" />
+                            <span className="font-medium text-sm">{opt.label}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 ml-6">{opt.desc}</p>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>対戦形式</Label>
-                    <select
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={customConfig.matchFormat}
-                      onChange={e => setCustomConfig(c => ({ ...c, matchFormat: e.target.value as 'bo1' | 'bo3' | 'bo5' }))}
-                    >
-                      <option value="bo1">BO1（1本勝負）</option>
-                      <option value="bo3">BO3（2本先取）</option>
-                      <option value="bo5">BO5（3本先取）</option>
-                    </select>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>オーダー人数</Label>
-                    <Input type="number" min={1} max={10} value={customConfig.orderSize}
-                      onChange={e => setCustomConfig(c => ({ ...c, orderSize: +e.target.value }))} />
+                    <Label>個人マッチ形式</Label>
+                    <p className="text-xs text-muted-foreground">1つの個人対戦での勝敗判定方式</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: 'bo1', label: 'BO1', desc: '1本勝負' },
+                        { value: 'bo3', label: 'BO3', desc: '2本先取' },
+                        { value: 'bo5', label: 'BO5', desc: '3本先取' },
+                      ].map(opt => (
+                        <label key={opt.value} className={`flex flex-col items-center p-3 border rounded-lg cursor-pointer transition-colors ${customConfig.matchFormat === opt.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                          <input type="radio" name="matchFormat" value={opt.value}
+                            checked={customConfig.matchFormat === opt.value}
+                            onChange={() => setCustomConfig(c => ({ ...c, matchFormat: opt.value as 'bo1' | 'bo3' | 'bo5' }))}
+                            className="sr-only" />
+                          <span className="font-bold text-lg">{opt.label}</span>
+                          <span className="text-xs text-muted-foreground">{opt.desc}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>サブ人数</Label>
-                    <Input type="number" min={0} max={5} value={customConfig.subCount}
-                      onChange={e => setCustomConfig(c => ({ ...c, subCount: +e.target.value }))} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>1ラウンド出場数</Label>
-                    <Input type="number" min={1} max={10} value={customConfig.playersPerRound}
-                      onChange={e => setCustomConfig(c => ({ ...c, playersPerRound: +e.target.value }))} />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>ブロック数</Label>
-                    <Input type="number" min={1} max={8} value={customConfig.blockCount}
-                      onChange={e => setCustomConfig(c => ({ ...c, blockCount: +e.target.value }))} />
+                  {customConfig.qualifierFormat === 'round_robin' && (
+                    <div className="space-y-2">
+                      <Label>ブロック数</Label>
+                      <p className="text-xs text-muted-foreground">チームを振り分けるグループの数</p>
+                      <Input type="number" min={1} max={8} value={customConfig.blockCount}
+                        onChange={e => setCustomConfig(c => ({ ...c, blockCount: +e.target.value }))} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* チーム構成 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">チーム構成</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>オーダー人数</Label>
+                      <p className="text-xs text-muted-foreground">提出するオーダーの総人数</p>
+                      <Input type="number" min={1} max={10} value={customConfig.orderSize}
+                        onChange={e => setCustomConfig(c => ({ ...c, orderSize: +e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>サブ人数</Label>
+                      <p className="text-xs text-muted-foreground">オーダー内のサブ枠</p>
+                      <Input type="number" min={0} max={5} value={customConfig.subCount}
+                        onChange={e => setCustomConfig(c => ({ ...c, subCount: +e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>1ラウンド出場数</Label>
+                      <p className="text-xs text-muted-foreground">各ラウンドで対戦する人数</p>
+                      <Input type="number" min={1} max={10} value={customConfig.playersPerRound}
+                        onChange={e => setCustomConfig(c => ({ ...c, playersPerRound: +e.target.value }))} />
+                    </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label>先取ラウンド数</Label>
+                    <p className="text-xs text-muted-foreground">War（チーム対戦）で何ラウンド先取で勝利とするか</p>
                     <Input type="number" min={1} max={5} value={customConfig.roundsToWin}
-                      onChange={e => setCustomConfig(c => ({ ...c, roundsToWin: +e.target.value }))} />
+                      onChange={e => setCustomConfig(c => ({ ...c, roundsToWin: +e.target.value }))}
+                      className="max-w-[120px]" />
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="grid grid-cols-2 gap-4">
+              {/* スコアリング */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">スコアリング</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-2">
                     <Label>勝利ポイント</Label>
+                    <p className="text-xs text-muted-foreground">War勝利時に獲得するポイント（順位表のランキングに使用）</p>
                     <Input type="number" min={1} max={10} value={customConfig.winPoints}
-                      onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))} />
+                      onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))}
+                      className="max-w-[120px]" />
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
+              {/* オプションルール */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">オプション</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
                     <input type="checkbox" checked={customConfig.banPickEnabled}
                       onChange={e => setCustomConfig(c => ({ ...c, banPickEnabled: e.target.checked }))}
-                      className="w-4 h-4" />
-                    <span className="text-sm">Ban & Pick を有効にする</span>
+                      className="w-4 h-4 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-sm">Ban & Pick を有効にする</div>
+                      <p className="text-xs text-muted-foreground">オーダー提出後に対戦メンバーのBan/Pickフェーズを設ける</p>
+                    </div>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
                     <input type="checkbox" checked={customConfig.duplicateThemeAllowed}
                       onChange={e => setCustomConfig(c => ({ ...c, duplicateThemeAllowed: e.target.checked }))}
-                      className="w-4 h-4" />
-                    <span className="text-sm">チーム内のデッキテーマ重複を許可</span>
+                      className="w-4 h-4 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-sm">デッキテーマ重複を許可</div>
+                      <p className="text-xs text-muted-foreground">同一チーム内で同じデッキテーマの使用を許可する</p>
+                    </div>
                   </label>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </>
           )}
 
           {/* Discord Webhook */}
