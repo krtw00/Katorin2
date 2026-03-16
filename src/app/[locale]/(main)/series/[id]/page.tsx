@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Users, User, ChevronRight } from 'lucide-react'
+import { Trophy, Users, User, ChevronRight, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +21,7 @@ import { BannerImage } from '@/components/common/BannerImage'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { MetaItem } from '@/components/common/MetaItem'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ManualPointsConfirm } from '@/components/series/ManualPointsConfirm'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -32,46 +33,76 @@ export default async function SeriesDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch series with organizer
-  const { data: series, error } = await supabase
-    .from('series')
-    .select(
-      `
-      *,
-      organizer:profiles!series_organizer_id_fkey(*)
-    `
-    )
-    .eq('id', id)
-    .single() as { data: SeriesWithOrganizer | null; error: unknown }
+  // 並列取得: series, tournaments, blocks, teams, user を同時にフェッチ
+  const [
+    { data: series, error },
+    { data: tournaments },
+    { data: blocks },
+    { data: seriesTeams },
+    { data: { user } },
+  ] = await Promise.all([
+    supabase
+      .from('series')
+      .select(`*, organizer:profiles!series_organizer_id_fkey(*)`)
+      .eq('id', id)
+      .single()
+      .then(r => r as unknown as { data: SeriesWithOrganizer | null; error: unknown }),
+    supabase
+      .from('tournaments')
+      .select(`*, organizer:profiles!tournaments_organizer_id_fkey(*)`)
+      .eq('series_id', id)
+      .order('round_number', { ascending: true })
+      .order('start_at', { ascending: true })
+      .then(r => r as unknown as { data: TournamentWithOrganizer[] | null }),
+    supabase
+      .from('tournament_blocks')
+      .select('*')
+      .eq('series_id', id)
+      .order('block_order', { ascending: true }),
+    supabase
+      .from('teams')
+      .select('id, name, leader_id, avatar_url')
+      .eq('series_id', id),
+    supabase.auth.getUser(),
+  ])
 
   if (error || !series) {
     notFound()
   }
 
-  // Fetch tournaments in this series (round_number順)
-  const { data: tournaments } = await supabase
-    .from('tournaments')
-    .select(
-      `
-      *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
-    `
-    )
-    .eq('series_id', id)
-    .order('round_number', { ascending: true })
-    .order('start_at', { ascending: true }) as { data: TournamentWithOrganizer[] | null }
+  const isOrganizer = user?.id === series.organizer_id
 
-  // Fetch block standings across all tournaments in this series
+  // 第2段: tournaments依存のクエリ + applicationsを並列取得
   const tournamentIds = tournaments?.map((t) => t.id) || []
+
+  const [standingsResult, participantCountsResult, applicationsResult, seriesPointsResult] = await Promise.all([
+    // block_standings
+    tournamentIds.length > 0
+      ? supabase.from('block_standings').select('*').in('tournament_id', tournamentIds)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : Promise.resolve({ data: [] as any[] }),
+    // participant counts
+    tournamentIds.length > 0
+      ? supabase.from('participants').select('tournament_id').in('tournament_id', tournamentIds)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .then(r => r as any as { data: { tournament_id: string }[] | null })
+      : Promise.resolve({ data: [] as { tournament_id: string }[] }),
+    // applications (RLS制限あり)
+    user
+      ? supabase
+          .from('team_applications')
+          .select('*, team:teams(id, name, leader_id, leader:profiles!teams_leader_id_fkey(display_name))')
+          .eq('series_id', id)
+          .order('applied_at', { ascending: false })
+      : Promise.resolve({ data: null }),
+    // series_points (auto-calculated)
+    tournamentIds.length > 0
+      ? supabase.from('series_points').select('tournament_id').eq('series_id', id)
+      : Promise.resolve({ data: [] as { tournament_id: string }[] }),
+  ])
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let allStandings: any[] = []
-  if (tournamentIds.length > 0) {
-    const { data: standings } = await supabase
-      .from('block_standings')
-      .select('*')
-      .in('tournament_id', tournamentIds)
-    allStandings = standings || []
-  }
+  const allStandings: any[] = ('data' in standingsResult ? standingsResult.data : []) || []
 
   // Aggregate standings by team across all weeks
   const teamAgg = new Map<string, { team_name: string; team_avatar_url: string | null; block_id: string; wins: number; losses: number; total_win_points: number; round_diff: number; match_diff: number; total_rounds_won: number; matches_played: number }>()
@@ -102,77 +133,48 @@ export default async function SeriesDetailPage({ params }: Props) {
     }
   }
 
-  // Get blocks for this series
-  const { data: blocks } = await supabase
-    .from('tournament_blocks')
-    .select('*')
-    .eq('series_id', id)
-    .order('block_order', { ascending: true })
-
-  // Fetch participant counts for tournaments
-  const tIds = tournaments?.map((t) => t.id) || []
-  const { data: participantCounts } = await supabase
-    .from('participants')
-    .select('tournament_id')
-    .in('tournament_id', tIds) as { data: { tournament_id: string }[] | null }
+  // Extract calculated tournament IDs
+  const spData = ('data' in seriesPointsResult ? seriesPointsResult.data : []) as { tournament_id: string }[] | null
+  const calculatedTournamentIds = [...new Set((spData || []).map(sp => sp.tournament_id))]
 
   const countMap = new Map<string, number>()
+  const participantCounts = ('data' in participantCountsResult ? participantCountsResult.data : []) as { tournament_id: string }[] | null
   participantCounts?.forEach((p) => {
     countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
   })
 
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const isOrganizer = user?.id === series.organizer_id
-
-  // 参加チーム一覧（シリーズに紐づくチーム）
-  const { data: seriesTeams } = await supabase
-    .from('teams')
-    .select('id, name, leader_id, avatar_url')
-    .eq('series_id', id)
-
-  // エントリー申請（主催者 or リーダーのみRLSで見える）
+  // applications処理
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let applications: any[] = []
-  if (isOrganizer || user) {
-    const { data: apps } = await supabase
-      .from('team_applications')
-      .select('*, team:teams(id, name, leader_id, leader:profiles!teams_leader_id_fkey(display_name))')
-      .eq('series_id', id)
-      .order('applied_at', { ascending: false })
+  const apps = applicationsResult.data
+  if (apps?.length) {
+    const teamIds = apps.map((a: { team_id: string }) => a.team_id)
+    const { data: memberCounts } = await supabase
+      .from('team_members')
+      .select('team_id')
+      .in('team_id', teamIds)
 
-    // メンバー数を取得
-    if (apps?.length) {
-      const teamIds = apps.map(a => a.team_id)
-      const { data: memberCounts } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .in('team_id', teamIds)
+    const appCountMap = new Map<string, number>()
+    memberCounts?.forEach(m => {
+      appCountMap.set(m.team_id, (appCountMap.get(m.team_id) || 0) + 1)
+    })
 
-      const countMap = new Map<string, number>()
-      memberCounts?.forEach(m => {
-        countMap.set(m.team_id, (countMap.get(m.team_id) || 0) + 1)
-      })
-
-      applications = apps.map(a => {
-        const team = a.team as { id: string; name: string; leader_id: string; leader: { display_name: string } | { display_name: string }[] | null } | null
-        const leader = team?.leader
-        const leaderName = leader ? (Array.isArray(leader) ? leader[0]?.display_name : leader.display_name) : ''
-        return {
-          id: a.id,
-          team_id: a.team_id,
-          team_name: team?.name || '',
-          leader_name: leaderName,
-          member_count: countMap.get(a.team_id) || 0,
-          status: a.status,
-          message: a.message,
-          applied_at: a.applied_at,
-        }
-      })
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    applications = apps.map((a: any) => {
+      const team = a.team as { id: string; name: string; leader_id: string; leader: { display_name: string } | { display_name: string }[] | null } | null
+      const leader = team?.leader
+      const leaderName = leader ? (Array.isArray(leader) ? leader[0]?.display_name : leader.display_name) : ''
+      return {
+        id: a.id,
+        team_id: a.team_id,
+        team_name: team?.name || '',
+        leader_name: leaderName,
+        member_count: appCountMap.get(a.team_id) || 0,
+        status: a.status,
+        message: a.message,
+        applied_at: a.applied_at,
+      }
+    })
   }
 
   return (
@@ -253,10 +255,22 @@ export default async function SeriesDetailPage({ params }: Props) {
               申請管理 {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
             </TabsTrigger>
           )}
+          <TabsTrigger value="scouting">スカウティング</TabsTrigger>
           <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="standings">
+          {/* 主催者向け: 手動ポイント再計算 */}
+          {isOrganizer && tournaments && tournaments.length > 0 && (
+            <div className="mb-6">
+              <ManualPointsConfirm
+                seriesId={id}
+                tournaments={tournaments}
+                calculatedTournamentIds={calculatedTournamentIds}
+              />
+            </div>
+          )}
+
           {blocks && blocks.length > 0 && teamAgg.size > 0 ? (
             <div className="space-y-6">
               {blocks.map((block) => {
@@ -382,6 +396,22 @@ export default async function SeriesDetailPage({ params }: Props) {
                   {t('detail.noTournaments')}
                 </p>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="scouting">
+          <Card>
+            <CardContent className="py-6 text-center">
+              <Search className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-4">
+                対戦相手のデッキ使用履歴をチーム別に確認できます
+              </p>
+              <Link href={`/series/${id}/scouting`}>
+                <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                  スカウティングページを開く
+                </button>
+              </Link>
             </CardContent>
           </Card>
         </TabsContent>

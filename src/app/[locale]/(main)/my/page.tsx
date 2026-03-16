@@ -171,6 +171,9 @@ export default async function MyPage() {
             <div className="flex-1">
               <h1 className="font-bold text-lg">{profile?.display_name}</h1>
               <p className="text-sm text-muted-foreground">{user.email}</p>
+              {profile?.discord_id && (
+                <p className="text-sm text-muted-foreground">Discord: {profile.discord_id}</p>
+              )}
             </div>
             <Link href="/my/edit">
               <Button variant="outline" size="sm">

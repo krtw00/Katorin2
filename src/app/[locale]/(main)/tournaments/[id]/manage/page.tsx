@@ -20,7 +20,7 @@ import {
   tournamentStatusLabels,
 } from '@/types/tournament'
 import { Tables, InviteStatus } from '@/types/database'
-import { generateSingleEliminationBracket } from '@/lib/tournament/bracket-generator'
+import { generateSingleEliminationBracket, generateDoubleEliminationBracket } from '@/lib/tournament/bracket-generator'
 import { TeamTournamentManage } from '@/components/tournament/TeamTournamentManage'
 
 type Profile = Tables<'profiles'>
@@ -42,6 +42,7 @@ export default function TournamentManagePage({ params }: Props) {
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [checkedInOnly, setCheckedInOnly] = useState(false)
   const [checkingIn, setCheckingIn] = useState<Record<string, boolean>>({})
   const [removing, setRemoving] = useState<Record<string, boolean>>({})
 
@@ -54,6 +55,18 @@ export default function TournamentManagePage({ params }: Props) {
 
   const router = useRouter()
   const supabase = createClient()
+
+  const sendWebhookNotification = async (tournamentId: string, event: string) => {
+    try {
+      await fetch('/api/discord-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, tournamentId }),
+      })
+    } catch {
+      // Webhook failure should not block the main operation
+    }
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -237,11 +250,24 @@ export default function TournamentManagePage({ params }: Props) {
     setError('')
 
     try {
-      // Generate bracket
-      const bracketMatches = generateSingleEliminationBracket(
-        tournament.id,
-        participants
-      )
+      // Filter participants based on check-in status if option is enabled
+      const eligibleParticipants = checkedInOnly
+        ? participants.filter(p => p.checked_in_at)
+        : participants
+
+      if (eligibleParticipants.length < 2) {
+        setError(checkedInOnly
+          ? 'チェックイン済みの参加者が2名以上必要です'
+          : '参加者が2名以上必要です'
+        )
+        setGenerating(false)
+        return
+      }
+
+      // Generate bracket based on tournament format
+      const bracketMatches = tournament.tournament_format === 'double_elimination'
+        ? generateDoubleEliminationBracket(tournament.id, eligibleParticipants)
+        : generateSingleEliminationBracket(tournament.id, eligibleParticipants)
 
       // Insert matches
       const { error: insertError } = await supabase
@@ -263,6 +289,8 @@ export default function TournamentManagePage({ params }: Props) {
         setError(updateError.message)
         return
       }
+
+      sendWebhookNotification(tournament.id, 'bracket_published')
 
       // Reload page
       window.location.reload()
@@ -439,6 +467,7 @@ export default function TournamentManagePage({ params }: Props) {
                       setError(updateError.message)
                     } else {
                       setTournament({ ...tournament, status: 'recruiting' })
+                      sendWebhookNotification(tournament.id, 'recruiting_started')
                     }
                   }}
                   className="bg-green-600 hover:bg-green-700"
@@ -455,6 +484,7 @@ export default function TournamentManagePage({ params }: Props) {
                   </a>
                   <Button
                     onClick={async () => {
+                      if (!confirm('大会を完了にしますか？シリーズに所属している場合、ポイントが自動計算されます。')) return
                       setError('')
                       const { error: updateError } = await supabase
                         .from('tournaments')
@@ -464,6 +494,7 @@ export default function TournamentManagePage({ params }: Props) {
                         setError(updateError.message)
                       } else {
                         setTournament({ ...tournament, status: 'completed' })
+                        sendWebhookNotification(tournament.id, 'tournament_completed')
                       }
                     }}
                     variant="secondary"
@@ -480,7 +511,12 @@ export default function TournamentManagePage({ params }: Props) {
                 </a>
               )}
               {tournament.status === 'completed' && (
-                <p className="text-sm text-muted-foreground">この大会は完了しています</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">この大会は完了しています</p>
+                  {tournament.series_id && (
+                    <p className="text-sm text-green-600">シリーズポイントが自動計算されました</p>
+                  )}
+                </div>
               )}
             </div>
           </CardContent>
@@ -636,7 +672,21 @@ export default function TournamentManagePage({ params }: Props) {
             <CardTitle>{t('bracket.title')}</CardTitle>
             <CardDescription>{t('bracket.description')}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {participants.some(p => p.checked_in_at) && (
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checkedInOnly}
+                  onChange={(e) => setCheckedInOnly(e.target.checked)}
+                  className="rounded"
+                />
+                チェックイン済みの参加者のみでブラケットを生成
+                <span className="text-muted-foreground">
+                  ({participants.filter(p => p.checked_in_at).length}/{participants.length}名)
+                </span>
+              </label>
+            )}
             <Button onClick={handleGenerateBracket} disabled={generating}>
               {generating ? t('bracket.generating') : t('bracket.generate')}
             </Button>

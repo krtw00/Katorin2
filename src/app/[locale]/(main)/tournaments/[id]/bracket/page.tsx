@@ -87,6 +87,7 @@ export default async function TournamentBracketPage({ params }: Props) {
             tournamentId={id}
             initialMatches={(matches as MatchWithPlayers[]) || []}
             isOrganizer={isOrganizer}
+            currentUserId={user?.id ?? null}
           />
         </CardContent>
       </Card>

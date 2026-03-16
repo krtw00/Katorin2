@@ -45,6 +45,8 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       return []
     }
   })
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState(initialData?.discord_webhook_url || '')
+  const [webhookError, setWebhookError] = useState('')
   const [coverPreview, setCoverPreview] = useState<string | null>(
     initialData?.cover_image_url || null
   )
@@ -200,6 +202,15 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
         return
       }
 
+      // Webhook URL validation
+      const trimmedWebhookUrl = discordWebhookUrl.trim()
+      if (trimmedWebhookUrl && !trimmedWebhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        setWebhookError(t('webhookInvalid'))
+        setLoading(false)
+        return
+      }
+      setWebhookError('')
+
       const validCustomFields = customFields.filter((f) => f.label.trim() !== '')
 
       const tournamentData = {
@@ -223,6 +234,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
           : null,
         custom_fields: validCustomFields,
         entry_type: formData.entry_type,
+        discord_webhook_url: trimmedWebhookUrl || null,
         ...(formData.entry_type === 'team' ? {
           order_size: formData.order_size,
           sub_count: formData.sub_count,
@@ -1023,6 +1035,31 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
                       {t('entryPeriod.hint')}
                     </p>
                   </div>
+                </div>
+              </section>
+
+              {/* Discord Webhook */}
+              <section className="bg-background rounded-lg border p-6 space-y-4">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  Discord {t('webhookLabel')}
+                </h2>
+                <div className="space-y-2">
+                  <Input
+                    id="discord_webhook_url"
+                    value={discordWebhookUrl}
+                    onChange={(e) => {
+                      setDiscordWebhookUrl(e.target.value)
+                      setWebhookError('')
+                    }}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('webhookHint')}
+                  </p>
+                  {webhookError && (
+                    <p className="text-xs text-destructive">{webhookError}</p>
+                  )}
                 </div>
               </section>
 

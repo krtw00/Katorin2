@@ -28,31 +28,29 @@ export default async function StandingsPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('id', id)
-    .single()
+  // 全クエリを並列取得
+  const [{ data: tournament }, { data: blocks }, { data: blockStandings }, { data: swissRankings }] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select('*')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('tournament_blocks')
+      .select('*')
+      .eq('tournament_id', id)
+      .order('block_order', { ascending: true }),
+    supabase
+      .from('block_standings')
+      .select('*')
+      .eq('tournament_id', id),
+    supabase
+      .from('swiss_rankings')
+      .select('*')
+      .eq('tournament_id', id),
+  ])
 
   if (!tournament) notFound()
-
-  const { data: blocks } = await supabase
-    .from('tournament_blocks')
-    .select('*')
-    .eq('tournament_id', id)
-    .order('block_order', { ascending: true })
-
-  // ブロック別順位表（WMGP形式）
-  const { data: blockStandings } = await supabase
-    .from('block_standings')
-    .select('*')
-    .eq('tournament_id', id)
-
-  // スイスドロー順位表
-  const { data: swissRankings } = await supabase
-    .from('swiss_rankings')
-    .select('*')
-    .eq('tournament_id', id)
 
   const isRoundRobin = tournament.tournament_format === 'round_robin'
 

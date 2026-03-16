@@ -1,0 +1,229 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { MatchWithPlayers } from '@/types/tournament'
+import { reportMatchResult, type MatchReport } from '@/app/[locale]/(main)/tournaments/[id]/actions'
+
+type Props = {
+  match: MatchWithPlayers | null
+  open: boolean
+  onClose: () => void
+  currentUserId: string
+}
+
+export function MatchReportDialog({ match, open, onClose, currentUserId }: Props) {
+  const [player1Score, setPlayer1Score] = useState(0)
+  const [player2Score, setPlayer2Score] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [resultMessage, setResultMessage] = useState('')
+
+  const isPlayer1 = match?.player1_id === currentUserId
+  const isPlayer2 = match?.player2_id === currentUserId
+
+  // 既存の報告を表示
+  const myReport = match
+    ? (isPlayer1 ? match.player1_report : match.player2_report) as MatchReport | null
+    : null
+  const opponentReport = match
+    ? (isPlayer1 ? match.player2_report : match.player1_report) as MatchReport | null
+    : null
+
+  useEffect(() => {
+    if (match) {
+      if (myReport) {
+        setPlayer1Score(myReport.player1_score)
+        setPlayer2Score(myReport.player2_score)
+      } else {
+        setPlayer1Score(0)
+        setPlayer2Score(0)
+      }
+      setError('')
+      setResultMessage('')
+    }
+  }, [match, myReport])
+
+  if (!match) return null
+
+  const hasReported = !!myReport
+  const isDisputed = match.report_status === 'disputed'
+
+  const handleSubmit = async () => {
+    if (player1Score === player2Score) {
+      setError('同点は設定できません。勝敗を決めてください。')
+      return
+    }
+
+    if (!match.player1_id || !match.player2_id) {
+      setError('両プレイヤーが確定していません')
+      return
+    }
+
+    setSubmitting(true)
+    setError('')
+    setResultMessage('')
+
+    const winnerId = player1Score > player2Score ? match.player1_id : match.player2_id
+    const result = await reportMatchResult(match.id, {
+      winner_id: winnerId,
+      player1_score: player1Score,
+      player2_score: player2Score,
+    })
+
+    setSubmitting(false)
+
+    if (!result.success) {
+      setError(result.error || '報告に失敗しました')
+      return
+    }
+
+    if (result.status === 'agreed') {
+      setResultMessage('両者の報告が一致しました。結果が確定しました。')
+    } else if (result.status === 'disputed') {
+      setResultMessage('報告内容が相手と一致しません。主催者が確認します。')
+    } else {
+      setResultMessage('報告を送信しました。相手の報告を待っています。')
+    }
+
+    setTimeout(() => {
+      onClose()
+    }, 2000)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>結果を報告</DialogTitle>
+          <DialogDescription>
+            R{match.round}-{match.match_number}
+            {match.report_status && (
+              <Badge
+                variant={
+                  match.report_status === 'agreed' ? 'default'
+                    : match.report_status === 'disputed' ? 'destructive'
+                    : 'secondary'
+                }
+                className="ml-2"
+              >
+                {match.report_status === 'agreed' ? '確定済み'
+                  : match.report_status === 'disputed' ? '不一致'
+                  : match.report_status === 'pending' ? '相手待ち'
+                  : match.report_status}
+              </Badge>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {error && (
+            <div className="bg-destructive/15 text-destructive px-3 py-2 rounded text-sm">
+              {error}
+            </div>
+          )}
+
+          {resultMessage && (
+            <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-2 rounded text-sm">
+              {resultMessage}
+            </div>
+          )}
+
+          {isDisputed && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-3 py-2 rounded text-sm">
+              報告が不一致です。主催者が最終判断を行います。再報告も可能です。
+            </div>
+          )}
+
+          {/* 相手の報告状況 */}
+          {opponentReport && (
+            <div className="text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2">
+              相手は報告済み
+            </div>
+          )}
+
+          {/* Player 1 */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium">
+                {match.player1?.display_name || 'Player 1'}
+                {isPlayer1 && <span className="text-xs text-primary ml-1">(あなた)</span>}
+              </label>
+            </div>
+            <Input
+              type="number"
+              min="0"
+              max="99"
+              value={player1Score}
+              onChange={(e) => setPlayer1Score(parseInt(e.target.value) || 0)}
+              className="w-20 text-center text-lg font-bold"
+              disabled={submitting || !!resultMessage}
+            />
+          </div>
+
+          <div className="text-center text-muted-foreground text-sm">vs</div>
+
+          {/* Player 2 */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium">
+                {match.player2?.display_name || 'Player 2'}
+                {isPlayer2 && <span className="text-xs text-primary ml-1">(あなた)</span>}
+              </label>
+            </div>
+            <Input
+              type="number"
+              min="0"
+              max="99"
+              value={player2Score}
+              onChange={(e) => setPlayer2Score(parseInt(e.target.value) || 0)}
+              className="w-20 text-center text-lg font-bold"
+              disabled={submitting || !!resultMessage}
+            />
+          </div>
+
+          {/* Winner preview */}
+          {player1Score !== player2Score && (
+            <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+              <span className="text-sm text-green-700 dark:text-green-300">
+                勝者: {player1Score > player2Score
+                  ? match.player1?.display_name
+                  : match.player2?.display_name}
+              </span>
+            </div>
+          )}
+
+          {hasReported && !resultMessage && (
+            <p className="text-xs text-muted-foreground">
+              既に報告済みです。再送信すると報告内容が上書きされます。
+            </p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            閉じる
+          </Button>
+          {!resultMessage && (
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || player1Score === player2Score}
+            >
+              {submitting ? '送信中...' : hasReported ? '再報告する' : '結果を報告'}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

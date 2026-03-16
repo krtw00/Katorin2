@@ -22,48 +22,50 @@ export default async function WarDetailPage({ params }: Props) {
   const { id, matchId } = await params
   const supabase = await createClient()
 
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*, series:series(id, title)')
-    .eq('id', id)
-    .single()
+  // tournament と match を並列取得（第1段）
+  const [{ data: tournament }, { data: match }] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select('*, series:series(id, title)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('matches')
+      .select(`
+        *,
+        team1:teams!matches_team1_id_fkey(id, name, avatar_url),
+        team2:teams!matches_team2_id_fkey(id, name, avatar_url)
+      `)
+      .eq('id', matchId)
+      .single(),
+  ])
 
   if (!tournament) notFound()
-
-  const config = await getTournamentConfig(supabase, id)
-  const seriesInfo = tournament.series as { id: string; title: string } | null
-
-  const { data: match } = await supabase
-    .from('matches')
-    .select(`
-      *,
-      team1:teams!matches_team1_id_fkey(id, name, avatar_url),
-      team2:teams!matches_team2_id_fkey(id, name, avatar_url)
-    `)
-    .eq('id', matchId)
-    .single()
-
   if (!match) notFound()
 
-  const { data: orders } = await supabase
-    .from('war_orders')
-    .select('*, user:profiles(*)')
-    .eq('match_id', matchId)
-    .order('slot', { ascending: true })
+  const seriesInfo = tournament.series as { id: string; title: string } | null
 
-  const { data: warRounds } = await supabase
-    .from('war_rounds')
-    .select('*')
-    .eq('match_id', matchId)
-    .order('round_number', { ascending: true })
+  // 第2段: config, orders, warRounds, individualMatches, user を並列取得
+  const [config, { data: orders }, { data: warRounds }, { data: individualMatches }, { data: { user } }] = await Promise.all([
+    getTournamentConfig(supabase, id),
+    supabase
+      .from('war_orders')
+      .select('*, user:profiles(*)')
+      .eq('match_id', matchId)
+      .order('slot', { ascending: true }),
+    supabase
+      .from('war_rounds')
+      .select('*')
+      .eq('match_id', matchId)
+      .order('round_number', { ascending: true }),
+    supabase
+      .from('individual_matches')
+      .select('*, player1:profiles!individual_matches_player1_id_fkey(*), player2:profiles!individual_matches_player2_id_fkey(*)')
+      .eq('match_id', matchId)
+      .order('play_order', { ascending: true }),
+    supabase.auth.getUser(),
+  ])
 
-  const { data: individualMatches } = await supabase
-    .from('individual_matches')
-    .select('*, player1:profiles!individual_matches_player1_id_fkey(*), player2:profiles!individual_matches_player2_id_fkey(*)')
-    .eq('match_id', matchId)
-    .order('play_order', { ascending: true })
-
-  const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user?.id === tournament.organizer_id
 
   const team1 = (Array.isArray(match.team1) ? match.team1[0] : match.team1) as { id: string; name: string; avatar_url: string | null } | null

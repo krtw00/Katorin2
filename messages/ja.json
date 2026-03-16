@@ -187,7 +187,10 @@
       "entryPeriod": {
         "label": "エントリー期間",
         "hint": "この期間中にエントリーを受け付けます"
-      }
+      },
+      "webhookLabel": "Webhook通知",
+      "webhookHint": "Discord Webhook URLを設定すると、大会の重要イベント時に自動通知されます",
+      "webhookInvalid": "有効なDiscord Webhook URLを入力してください（https://discord.com/api/webhooks/...）"
     },
     "detail": {
       "participants": "{current} / {max}人",
@@ -342,7 +345,10 @@
       "calculationModeLabel": "ポイント計算方式",
       "calculationModeAutoDesc": "大会完了時に自動でポイントを計算",
       "calculationModeManualDesc": "主催者が手動でポイントを確定",
-      "periodLabel": "開催期間"
+      "periodLabel": "開催期間",
+      "webhookLabel": "Discord Webhook通知",
+      "webhookHint": "Discord Webhook URLを設定すると、シリーズ配下の大会イベント時に自動通知されます",
+      "webhookInvalid": "有効なDiscord Webhook URLを入力してください（https://discord.com/api/webhooks/...）"
     },
     "filter": {
       "search": "シリーズを検索...",

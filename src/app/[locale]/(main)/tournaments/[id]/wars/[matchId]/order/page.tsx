@@ -42,23 +42,22 @@ export default async function OrderPage({ params }: Props) {
   const { id, matchId } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // user, tournament, match を並列取得
+  const [{ data: { user } }, { data: tournament }, { data: match }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('tournaments')
+      .select('*')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('matches')
+      .select('*, team1:teams!matches_team1_id_fkey(id, name), team2:teams!matches_team2_id_fkey(id, name)')
+      .eq('id', matchId)
+      .single(),
+  ])
   if (!user) redirect('/login')
-
-  // 大会情報
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('id', id)
-    .single()
   if (!tournament) notFound()
-
-  // match情報
-  const { data: match } = await supabase
-    .from('matches')
-    .select('*, team1:teams!matches_team1_id_fkey(id, name), team2:teams!matches_team2_id_fkey(id, name)')
-    .eq('id', matchId)
-    .single()
   if (!match) notFound()
 
   const isOrganizer = user.id === tournament.organizer_id
