@@ -5,12 +5,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { RealtimeBracket } from '@/components/tournament/RealtimeBracket'
 import { TournamentRanking } from '@/components/tournament/TournamentRanking'
 import {
-  tournamentFormatLabels,
-  matchFormatLabels,
   MatchWithPlayers,
   ParticipantWithUser,
   Profile,
 } from '@/types/tournament'
+import { useTranslations } from 'next-intl'
 import { Database } from '@/types/database'
 
 type Tournament = Database['public']['Tables']['tournaments']['Row']
@@ -30,6 +29,7 @@ export function TournamentTabs({
   defaultTab = 'overview',
   isOrganizer = false,
 }: Props) {
+  const t = useTranslations()
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
     return new Date(dateString).toLocaleString('ja-JP', {
@@ -47,12 +47,12 @@ export function TournamentTabs({
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-3 mb-6">
-        <TabsTrigger value="overview">概要</TabsTrigger>
+        <TabsTrigger value="overview">{t('tournament.tabs.overview')}</TabsTrigger>
         <TabsTrigger value="bracket" disabled={!hasStarted && matches.length === 0}>
-          トーナメント表
+          {t('tournament.tabs.bracket')}
         </TabsTrigger>
         <TabsTrigger value="ranking">
-          {hasStarted ? 'ランキング' : '参加者'}
+          {hasStarted ? t('tournament.tabs.ranking') : t('tournament.tabs.participants')}
         </TabsTrigger>
       </TabsList>
 
@@ -61,30 +61,30 @@ export function TournamentTabs({
         <div className="grid gap-6 md:grid-cols-2">
           {/* Tournament Info */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">大会情報</h3>
+            <h3 className="font-semibold text-lg">{t('tournament.tabs.info')}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">トーナメント形式</span>
-                <span>{tournamentFormatLabels[tournament.tournament_format]}</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.format')}</span>
+                <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
               </div>
               <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">対戦形式</span>
-                <span>{matchFormatLabels[tournament.match_format]}</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.matchFormat')}</span>
+                <span>{t('labels.matchFormat.' + tournament.match_format)}</span>
               </div>
               <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">開催日時</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.startDate')}</span>
                 <span>{formatDate(tournament.start_at)}</span>
               </div>
               <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">エントリー開始</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.entryStart')}</span>
                 <span>{formatDate(tournament.entry_start_at)}</span>
               </div>
               <div className="flex justify-between py-2 border-b">
-                <span className="text-muted-foreground">エントリー締切</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.entryEnd')}</span>
                 <span>{formatDate(tournament.entry_deadline)}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-muted-foreground">参加者数</span>
+                <span className="text-muted-foreground">{t('tournament.tabs.participantCount')}</span>
                 <span>
                   {participants.length} / {tournament.max_participants}
                 </span>
@@ -94,7 +94,7 @@ export function TournamentTabs({
 
           {/* Organizer Info */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">主催者</h3>
+            <h3 className="font-semibold text-lg">{t('tournament.tabs.organizer')}</h3>
             <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
               <Avatar className="h-12 w-12">
                 <AvatarFallback className="text-lg">
@@ -110,7 +110,7 @@ export function TournamentTabs({
 
             {tournament.description && (
               <div className="mt-6">
-                <h3 className="font-semibold text-lg mb-2">説明</h3>
+                <h3 className="font-semibold text-lg mb-2">{t('tournament.tabs.description')}</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap">
                   {tournament.description}
                 </p>
@@ -130,7 +130,7 @@ export function TournamentTabs({
           />
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            トーナメント表はまだ生成されていません
+            {t('tournament.tabs.notGenerated')}
           </div>
         )}
       </TabsContent>

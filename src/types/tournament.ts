@@ -40,36 +40,6 @@ export type ParticipantWithUser = Participant & {
   user: Profile
 }
 
-// Status labels for UI
-export const tournamentStatusLabels: Record<Database['public']['Enums']['tournament_status'], string> = {
-  draft: '下書き',
-  published: '公開',
-  recruiting: '募集中',
-  in_progress: '開催中',
-  completed: '終了',
-  cancelled: 'キャンセル',
-}
-
-export const matchStatusLabels: Record<Database['public']['Enums']['match_status'], string> = {
-  pending: '待機中',
-  in_progress: '対戦中',
-  completed: '終了',
-  bye: '不戦勝',
-}
-
-export const tournamentFormatLabels: Record<Database['public']['Enums']['tournament_format'], string> = {
-  single_elimination: 'シングルエリミネーション',
-  double_elimination: 'ダブルエリミネーション',
-  swiss: 'スイスドロー',
-  round_robin: '総当たり',
-}
-
-export const matchFormatLabels: Record<Database['public']['Enums']['match_format'], string> = {
-  bo1: '1本勝負',
-  bo3: 'マッチ戦（2本先取）',
-  bo5: 'マッチ戦（3本先取）',
-}
-
 // Custom field definition for tournament entry
 export type InputType = 'text' | 'checkbox' | 'image'
 export type EditDeadline = 'entry_closed' | 'entry_period' | 'bracket_published' | 'event_end'

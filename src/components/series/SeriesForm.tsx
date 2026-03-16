@@ -212,7 +212,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* Cover Image */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">カバー画像</CardTitle>
+              <CardTitle className="text-lg">{t('coverImage')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ImageUpload
@@ -220,7 +220,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                 onChange={(url) => setCoverUrl(url)}
                 onUpload={async (file) => {
                   const { data: { user: u } } = await supabase.auth.getUser()
-                  if (!u) throw new Error('ログインが必要です')
+                  if (!u) throw new Error(t('loginRequired'))
                   const result = await uploadTournamentCover(supabase, file, u.id)
                   if (isUploadError(result)) throw new Error(result.message)
                   return result.url
@@ -231,7 +231,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                 maxSizeMB={5}
               />
               <p className="text-xs text-muted-foreground mt-2">
-                JPG, PNG, GIF形式、5MB以下、16:9推奨
+                {t('coverImageHint')}
               </p>
             </CardContent>
           </Card>
@@ -275,9 +275,9 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                     {!ruleUnlocked ? (
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="text-sm font-medium">ルール設定はロックされています</p>
+                          <p className="text-sm font-medium">{t('ruleLocked')}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            大会が進行中のため、ルール変更は制限されています。変更すると進行中の結果に影響する可能性があります。
+                            {t('ruleLockedDesc')}
                           </p>
                         </div>
                         <Button
@@ -287,14 +287,14 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                           className="shrink-0 text-destructive border-destructive/50 hover:bg-destructive/10"
                           onClick={() => setRuleUnlocked(true)}
                         >
-                          ロック解除
+                          {t('unlockRules')}
                         </Button>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-sm font-medium text-yellow-600">ルールロックが解除されました</p>
+                        <p className="text-sm font-medium text-yellow-600">{t('ruleUnlocked')}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          変更内容は保存時に反映されます。進行中の結果には自動で反映されません。
+                          {t('ruleUnlockedDesc')}
                         </p>
                       </div>
                     )}
@@ -305,16 +305,16 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               {/* 大会形式 */}
               <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
-                  <CardTitle className="text-lg">大会形式</CardTitle>
+                  <CardTitle className="text-lg">{t('tournamentFormat')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
-                    <Label>予選フォーマット</Label>
-                    <p className="text-xs text-muted-foreground">チーム間の対戦方式を選択します</p>
+                    <Label>{t('qualifierFormat')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('qualifierFormatHint')}</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { value: 'round_robin', label: '総当たり', desc: 'ブロック内の全チームと対戦' },
-                        { value: 'swiss', label: 'スイスドロー', desc: '勝敗が近いチーム同士をマッチング' },
+                        { value: 'round_robin', label: t('roundRobin'), desc: t('roundRobinDesc') },
+                        { value: 'swiss', label: t('swissDraw'), desc: t('swissDrawDesc') },
                       ].map(opt => (
                         <label key={opt.value} className={`flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${customConfig.qualifierFormat === opt.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
                           <div className="flex items-center gap-2">
@@ -331,13 +331,13 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>個人マッチ形式</Label>
-                    <p className="text-xs text-muted-foreground">1つの個人対戦での勝敗判定方式</p>
+                    <Label>{t('matchFormat')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('matchFormatHint')}</p>
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { value: 'bo1', label: 'BO1', desc: '1本勝負' },
-                        { value: 'bo3', label: 'BO3', desc: '2本先取' },
-                        { value: 'bo5', label: 'BO5', desc: '3本先取' },
+                        { value: 'bo1', label: 'BO1', desc: t('bo1Desc') },
+                        { value: 'bo3', label: 'BO3', desc: t('bo3Desc') },
+                        { value: 'bo5', label: 'BO5', desc: t('bo5Desc') },
                       ].map(opt => (
                         <label key={opt.value} className={`flex flex-col items-center p-3 border rounded-lg cursor-pointer transition-colors ${customConfig.matchFormat === opt.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
                           <input type="radio" name="matchFormat" value={opt.value}
@@ -353,8 +353,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
 
                   {customConfig.qualifierFormat === 'round_robin' && (
                     <div className="space-y-2">
-                      <Label>ブロック数</Label>
-                      <p className="text-xs text-muted-foreground">チームを振り分けるグループの数</p>
+                      <Label>{t('blockCount')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('blockCountHint')}</p>
                       <Input type="number" min={1} max={8} value={customConfig.blockCount}
                         onChange={e => setCustomConfig(c => ({ ...c, blockCount: +e.target.value }))} />
                     </div>
@@ -365,33 +365,33 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               {/* チーム構成 */}
               <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
-                  <CardTitle className="text-lg">チーム構成</CardTitle>
+                  <CardTitle className="text-lg">{t('teamComposition')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>オーダー人数</Label>
-                      <p className="text-xs text-muted-foreground">提出するオーダーの総人数</p>
+                      <Label>{t('orderSize')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('orderSizeHint')}</p>
                       <Input type="number" min={1} max={10} value={customConfig.orderSize}
                         onChange={e => setCustomConfig(c => ({ ...c, orderSize: +e.target.value }))} />
                     </div>
                     <div className="space-y-2">
-                      <Label>サブ人数</Label>
-                      <p className="text-xs text-muted-foreground">オーダー内のサブ枠</p>
+                      <Label>{t('subCount')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('subCountHint')}</p>
                       <Input type="number" min={0} max={5} value={customConfig.subCount}
                         onChange={e => setCustomConfig(c => ({ ...c, subCount: +e.target.value }))} />
                     </div>
                     <div className="space-y-2">
-                      <Label>1ラウンド出場数</Label>
-                      <p className="text-xs text-muted-foreground">各ラウンドで対戦する人数</p>
+                      <Label>{t('playersPerRound')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('playersPerRoundHint')}</p>
                       <Input type="number" min={1} max={10} value={customConfig.playersPerRound}
                         onChange={e => setCustomConfig(c => ({ ...c, playersPerRound: +e.target.value }))} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>先取ラウンド数</Label>
-                    <p className="text-xs text-muted-foreground">War（チーム対戦）で何ラウンド先取で勝利とするか</p>
+                    <Label>{t('roundsToWin')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('roundsToWinHint')}</p>
                     <Input type="number" min={1} max={5} value={customConfig.roundsToWin}
                       onChange={e => setCustomConfig(c => ({ ...c, roundsToWin: +e.target.value }))}
                       className="max-w-[120px]" />
@@ -402,12 +402,12 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               {/* スコアリング */}
               <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
-                  <CardTitle className="text-lg">スコアリング</CardTitle>
+                  <CardTitle className="text-lg">{t('scoring')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <Label>勝利ポイント</Label>
-                    <p className="text-xs text-muted-foreground">War勝利時に獲得するポイント（順位表のランキングに使用）</p>
+                    <Label>{t('winPointsLabel')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('winPointsHint')}</p>
                     <Input type="number" min={1} max={10} value={customConfig.winPoints}
                       onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))}
                       className="max-w-[120px]" />
@@ -418,7 +418,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               {/* オプションルール */}
               <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
-                  <CardTitle className="text-lg">オプション</CardTitle>
+                  <CardTitle className="text-lg">{t('options')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
@@ -426,8 +426,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                       onChange={e => setCustomConfig(c => ({ ...c, banPickEnabled: e.target.checked }))}
                       className="w-4 h-4 mt-0.5" />
                     <div>
-                      <div className="font-medium text-sm">Ban & Pick を有効にする</div>
-                      <p className="text-xs text-muted-foreground">オーダー提出後に対戦メンバーのBan/Pickフェーズを設ける</p>
+                      <div className="font-medium text-sm">{t('enableBanPick')}</div>
+                      <p className="text-xs text-muted-foreground">{t('enableBanPickHint')}</p>
                     </div>
                   </label>
                   <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
@@ -435,8 +435,8 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
                       onChange={e => setCustomConfig(c => ({ ...c, duplicateThemeAllowed: e.target.checked }))}
                       className="w-4 h-4 mt-0.5" />
                     <div>
-                      <div className="font-medium text-sm">デッキテーマ重複を許可</div>
-                      <p className="text-xs text-muted-foreground">同一チーム内で同じデッキテーマの使用を許可する</p>
+                      <div className="font-medium text-sm">{t('allowDuplicateTheme')}</div>
+                      <p className="text-xs text-muted-foreground">{t('allowDuplicateThemeHint')}</p>
                     </div>
                   </label>
                 </CardContent>

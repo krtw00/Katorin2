@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge'
 import { Users, LayoutGrid, User, ChevronRight } from 'lucide-react'
 import {
   TournamentWithOrganizer,
-  tournamentFormatLabels,
 } from '@/types/tournament'
+import { useTranslations } from 'next-intl'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { MetaItem } from '@/components/common/MetaItem'
 import { BannerImage } from '@/components/common/BannerImage'
@@ -31,6 +31,7 @@ export function TournamentListItem({
   showManageLink = false,
   placement,
 }: Props) {
+  const t = useTranslations()
   const href = showManageLink
     ? `/tournaments/${tournament.id}/manage`
     : `/tournaments/${tournament.id}`
@@ -55,7 +56,7 @@ export function TournamentListItem({
           <StatusIndicator status={tournament.status} showDot showIcon={false} />
         </div>
         <div className="flex items-center gap-3 mt-1">
-          <MetaItem icon={LayoutGrid}>{tournamentFormatLabels[tournament.tournament_format]}</MetaItem>
+          <MetaItem icon={LayoutGrid}>{t('labels.tournamentFormat.' + tournament.tournament_format)}</MetaItem>
           <MetaItem icon={Users}>
             {participantCount}/{tournament.max_participants}
           </MetaItem>

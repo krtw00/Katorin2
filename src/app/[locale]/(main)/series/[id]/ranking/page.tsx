@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { SeriesWithOrganizer, seriesStatusLabels } from '@/types/series'
+import { SeriesWithOrganizer } from '@/types/series'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -13,6 +13,7 @@ type Props = {
 
 export default async function SeriesRankingPage({ params }: Props) {
   const t = await getTranslations('series')
+  const tLabels = await getTranslations('labels')
   const { id } = await params
   const supabase = await createClient()
 
@@ -44,7 +45,7 @@ export default async function SeriesRankingPage({ params }: Props) {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{series.title}</h1>
           <Badge variant="outline">
-            {seriesStatusLabels[series.status]}
+            {tLabels('seriesStatus.' + series.status)}
           </Badge>
         </div>
         <p className="text-muted-foreground mt-1">{t('detail.ranking')}</p>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -82,6 +83,8 @@ export function OrderSubmitForm({
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
+  const t = useTranslations('tournament.order')
+  const tc = useTranslations('common')
 
   const isEdit = existingOrders.length > 0
 
@@ -99,11 +102,11 @@ export function OrderSubmitForm({
     // バリデーション
     for (let i = 0; i < orderSize; i++) {
       if (!slots[i].userId) {
-        setError(`メインプレイヤー ${i + 1} を選択してください`)
+        setError(t('selectMainPlayer', { n: i + 1 }))
         return
       }
       if (!slots[i].deckName.trim()) {
-        setError(`メインプレイヤー ${i + 1} のデッキ名を入力してください`)
+        setError(t('deckRequired', { n: i + 1 }))
         return
       }
     }
@@ -111,7 +114,7 @@ export function OrderSubmitForm({
     // 重複チェック
     const playerIds = slots.filter(s => s.userId).map(s => s.userId)
     if (new Set(playerIds).size !== playerIds.length) {
-      setError('同じプレイヤーを複数スロットに設定できません')
+      setError(t('duplicatePlayer'))
       return
     }
 
@@ -146,7 +149,7 @@ export function OrderSubmitForm({
 
       router.push(`/tournaments/${tournamentId}/wars/${matchId}`)
     } catch {
-      setError('オーダー提出に失敗しました')
+      setError(t('submitFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -156,9 +159,9 @@ export function OrderSubmitForm({
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>{isEdit ? 'オーダー編集' : 'オーダー提出'}</CardTitle>
+          <CardTitle>{isEdit ? t('editTitle') : t('submitTitle')}</CardTitle>
           <CardDescription>
-            {teamName} - メイン{orderSize}名{subCount > 0 ? ` + サブ${subCount}名` : ''}
+            {teamName} - {subCount > 0 ? t('description', { main: orderSize, sub: subCount }) : t('descriptionNoSub', { main: orderSize })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -175,20 +178,20 @@ export function OrderSubmitForm({
                   ) : (
                     <Badge className="mr-2">{index + 1}</Badge>
                   )}
-                  {slot.isSub ? `サブプレイヤー ${index - orderSize + 1}` : `メインプレイヤー ${index + 1}`}
+                  {slot.isSub ? t('subPlayer', { n: index - orderSize + 1 }) : t('mainPlayer', { n: index + 1 })}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground">プレイヤー</label>
+                  <label className="text-xs text-muted-foreground">{t('player')}</label>
                   <select
                     value={slot.userId}
                     onChange={(e) => updateSlot(index, 'userId', e.target.value)}
                     className="w-full px-3 py-2 border rounded-md bg-background text-sm"
                     disabled={submitting}
                   >
-                    <option value="">選択してください</option>
+                    <option value="">{t('selectPlayer')}</option>
                     {members.map(m => (
                       <option
                         key={m.userId}
@@ -202,20 +205,20 @@ export function OrderSubmitForm({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">デッキ名</label>
+                    <label className="text-xs text-muted-foreground">{t('deckName')}</label>
                     <Input
                       value={slot.deckName}
                       onChange={(e) => updateSlot(index, 'deckName', e.target.value)}
-                      placeholder="例: 天盃龍"
+                      placeholder={t('deckPlaceholder')}
                       disabled={submitting}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">テーマ</label>
+                    <label className="text-xs text-muted-foreground">{t('theme')}</label>
                     <Input
                       value={slot.deckTheme}
                       onChange={(e) => updateSlot(index, 'deckTheme', e.target.value)}
-                      placeholder="例: ビート型"
+                      placeholder={t('themePlaceholder')}
                       disabled={submitting}
                     />
                   </div>
@@ -230,14 +233,14 @@ export function OrderSubmitForm({
             onClick={() => router.back()}
             disabled={submitting}
           >
-            キャンセル
+            {tc('cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={submitting}
             className="flex-1 bg-green-600 hover:bg-green-700"
           >
-            {submitting ? '提出中...' : isEdit ? 'オーダーを更新' : 'オーダーを提出'}
+            {submitting ? t('submitting') : isEdit ? t('update') : t('submit')}
           </Button>
         </CardFooter>
       </Card>

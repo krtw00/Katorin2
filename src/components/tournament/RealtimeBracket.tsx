@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
-import { matchStatusLabels, MatchWithPlayers } from '@/types/tournament'
+import { useTranslations } from 'next-intl'
+import { MatchWithPlayers } from '@/types/tournament'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
 import { createClient } from '@/lib/supabase/client'
 import { handleError } from '@/lib/errors/handleError'
@@ -88,6 +89,8 @@ function MatchCard({
   isParticipant?: boolean
   onReport?: () => void
 }) {
+  const t = useTranslations('bracket')
+  const tLabels = useTranslations('labels')
   const ref = useRef<HTMLDivElement>(null)
   const isCompleted = match.status === 'completed'
   const isInProgress = match.status === 'in_progress'
@@ -120,11 +123,11 @@ function MatchCard({
   }
 
   const statusLabel = () => {
-    if (isDisputed) return '報告不一致'
-    if (match.report_status === 'pending') return '報告待ち'
-    if (showClickIndicator) return 'クリックして結果入力'
-    if (showReportIndicator) return '結果を報告'
-    return matchStatusLabels[match.status]
+    if (isDisputed) return t('reportConflict')
+    if (match.report_status === 'pending') return t('reportPending')
+    if (showClickIndicator) return t('clickToInput')
+    if (showReportIndicator) return t('reportResult')
+    return tLabels('matchStatus.' + match.status)
   }
 
   return (
@@ -181,6 +184,8 @@ function ScoreInputModal({
   onClose: () => void
   onSubmit: (matchId: string, p1Score: number, p2Score: number, winnerId: string) => Promise<void>
 }) {
+  const t = useTranslations('bracket')
+  const tc = useTranslations('common')
   const [player1Score, setPlayer1Score] = useState(0)
   const [player2Score, setPlayer2Score] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -199,12 +204,12 @@ function ScoreInputModal({
 
   const handleSubmit = async () => {
     if (player1Score === player2Score) {
-      setError('同点は設定できません。勝敗を決めてください。')
+      setError(t('tieError'))
       return
     }
 
     if (!match.player1_id || !match.player2_id) {
-      setError('両プレイヤーが確定していません')
+      setError(t('playerNotConfirmed'))
       return
     }
 
@@ -232,7 +237,7 @@ function ScoreInputModal({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>試合結果を入力</DialogTitle>
+          <DialogTitle>{t('inputResult')}</DialogTitle>
           <DialogDescription>
             {bracketLabel ? `${bracketLabel} ` : ''}R{roundDisplay}-{match.match_number}
           </DialogDescription>
@@ -287,7 +292,7 @@ function ScoreInputModal({
           {player1Score !== player2Score && (
             <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
               <span className="text-sm text-green-700 dark:text-green-300">
-                勝者: {player1Score > player2Score
+                {t('winner')} {player1Score > player2Score
                   ? match.player1?.display_name
                   : match.player2?.display_name}
               </span>
@@ -297,10 +302,10 @@ function ScoreInputModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
-            キャンセル
+            {tc('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting || player1Score === player2Score}>
-            {submitting ? '保存中...' : '結果を確定'}
+            {submitting ? tc('saving') : t('confirmResult')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -387,14 +392,17 @@ function BracketSection({
     }
   }, [matchesByRound])
 
+  const t = useTranslations('bracket')
+
   const getRoundLabel = useCallback((round: number, bracketSide: string | null) => {
-    if (bracketSide === 'grand_final') return 'Grand Finals'
+    if (bracketSide === 'grand_final') return t('grandFinals')
     const displayRound = bracketSide === 'losers' ? round - 100 : round
-    const prefix = bracketSide === 'winners' ? 'W' : bracketSide === 'losers' ? 'L' : ''
-    if (round === maxRound && bracketSide === 'winners') return `${prefix} 決勝`
-    if (round === maxRound && bracketSide === 'losers') return `${prefix} 決勝`
-    return `${prefix}${displayRound}回戦`
-  }, [maxRound])
+    if (round === maxRound && bracketSide === 'winners') return t('winnersFinal')
+    if (round === maxRound && bracketSide === 'losers') return t('losersFinal')
+    if (bracketSide === 'winners') return t('winnersRound', { n: displayRound })
+    if (bracketSide === 'losers') return t('losersRound', { n: displayRound })
+    return t('round', { n: displayRound })
+  }, [maxRound, t])
 
   if (matches.length === 0) return null
 
@@ -439,7 +447,7 @@ function BracketSection({
           <div className="flex flex-col" style={{ width: CARD_WIDTH }}>
             <div className="text-center mb-4 h-8">
               <span className="text-sm font-medium px-3 py-1 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 rounded-full">
-                優勝
+                {t('champion')}
               </span>
             </div>
             <div>
@@ -466,7 +474,7 @@ function BracketSection({
                       </div>
                     ) : (
                       <span className="text-sm text-muted-foreground italic">
-                        未確定
+                        {t('undecided')}
                       </span>
                     )}
                   </div>
@@ -544,6 +552,7 @@ function BracketSection({
 }
 
 export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = false, currentUserId = null }: Props) {
+  const t = useTranslations('bracket')
   const matches = useRealtimeMatches(tournamentId, initialMatches)
   const containerRef = useRef<HTMLDivElement>(null)
   const [positions, setPositions] = useState<Map<string, MatchPosition>>(new Map())
@@ -597,11 +606,11 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
   }, [matchesByRound])
 
   const getRoundLabel = useCallback((round: number) => {
-    if (round === maxRound) return '決勝'
-    if (round === maxRound - 1 && maxRound >= 2) return '準決勝'
-    if (round === maxRound - 2 && maxRound >= 3) return '準々決勝'
-    return `${round}回戦`
-  }, [maxRound])
+    if (round === maxRound) return t('final')
+    if (round === maxRound - 1 && maxRound >= 2) return t('semifinal')
+    if (round === maxRound - 2 && maxRound >= 3) return t('quarterfinal')
+    return t('round', { n: round })
+  }, [maxRound, t])
 
   const handlePositionChange = useCallback((id: string, rect: DOMRect) => {
     setPositions(prev => {
@@ -697,7 +706,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">
-          トーナメント表はまだ生成されていません
+          {t('notGenerated')}
         </p>
       </div>
     )
@@ -713,7 +722,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
     return (
       <div className="overflow-auto" ref={containerRef}>
         <BracketSection
-          title="Winners Bracket"
+          title={t('winnersBracket')}
           titleColor="text-blue-600 dark:text-blue-400"
           matches={winnersMatches}
           isOrganizer={isOrganizer}
@@ -724,7 +733,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
         />
 
         <BracketSection
-          title="Losers Bracket"
+          title={t('losersBracket')}
           titleColor="text-red-600 dark:text-red-400"
           matches={losersMatches}
           isOrganizer={isOrganizer}
@@ -735,7 +744,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
         />
 
         <BracketSection
-          title="Grand Finals"
+          title={t('grandFinals')}
           titleColor="text-yellow-600 dark:text-yellow-400"
           matches={grandFinalMatches}
           isOrganizer={isOrganizer}
@@ -749,24 +758,24 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
         <div className="flex items-center gap-6 mt-4 pt-4 border-t text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-primary" />
-            <span>対戦中</span>
+            <span>{t('inProgress')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-green-500" />
-            <span>勝者</span>
+            <span>{t('winner')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-muted" />
-            <span>終了</span>
+            <span>{t('completed')}</span>
           </div>
           {isOrganizer && (
             <div className="flex items-center gap-2 ml-auto text-primary">
-              <span>※ 試合カードをクリックして結果入力</span>
+              <span>{t('organizerHint')}</span>
             </div>
           )}
           {currentUserId && !isOrganizer && (
             <div className="flex items-center gap-2 ml-auto text-blue-600 dark:text-blue-300">
-              <span>※ 自分の試合をクリックして結果報告</span>
+              <span>{t('participantHint')}</span>
             </div>
           )}
         </div>
@@ -863,7 +872,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
             <div className="flex flex-col" style={{ width: CARD_WIDTH }}>
               <div className="text-center mb-4 h-8">
                 <span className="text-sm font-medium px-3 py-1 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 rounded-full">
-                  優勝
+                  {t('champion')}
                 </span>
               </div>
 
@@ -896,7 +905,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
                         </div>
                       ) : (
                         <span className="text-sm text-muted-foreground italic">
-                          未確定
+                          {t('undecided')}
                         </span>
                       )}
                     </div>
@@ -911,24 +920,24 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
         <div className="flex items-center gap-6 mt-8 pt-4 border-t text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-primary" />
-            <span>対戦中</span>
+            <span>{t('inProgress')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-green-500" />
-            <span>勝者</span>
+            <span>{t('winner')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-muted" />
-            <span>終了</span>
+            <span>{t('completed')}</span>
           </div>
           {isOrganizer && (
             <div className="flex items-center gap-2 ml-auto text-primary">
-              <span>※ 試合カードをクリックして結果入力</span>
+              <span>{t('organizerHint')}</span>
             </div>
           )}
           {currentUserId && !isOrganizer && (
             <div className="flex items-center gap-2 ml-auto text-blue-600 dark:text-blue-300">
-              <span>※ 自分の試合をクリックして結果報告</span>
+              <span>{t('participantHint')}</span>
             </div>
           )}
         </div>

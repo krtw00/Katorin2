@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export function MatchReportDialog({ match, open, onClose, currentUserId }: Props) {
+  const t = useTranslations('tournament.report')
   const [player1Score, setPlayer1Score] = useState(0)
   const [player2Score, setPlayer2Score] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -61,12 +63,12 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
 
   const handleSubmit = async () => {
     if (player1Score === player2Score) {
-      setError('同点は設定できません。勝敗を決めてください。')
+      setError(t('tieError'))
       return
     }
 
     if (!match.player1_id || !match.player2_id) {
-      setError('両プレイヤーが確定していません')
+      setError(t('playerNotConfirmed'))
       return
     }
 
@@ -84,16 +86,16 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
     setSubmitting(false)
 
     if (!result.success) {
-      setError(result.error || '報告に失敗しました')
+      setError(result.error || t('submitFailed'))
       return
     }
 
     if (result.status === 'agreed') {
-      setResultMessage('両者の報告が一致しました。結果が確定しました。')
+      setResultMessage(t('confirmed'))
     } else if (result.status === 'disputed') {
-      setResultMessage('報告内容が相手と一致しません。主催者が確認します。')
+      setResultMessage(t('disputed'))
     } else {
-      setResultMessage('報告を送信しました。相手の報告を待っています。')
+      setResultMessage(t('pending'))
     }
 
     setTimeout(() => {
@@ -105,7 +107,7 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>結果を報告</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
             R{match.round}-{match.match_number}
             {match.report_status && (
@@ -117,9 +119,9 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
                 }
                 className="ml-2"
               >
-                {match.report_status === 'agreed' ? '確定済み'
-                  : match.report_status === 'disputed' ? '不一致'
-                  : match.report_status === 'pending' ? '相手待ち'
+                {match.report_status === 'agreed' ? t('statusConfirmed')
+                  : match.report_status === 'disputed' ? t('statusDisputed')
+                  : match.report_status === 'pending' ? t('statusPending')
                   : match.report_status}
               </Badge>
             )}
@@ -141,14 +143,14 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
 
           {isDisputed && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-3 py-2 rounded text-sm">
-              報告が不一致です。主催者が最終判断を行います。再報告も可能です。
+              {t('disputeNotice')}
             </div>
           )}
 
           {/* 相手の報告状況 */}
           {opponentReport && (
             <div className="text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2">
-              相手は報告済み
+              {t('opponentReported')}
             </div>
           )}
 
@@ -157,7 +159,7 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
             <div className="flex-1">
               <label className="text-sm font-medium">
                 {match.player1?.display_name || 'Player 1'}
-                {isPlayer1 && <span className="text-xs text-primary ml-1">(あなた)</span>}
+                {isPlayer1 && <span className="text-xs text-primary ml-1">{t('you')}</span>}
               </label>
             </div>
             <Input
@@ -178,7 +180,7 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
             <div className="flex-1">
               <label className="text-sm font-medium">
                 {match.player2?.display_name || 'Player 2'}
-                {isPlayer2 && <span className="text-xs text-primary ml-1">(あなた)</span>}
+                {isPlayer2 && <span className="text-xs text-primary ml-1">{t('you')}</span>}
               </label>
             </div>
             <Input
@@ -196,7 +198,7 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
           {player1Score !== player2Score && (
             <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
               <span className="text-sm text-green-700 dark:text-green-300">
-                勝者: {player1Score > player2Score
+                {t('winner')} {player1Score > player2Score
                   ? match.player1?.display_name
                   : match.player2?.display_name}
               </span>
@@ -205,21 +207,21 @@ export function MatchReportDialog({ match, open, onClose, currentUserId }: Props
 
           {hasReported && !resultMessage && (
             <p className="text-xs text-muted-foreground">
-              既に報告済みです。再送信すると報告内容が上書きされます。
+              {t('alreadyReported')}
             </p>
           )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
-            閉じる
+            {t('close')}
           </Button>
           {!resultMessage && (
             <Button
               onClick={handleSubmit}
               disabled={submitting || player1Score === player2Score}
             >
-              {submitting ? '送信中...' : hasReported ? '再報告する' : '結果を報告'}
+              {submitting ? t('submitting') : hasReported ? t('reReport') : t('submit')}
             </Button>
           )}
         </DialogFooter>

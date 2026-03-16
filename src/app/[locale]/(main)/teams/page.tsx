@@ -16,6 +16,7 @@ type TeamWithCount = TeamWithLeader & { member_count: number }
 export default function TeamsPage() {
   const t = useTranslations('team.list')
   const tCommon = useTranslations('common')
+  const tt = useTranslations('team.page')
   const supabase = createClient()
   const [leaderTeams, setLeaderTeams] = useState<TeamWithCount[]>([])
   const [memberTeams, setMemberTeams] = useState<TeamWithCount[]>([])
@@ -107,10 +108,10 @@ export default function TeamsPage() {
       {!loading && !user && (
         <EmptyState
           icon={Users}
-          message="チームを表示するにはログインしてください"
+          message={tt('loginRequired')}
           action={
             <Link href="/login">
-              <Button size="sm">ログイン</Button>
+              <Button size="sm">{tCommon('login')}</Button>
             </Link>
           }
         />
@@ -143,7 +144,7 @@ export default function TeamsPage() {
 
           {memberTeams.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-sm font-medium text-muted-foreground">メンバーとして所属</h2>
+              <h2 className="text-sm font-medium text-muted-foreground">{tt('memberOf')}</h2>
               <div className="grid gap-2">
                 {memberTeams.map((team) => (
                   <TeamListItem key={team.id} team={team} />

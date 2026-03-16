@@ -1,4 +1,9 @@
-import { TournamentError, ErrorCode, getErrorMessage } from './TournamentError'
+import { TournamentError, ErrorCode, errorMessageKeys } from './TournamentError'
+
+// Fallback message for logging (not displayed to users - UI uses i18n keys)
+function fallbackMessage(code: ErrorCode): string {
+  return errorMessageKeys[code] || 'unknownError'
+}
 import { PostgrestError } from '@supabase/supabase-js'
 
 /**
@@ -11,7 +16,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // Unique constraint violation
       return new TournamentError(
         ErrorCode.DUPLICATE_ENTRY,
-        getErrorMessage(ErrorCode.DUPLICATE_ENTRY),
+        fallbackMessage(ErrorCode.DUPLICATE_ENTRY),
         error
       )
 
@@ -19,7 +24,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // Foreign key constraint violation
       return new TournamentError(
         ErrorCode.NOT_FOUND,
-        '関連するデータが見つかりません',
+        'relatedNotFound',
         error
       )
 
@@ -27,7 +32,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // Insufficient privilege (RLS policy violation)
       return new TournamentError(
         ErrorCode.FORBIDDEN,
-        getErrorMessage(ErrorCode.FORBIDDEN),
+        fallbackMessage(ErrorCode.FORBIDDEN),
         error
       )
 
@@ -35,7 +40,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // Not found (no rows returned)
       return new TournamentError(
         ErrorCode.NOT_FOUND,
-        getErrorMessage(ErrorCode.NOT_FOUND),
+        fallbackMessage(ErrorCode.NOT_FOUND),
         error
       )
 
@@ -43,7 +48,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // Invalid input syntax
       return new TournamentError(
         ErrorCode.INVALID_INPUT,
-        getErrorMessage(ErrorCode.INVALID_INPUT),
+        fallbackMessage(ErrorCode.INVALID_INPUT),
         error
       )
 
@@ -51,7 +56,7 @@ export function handleSupabaseError(error: PostgrestError): TournamentError {
       // その他のデータベースエラー
       return new TournamentError(
         ErrorCode.DATABASE_ERROR,
-        error.message || getErrorMessage(ErrorCode.DATABASE_ERROR),
+        error.message || fallbackMessage(ErrorCode.DATABASE_ERROR),
         error
       )
   }
@@ -76,7 +81,7 @@ export function handleError(error: unknown): TournamentError {
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return new TournamentError(
       ErrorCode.NETWORK_ERROR,
-      getErrorMessage(ErrorCode.NETWORK_ERROR),
+      fallbackMessage(ErrorCode.NETWORK_ERROR),
       error
     )
   }
@@ -85,7 +90,7 @@ export function handleError(error: unknown): TournamentError {
   if (error instanceof Error) {
     return new TournamentError(
       ErrorCode.UNKNOWN_ERROR,
-      error.message || getErrorMessage(ErrorCode.UNKNOWN_ERROR),
+      error.message || fallbackMessage(ErrorCode.UNKNOWN_ERROR),
       error
     )
   }
@@ -93,7 +98,7 @@ export function handleError(error: unknown): TournamentError {
   // その他の予期しないエラー
   return new TournamentError(
     ErrorCode.UNKNOWN_ERROR,
-    getErrorMessage(ErrorCode.UNKNOWN_ERROR),
+    fallbackMessage(ErrorCode.UNKNOWN_ERROR),
     error
   )
 }
@@ -124,7 +129,7 @@ export function createValidationError(message: string, details?: unknown): Tourn
 export function createUnauthorizedError(message?: string): TournamentError {
   return new TournamentError(
     ErrorCode.UNAUTHORIZED,
-    message || getErrorMessage(ErrorCode.UNAUTHORIZED)
+    message || fallbackMessage(ErrorCode.UNAUTHORIZED)
   )
 }
 
@@ -134,7 +139,7 @@ export function createUnauthorizedError(message?: string): TournamentError {
 export function createForbiddenError(message?: string): TournamentError {
   return new TournamentError(
     ErrorCode.FORBIDDEN,
-    message || getErrorMessage(ErrorCode.FORBIDDEN)
+    message || fallbackMessage(ErrorCode.FORBIDDEN)
   )
 }
 
@@ -144,6 +149,6 @@ export function createForbiddenError(message?: string): TournamentError {
 export function createNotFoundError(resource: string): TournamentError {
   return new TournamentError(
     ErrorCode.NOT_FOUND,
-    `${resource}が見つかりません`
+    `${resource} not found`
   )
 }

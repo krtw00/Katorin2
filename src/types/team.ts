@@ -142,28 +142,6 @@ export type TeamInviteWithTeam = TeamInvite & {
   team: Team
 }
 
-// ステータスラベル
-export const teamRoleLabels: Record<TeamRole, string> = {
-  leader: 'リーダー',
-  member: 'メンバー',
-}
-
-export const teamBattleFormatLabels: Record<TeamBattleFormat, string> = {
-  knockout: '勝ち抜き戦',
-  point: 'ポイント制',
-}
-
-export const teamCreationModeLabels: Record<TeamCreationMode, string> = {
-  user: 'ユーザー自由',
-  organizer: '主催者指定',
-}
-
-export const checkInStatusLabels: Record<CheckInStatus, string> = {
-  pending: '未チェックイン',
-  checked_in: 'チェックイン済み',
-  no_show: '欠席',
-}
-
 // War関連型
 export type WarOrder = {
   id: string

@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   SeriesWithOrganizer,
-  seriesStatusLabels,
 } from '@/types/series'
 import { TournamentWithOrganizer } from '@/types/tournament'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
@@ -29,6 +28,7 @@ type Props = {
 
 export default async function SeriesDetailPage({ params }: Props) {
   const t = await getTranslations('series')
+  const tl = await getTranslations('labels')
   const { id } = await params
   const supabase = await createClient()
 
@@ -201,7 +201,7 @@ export default async function SeriesDetailPage({ params }: Props) {
       <div className="mb-4">
         <div className="flex items-center gap-2 flex-wrap mb-1">
           <h1 className="text-xl font-bold sm:text-2xl">{series.title}</h1>
-          <StatusIndicator status={series.status} label={seriesStatusLabels[series.status]} size="md" />
+          <StatusIndicator status={series.status} label={tl(`seriesStatus.${series.status}`)} size="md" />
           <Badge variant="outline" className="text-xs">
             {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
           </Badge>
@@ -235,7 +235,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             <Users className="h-4 w-4 text-muted-foreground shrink-0" />
             <div>
               <div className="text-lg font-bold leading-none">{seriesTeams?.length || 0}</div>
-              <div className="text-xs text-muted-foreground">チーム</div>
+              <div className="text-xs text-muted-foreground">{t('detail.teams')}</div>
             </div>
           </CardContent>
         </Card>
@@ -243,8 +243,8 @@ export default async function SeriesDetailPage({ params }: Props) {
           <CardContent className="p-3 flex items-center gap-2">
             <StatusIndicator status={series.status} showIcon showDot={false} className="shrink-0" />
             <div>
-              <div className="text-lg font-bold leading-none">{seriesStatusLabels[series.status]}</div>
-              <div className="text-xs text-muted-foreground">状態</div>
+              <div className="text-lg font-bold leading-none">{tl(`seriesStatus.${series.status}`)}</div>
+              <div className="text-xs text-muted-foreground">{t('detail.status')}</div>
             </div>
           </CardContent>
         </Card>
@@ -253,15 +253,15 @@ export default async function SeriesDetailPage({ params }: Props) {
       {/* Tabs */}
       <Tabs defaultValue="standings">
         <TabsList className="mb-4 w-full overflow-x-auto justify-start">
-          <TabsTrigger value="standings">順位表</TabsTrigger>
-          <TabsTrigger value="teams">チーム ({seriesTeams?.length || 0})</TabsTrigger>
+          <TabsTrigger value="standings">{t('detail.standings')}</TabsTrigger>
+          <TabsTrigger value="teams">{t('detail.teams')} ({seriesTeams?.length || 0})</TabsTrigger>
           <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
           {isOrganizer && (
             <TabsTrigger value="applications">
-              申請管理 {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
+              {t('detail.applicationManage')} {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
             </TabsTrigger>
           )}
-          <TabsTrigger value="meta">メタ分析</TabsTrigger>
+          <TabsTrigger value="meta">{t('detail.metaAnalysis')}</TabsTrigger>
           <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
         </TabsList>
 
@@ -299,13 +299,13 @@ export default async function SeriesDetailPage({ params }: Props) {
                           <thead>
                             <tr className="border-b bg-muted/50">
                               <th className="px-3 py-2 text-left w-8">#</th>
-                              <th className="px-3 py-2 text-left">チーム</th>
-                              <th className="px-3 py-2 text-center hidden sm:table-cell">試合</th>
-                              <th className="px-3 py-2 text-center">勝</th>
-                              <th className="px-3 py-2 text-center">負</th>
-                              <th className="px-3 py-2 text-center">勝点</th>
-                              <th className="px-3 py-2 text-center hidden md:table-cell">R差</th>
-                              <th className="px-3 py-2 text-center hidden md:table-cell">M差</th>
+                              <th className="px-3 py-2 text-left">{t('detail.standingsTable.team')}</th>
+                              <th className="px-3 py-2 text-center hidden sm:table-cell">{t('detail.standingsTable.matches')}</th>
+                              <th className="px-3 py-2 text-center">{t('detail.standingsTable.wins')}</th>
+                              <th className="px-3 py-2 text-center">{t('detail.standingsTable.losses')}</th>
+                              <th className="px-3 py-2 text-center">{t('detail.standingsTable.winPoints')}</th>
+                              <th className="px-3 py-2 text-center hidden md:table-cell">{t('detail.standingsTable.roundDiff')}</th>
+                              <th className="px-3 py-2 text-center hidden md:table-cell">{t('detail.standingsTable.matchDiff')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -332,7 +332,7 @@ export default async function SeriesDetailPage({ params }: Props) {
           ) : (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                まだ試合結果がありません
+                {t('detail.noResults')}
               </CardContent>
             </Card>
           )}
@@ -381,7 +381,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             ) : (
               <Card>
                 <CardContent className="p-0">
-                  <EmptyState icon={Users} message="参加チームはまだありません" />
+                  <EmptyState icon={Users} message={t('detail.noTeams')} />
                 </CardContent>
               </Card>
             )}
@@ -422,11 +422,11 @@ export default async function SeriesDetailPage({ params }: Props) {
             <CardContent className="py-6 text-center">
               <BarChart3 className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground mb-4">
-                Week別のデッキ使用率ランキング・メタ変遷を確認できます
+                {t('detail.metaDescription')}
               </p>
               <Link href={`/series/${id}/meta`}>
                 <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                  メタ分析を開く
+                  {t('detail.openMeta')}
                 </button>
               </Link>
             </CardContent>

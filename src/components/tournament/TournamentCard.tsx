@@ -11,10 +11,8 @@ import {
 } from '@/components/ui/card'
 import {
   TournamentWithOrganizer,
-  tournamentStatusLabels,
-  tournamentFormatLabels,
-  matchFormatLabels,
 } from '@/types/tournament'
+import { useTranslations } from 'next-intl'
 
 type Props = {
   tournament: TournamentWithOrganizer
@@ -22,6 +20,7 @@ type Props = {
 }
 
 export function TournamentCard({ tournament, participantCount = 0 }: Props) {
+  const t = useTranslations()
   const statusVariants: Record<
     string,
     'default' | 'secondary' | 'destructive' | 'outline'
@@ -40,37 +39,37 @@ export function TournamentCard({ tournament, participantCount = 0 }: Props) {
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{tournament.title}</CardTitle>
           <Badge variant={statusVariants[tournament.status]}>
-            {tournamentStatusLabels[tournament.status]}
+            {t('labels.tournamentStatus.' + tournament.status)}
           </Badge>
         </div>
         <CardDescription className="line-clamp-2">
-          {tournament.description || '説明なし'}
+          {tournament.description || t('series.detail.noDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">形式</span>
-          <span>{tournamentFormatLabels[tournament.tournament_format]}</span>
+          <span className="text-muted-foreground">{t('tournament.detail.format')}</span>
+          <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">対戦</span>
-          <span>{matchFormatLabels[tournament.match_format]}</span>
+          <span className="text-muted-foreground">{t('tournament.detail.matchFormat')}</span>
+          <span>{t('labels.matchFormat.' + tournament.match_format)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">参加者</span>
+          <span className="text-muted-foreground">{t('tournament.detail.participantsLabel')}</span>
           <span>
             {participantCount} / {tournament.max_participants}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">主催</span>
+          <span className="text-muted-foreground">{t('tournament.detail.organizer')}</span>
           <span>{tournament.organizer.display_name}</span>
         </div>
       </CardContent>
       <CardFooter>
         <Link href={`/tournaments/${tournament.id}`} className="w-full">
           <Button className="w-full">
-            {tournament.status === 'recruiting' ? 'エントリーする' : '詳細を見る'}
+            {tournament.status === 'recruiting' ? t('tournament.detail.entry') : t('common.viewDetails')}
           </Button>
         </Link>
       </CardFooter>
