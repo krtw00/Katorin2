@@ -746,7 +746,11 @@
       "bracketReady": "{count}名参加中 - ブラケット生成可能",
       "entryOpen": "{count}/{max}名 - エントリー受付中",
       "goToManage": "管理画面へ",
-      "viewDetails": "詳細を見る"
+      "viewDetails": "詳細を見る",
+      "nextMatch": "対戦中: {opponent}",
+      "resultPending": "結果報告待ち",
+      "goToMatch": "試合を見る",
+      "reportResult": "結果を報告"
     },
     "tabs": {
       "participating": "参加中",
