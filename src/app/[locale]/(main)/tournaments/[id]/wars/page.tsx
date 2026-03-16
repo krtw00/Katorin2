@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -96,18 +94,16 @@ export default async function WarsPage({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href={`/tournaments/${id}`}>
-            <Button variant="ghost" size="sm">← 大会詳細</Button>
-          </Link>
-          <h1 className="text-2xl font-bold mt-2">{tournament.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            War一覧 / {tournamentStatusLabels[tournament.status]}
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div>
+        <Link href={`/tournaments/${id}`}>
+          <Button variant="ghost" size="sm">← 大会詳細</Button>
+        </Link>
+        <h1 className="text-2xl font-bold mt-2">{tournament.title}</h1>
+        <p className="text-sm text-muted-foreground">
+          War一覧 / {tournamentStatusLabels[tournament.status]}
+        </p>
+        <div className="flex gap-2 mt-3">
           {isOrganizer && (
             <Link href={`/tournaments/${id}/manage`}>
               <Button variant="outline" size="sm">管理画面</Button>

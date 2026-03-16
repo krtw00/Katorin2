@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -190,19 +188,17 @@ export default async function SeriesDetailPage({ params }: Props) {
       />
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h1 className="text-xl font-bold sm:text-2xl">{series.title}</h1>
-            <StatusIndicator status={series.status} label={seriesStatusLabels[series.status]} size="md" />
-            <Badge variant="outline" className="text-xs">
-              {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
-            </Badge>
-          </div>
-          <MetaItem icon={User} className="text-sm">{series.organizer.display_name}</MetaItem>
+      <div className="mb-4">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <h1 className="text-xl font-bold sm:text-2xl">{series.title}</h1>
+          <StatusIndicator status={series.status} label={seriesStatusLabels[series.status]} size="md" />
+          <Badge variant="outline" className="text-xs">
+            {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
+          </Badge>
         </div>
+        <MetaItem icon={User} className="text-sm">{series.organizer.display_name}</MetaItem>
         {isOrganizer && (
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 mt-3">
             <Link href={`/series/${id}/edit`}>
               <Button variant="outline" size="sm">{t('detail.edit')}</Button>
             </Link>

@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -94,7 +92,7 @@ export default async function JoinedTournamentsPage() {
   const active = [...grouped.recruiting, ...grouped.in_progress]
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

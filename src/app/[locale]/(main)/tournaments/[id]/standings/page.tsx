@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -55,7 +53,7 @@ export default async function StandingsPage({ params }: Props) {
   const isRoundRobin = tournament.tournament_format === 'round_robin'
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <Link href={`/tournaments/${id}`}>
           <Button variant="ghost" size="sm">← 大会詳細</Button>

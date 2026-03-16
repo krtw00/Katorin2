@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -35,7 +33,7 @@ export default async function SeriesRankingPage({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
         <Link href={`/series/${id}`}>

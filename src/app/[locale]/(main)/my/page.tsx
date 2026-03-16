@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import {
@@ -158,7 +156,7 @@ export default async function MyPage() {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Profile Card - Compact */}
       <Card>
         <CardContent className="p-4">

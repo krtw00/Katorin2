@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -125,7 +123,7 @@ export default async function DeckStatsPage({ params }: Props) {
   const maxCount = tournamentStats.length > 0 ? tournamentStats[0].count : 0
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         {seriesInfo ? (

@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -78,7 +76,7 @@ export default async function WarDetailPage({ params }: Props) {
   const team2Won = isCompleted && match.winner_team_id === match.team2_id
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         {seriesInfo && (
