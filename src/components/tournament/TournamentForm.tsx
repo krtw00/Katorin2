@@ -222,7 +222,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
         max_participants: formData.max_participants,
         entry_limit_behavior: formData.entry_limit_behavior,
         entry_mode: formData.entry_mode,
-        visibility: formData.visibility,
+        visibility: defaultSeriesId ? 'public' as Visibility : formData.visibility,
         series_id: formData.series_id || null,
         entry_start_at: formData.entry_start_at
           ? new Date(formData.entry_start_at).toISOString()
@@ -259,6 +259,23 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
         if (insertError) {
           setError(insertError.message)
           return
+        }
+
+        // シリーズ紐付き時: 既存チームのエントリーを自動作成
+        if (defaultSeriesId && data.id) {
+          const { data: seriesTeams } = await supabase
+            .from('teams')
+            .select('id')
+            .eq('series_id', defaultSeriesId)
+          if (seriesTeams?.length) {
+            const entries = seriesTeams.map(t => ({
+              tournament_id: data.id,
+              team_id: t.id,
+            }))
+            await supabase
+              .from('team_entries')
+              .upsert(entries, { onConflict: 'tournament_id,team_id' })
+          }
         }
 
         if (onSuccess) {
@@ -460,43 +477,45 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                   </div>
                 )}
 
-                {/* Visibility */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t('visibility.label')}</label>
+                {/* Visibility（シリーズ紐付き時は非表示、シリーズの設定に従う） */}
+                {!defaultSeriesId && (
                   <div className="space-y-2">
-                    {[
-                      { value: 'public', label: t('visibility.public'), desc: t('visibility.publicDesc') },
-                      { value: 'unlisted', label: t('visibility.unlisted'), desc: t('visibility.unlistedDesc') },
-                      { value: 'private', label: t('visibility.private'), desc: t('visibility.privateDesc') },
-                    ].map((option) => (
-                      <label
-                        key={option.value}
-                        className={`
-                          flex items-start gap-3 p-3 rounded-md border cursor-pointer
-                          transition-colors
-                          ${formData.visibility === option.value
-                            ? 'border-primary bg-primary/5'
-                            : 'hover:bg-muted/50'
-                          }
-                        `}
-                      >
-                        <input
-                          type="radio"
-                          name="visibility"
-                          value={option.value}
-                          checked={formData.visibility === option.value}
-                          onChange={(e) => updateFormData('visibility', e.target.value)}
-                          className="mt-1"
-                          disabled={loading}
-                        />
-                        <div>
-                          <div className="font-medium text-sm">{option.label}</div>
-                          <div className="text-xs text-muted-foreground">{option.desc}</div>
-                        </div>
-                      </label>
-                    ))}
+                    <label className="text-sm font-medium">{t('visibility.label')}</label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'public', label: t('visibility.public'), desc: t('visibility.publicDesc') },
+                        { value: 'unlisted', label: t('visibility.unlisted'), desc: t('visibility.unlistedDesc') },
+                        { value: 'private', label: t('visibility.private'), desc: t('visibility.privateDesc') },
+                      ].map((option) => (
+                        <label
+                          key={option.value}
+                          className={`
+                            flex items-start gap-3 p-3 rounded-md border cursor-pointer
+                            transition-colors
+                            ${formData.visibility === option.value
+                              ? 'border-primary bg-primary/5'
+                              : 'hover:bg-muted/50'
+                            }
+                          `}
+                        >
+                          <input
+                            type="radio"
+                            name="visibility"
+                            value={option.value}
+                            checked={formData.visibility === option.value}
+                            onChange={(e) => updateFormData('visibility', e.target.value)}
+                            className="mt-1"
+                            disabled={loading}
+                          />
+                          <div>
+                            <div className="font-medium text-sm">{option.label}</div>
+                            <div className="text-xs text-muted-foreground">{option.desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </section>
 
               {/* Participants Section */}
