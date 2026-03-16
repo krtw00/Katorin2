@@ -450,29 +450,13 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                   />
                 </div>
 
-                {/* Series Selection */}
-                {series.length > 0 && (
+                {/* Series info (シリーズからの追加時は固定表示、単発大会では非表示) */}
+                {defaultSeriesId && (
                   <div className="space-y-2">
-                    <label htmlFor="series_id" className="text-sm font-medium">
-                      {t('series.label')}
-                    </label>
-                    <p className="text-xs text-muted-foreground">
-                      {t('series.hint')}
-                    </p>
-                    <select
-                      id="series_id"
-                      value={formData.series_id}
-                      onChange={(e) => updateFormData('series_id', e.target.value)}
-                      disabled={loading}
-                      className="w-full px-3 py-2 border rounded-md bg-background"
-                    >
-                      <option value="">{t('series.none')}</option>
-                      {series.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.title}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="text-sm font-medium">{t('series.label')}</label>
+                    <div className="px-3 py-2 border rounded-md bg-muted text-sm">
+                      {series.find(s => s.id === defaultSeriesId)?.title || 'シリーズに紐づけ済み'}
+                    </div>
                   </div>
                 )}
 
