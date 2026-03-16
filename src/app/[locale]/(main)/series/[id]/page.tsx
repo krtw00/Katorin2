@@ -20,6 +20,7 @@ import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { MetaItem } from '@/components/common/MetaItem'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ManualPointsConfirm } from '@/components/series/ManualPointsConfirm'
+import { BlockAssignment } from '@/components/series/BlockAssignment'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -73,7 +74,7 @@ export default async function SeriesDetailPage({ params }: Props) {
   // 第2段: tournaments依存のクエリ + applicationsを並列取得
   const tournamentIds = tournaments?.map((t) => t.id) || []
 
-  const [standingsResult, participantCountsResult, applicationsResult, seriesPointsResult] = await Promise.all([
+  const [standingsResult, participantCountsResult, applicationsResult, seriesPointsResult, teamEntriesResult] = await Promise.all([
     // block_standings
     tournamentIds.length > 0
       ? supabase.from('block_standings').select('*').in('tournament_id', tournamentIds)
@@ -97,10 +98,19 @@ export default async function SeriesDetailPage({ params }: Props) {
     tournamentIds.length > 0
       ? supabase.from('series_points').select('tournament_id').eq('series_id', id)
       : Promise.resolve({ data: [] as { tournament_id: string }[] }),
+    // team_entries のblock_id（ブロック振り分け用）
+    tournamentIds.length > 0
+      ? supabase.from('team_entries').select('team_id, block_id').eq('tournament_id', tournamentIds[0])
+      : Promise.resolve({ data: [] as { team_id: string; block_id: string | null }[] }),
   ])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allStandings: any[] = ('data' in standingsResult ? standingsResult.data : []) || []
+
+  // チーム→ブロック マッピング
+  const teamBlockEntries = ('data' in teamEntriesResult ? teamEntriesResult.data : []) as { team_id: string; block_id: string | null }[] | null
+  const teamBlockMap: Record<string, string | null> = {}
+  teamBlockEntries?.forEach(e => { teamBlockMap[e.team_id] = e.block_id })
 
   // Aggregate standings by team across all weeks
   const teamAgg = new Map<string, { team_name: string; team_avatar_url: string | null; block_id: string; wins: number; losses: number; total_win_points: number; round_diff: number; match_diff: number; total_rounds_won: number; matches_played: number }>()
@@ -333,6 +343,17 @@ export default async function SeriesDetailPage({ params }: Props) {
             {/* エントリー申請フォーム（ログインユーザー向け） */}
             {user && !isOrganizer && (
               <TeamApplicationForm seriesId={id} />
+            )}
+
+            {/* ブロック振り分け（主催者向け） */}
+            {isOrganizer && seriesTeams && seriesTeams.length > 0 && blocks && blocks.length > 0 && (
+              <BlockAssignment
+                seriesId={id}
+                teams={seriesTeams}
+                blocks={blocks}
+                teamBlockMap={teamBlockMap}
+                tournamentIds={tournamentIds}
+              />
             )}
 
             {/* 参加チーム一覧 */}
