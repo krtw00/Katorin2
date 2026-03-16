@@ -33,6 +33,12 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
   const [error, setError] = useState('')
   const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.cover_image_url || null)
 
+  // ルール変更ロック: recruiting以降はロック
+  const lockedStatuses = ['recruiting', 'in_progress', 'completed']
+  const isRuleLocked = mode === 'edit' && initialData?.status ? lockedStatuses.includes(initialData.status) : false
+  const [ruleUnlocked, setRuleUnlocked] = useState(false)
+  const rulesDisabled = isRuleLocked && !ruleUnlocked
+
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState(initialData?.discord_webhook_url || '')
   const [webhookError, setWebhookError] = useState('')
 
@@ -297,8 +303,42 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           {/* ルール設定（チーム戦のみ） */}
           {formData.entry_type === 'team' && (
             <>
+              {/* ロック警告 */}
+              {isRuleLocked && (
+                <Card className={ruleUnlocked ? 'border-yellow-500' : 'border-destructive/50'}>
+                  <CardContent className="p-4">
+                    {!ruleUnlocked ? (
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium">ルール設定はロックされています</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            大会が進行中のため、ルール変更は制限されています。変更すると進行中の結果に影響する可能性があります。
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 text-destructive border-destructive/50 hover:bg-destructive/10"
+                          onClick={() => setRuleUnlocked(true)}
+                        >
+                          ロック解除
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-sm font-medium text-yellow-600">ルールロックが解除されました</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          変更内容は保存時に反映されます。進行中の結果には自動で反映されません。
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* 大会形式 */}
-              <Card>
+              <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">大会形式</CardTitle>
                 </CardHeader>
@@ -358,7 +398,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </Card>
 
               {/* チーム構成 */}
-              <Card>
+              <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">チーム構成</CardTitle>
                 </CardHeader>
@@ -395,7 +435,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </Card>
 
               {/* スコアリング */}
-              <Card>
+              <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">スコアリング</CardTitle>
                 </CardHeader>
@@ -411,7 +451,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </Card>
 
               {/* オプションルール */}
-              <Card>
+              <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">オプション</CardTitle>
                 </CardHeader>
