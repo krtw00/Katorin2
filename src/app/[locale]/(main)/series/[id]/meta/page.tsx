@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/common/EmptyState'
+import { PieChart } from '@/components/common/PieChart'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -232,6 +233,22 @@ export default async function SeriesMetaPage({ params }: Props) {
         <EmptyState icon={BarChart3} message="デッキデータがありません" />
       ) : (
         <>
+          {/* シリーズ全体の円グラフ */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">デッキ使用分布</CardTitle>
+                <Badge variant="outline">{grandTotal}件</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <PieChart
+                data={trendData.slice(0, 10).map(d => ({ label: d.theme, value: d.totalCount }))}
+                size={220}
+              />
+            </CardContent>
+          </Card>
+
           {/* シリーズ全体のメタ分布 */}
           <Card>
             <CardHeader className="pb-3">
@@ -339,20 +356,11 @@ export default async function SeriesMetaPage({ params }: Props) {
                     </div>
                     <p className="text-xs text-muted-foreground">{wd.tournamentTitle}</p>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-1.5">
-                      {topDecks.map(([theme, count], di) => (
-                        <div key={theme} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground font-mono w-4 text-right text-xs">{di + 1}</span>
-                            <span className={di === 0 ? 'font-bold' : 'font-medium'}>{theme}</span>
-                          </div>
-                          <span className="text-muted-foreground tabular-nums text-xs">
-                            {Math.round((count / wd.total) * 100)}%
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  <CardContent className="space-y-3">
+                    <PieChart
+                      data={topDecks.map(([label, value]) => ({ label, value }))}
+                      size={140}
+                    />
                   </CardContent>
                 </Card>
               )

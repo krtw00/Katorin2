@@ -23,10 +23,11 @@ type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
 type TournamentFormProps = {
   mode: 'create' | 'edit'
   initialData?: Tournament
+  defaultSeriesId?: string
   onSuccess?: (tournament: Tournament) => void
 }
 
-export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormProps) {
+export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }: TournamentFormProps) {
   const t = useTranslations('tournament.form')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -98,7 +99,7 @@ export function TournamentForm({ mode, initialData, onSuccess }: TournamentFormP
       entry_limit_behavior: 'first_come' as 'first_come' | 'waitlist',
       entry_mode: 'open' as EntryMode,
       visibility: 'public' as Visibility,
-      series_id: '',
+      series_id: defaultSeriesId || '',
       entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
       start_at: formatDateTimeLocal(now),
