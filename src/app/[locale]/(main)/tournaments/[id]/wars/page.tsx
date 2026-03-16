@@ -22,13 +22,29 @@ export default async function WarsPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*, organizer:profiles!tournaments_organizer_id_fkey(*)')
-    .eq('id', id)
-    .single()
+  // tournament, matches, user を並列取得
+  const [{ data: tournament }, { data: matches }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select('*, organizer:profiles!tournaments_organizer_id_fkey(*)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('matches')
+      .select(`
+        *,
+        team1:teams!matches_team1_id_fkey(id, name, avatar_url),
+        team2:teams!matches_team2_id_fkey(id, name, avatar_url)
+      `)
+      .eq('tournament_id', id)
+      .order('round', { ascending: true })
+      .order('match_number', { ascending: true }),
+    supabase.auth.getUser(),
+  ])
 
   if (!tournament) notFound()
+
+  const isOrganizer = user?.id === tournament.organizer_id
 
   // ブロック取得（tournament_id or series_id経由）
   let blocks = (await supabase
@@ -47,22 +63,6 @@ export default async function WarsPage({ params }: Props) {
       .order('block_order', { ascending: true })
     ).data
   }
-
-  // 全War取得
-  const { data: matches } = await supabase
-    .from('matches')
-    .select(`
-      *,
-      team1:teams!matches_team1_id_fkey(id, name, avatar_url),
-      team2:teams!matches_team2_id_fkey(id, name, avatar_url)
-    `)
-    .eq('tournament_id', id)
-    .order('round', { ascending: true })
-    .order('match_number', { ascending: true })
-
-  // 現在のユーザー
-  const { data: { user } } = await supabase.auth.getUser()
-  const isOrganizer = user?.id === tournament.organizer_id
 
   // ブロックごとにグループ化
   const matchesByBlock = new Map<string, typeof matches>()

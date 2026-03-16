@@ -18,6 +18,7 @@ import {
   matchFormatLabels,
 } from '@/types/tournament'
 import { getTournamentConfig } from '@/lib/tournament-config'
+import { CheckInButton } from '@/components/tournament/CheckInButton'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -27,65 +28,94 @@ export default async function TournamentDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: tournament, error } = await supabase
-    .from('tournaments')
-    .select(`
-      *,
-      organizer:profiles!tournaments_organizer_id_fkey(*),
-      series:series(id, title)
-    `)
-    .eq('id', id)
-    .single()
+  // tournament と user を並列取得
+  const [{ data: tournament, error }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('tournaments')
+      .select(`
+        *,
+        organizer:profiles!tournaments_organizer_id_fkey(*),
+        series:series(id, title)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase.auth.getUser(),
+  ])
 
   if (error || !tournament) notFound()
 
-  const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user?.id === tournament.organizer_id
   const isTeam = tournament.entry_type === 'team'
-  const config = await getTournamentConfig(supabase, id)
 
   // シリーズ情報
   const seriesInfo = tournament.series as { id: string; title: string } | null
 
-  // チーム戦: ブロック・チームエントリー・試合数
+  // チーム戦 / 個人戦のデータを並列取得
   let blocks: { id: string; block_name: string }[] = []
   let teamEntryCount = 0
   let matchStats = { total: 0, completed: 0 }
+  let participantCount = 0
+  let config
+  let myParticipant: { id: string; checked_in_at: string | null } | null = null
+  let isParticipant = false
+  let disputedCount = 0
 
   if (isTeam) {
-    // ブロック取得（tournament_id OR series_id で1クエリ）
     const blockFilter = tournament.series_id
       ? `tournament_id.eq.${id},series_id.eq.${tournament.series_id}`
       : `tournament_id.eq.${id}`
-    const { data: b } = await supabase
-      .from('tournament_blocks')
-      .select('id, block_name')
-      .or(blockFilter)
-      .order('block_order')
+
+    const [configResult, { data: b }, { count: tc }, { data: matches }] = await Promise.all([
+      getTournamentConfig(supabase, id),
+      supabase
+        .from('tournament_blocks')
+        .select('id, block_name')
+        .or(blockFilter)
+        .order('block_order'),
+      supabase
+        .from('team_entries')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', id),
+      supabase
+        .from('matches')
+        .select('status')
+        .eq('tournament_id', id),
+    ])
+    config = configResult
     blocks = b || []
-
-    const { count: tc } = await supabase
-      .from('team_entries')
-      .select('*', { count: 'exact', head: true })
-      .eq('tournament_id', id)
     teamEntryCount = tc || 0
-
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('status')
-      .eq('tournament_id', id)
     matchStats.total = matches?.length || 0
     matchStats.completed = matches?.filter(m => m.status === 'completed').length || 0
-  }
-
-  // 個人戦: 参加者数
-  let participantCount = 0
-  if (!isTeam) {
-    const { count } = await supabase
-      .from('participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('tournament_id', id)
+  } else {
+    const [configResult, { count }] = await Promise.all([
+      getTournamentConfig(supabase, id),
+      supabase
+        .from('participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', id),
+    ])
+    config = configResult
     participantCount = count || 0
+
+    if (user) {
+      const { data: mp } = await supabase
+        .from('participants')
+        .select('id, checked_in_at')
+        .eq('tournament_id', id)
+        .eq('user_id', user.id)
+        .single()
+      myParticipant = mp
+      isParticipant = !!myParticipant
+    }
+
+    if (isOrganizer) {
+      const { data: disputedMatches } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('tournament_id', id)
+        .eq('report_status', 'disputed')
+      disputedCount = disputedMatches?.length || 0
+    }
   }
 
   const organizer = tournament.organizer as { display_name: string } | { display_name: string }[] | null
@@ -243,6 +273,17 @@ export default async function TournamentDetailPage({ params }: Props) {
           )}
         </CardContent>
 
+        {disputedCount > 0 && (
+          <CardContent>
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
+              {disputedCount}件の試合で結果報告が不一致です。
+              <Link href={`/tournaments/${id}/bracket`} className="underline ml-1">
+                トーナメント表で確認
+              </Link>
+            </div>
+          </CardContent>
+        )}
+
         <CardFooter className="flex gap-2 flex-wrap border-t pt-6">
           {isTeam && (
             <>
@@ -252,17 +293,29 @@ export default async function TournamentDetailPage({ params }: Props) {
               <Link href={`/tournaments/${id}/standings`}>
                 <Button variant="outline">順位表</Button>
               </Link>
+              <Link href={`/tournaments/${id}/deck-stats`}>
+                <Button variant="outline">デッキ統計</Button>
+              </Link>
             </>
           )}
           {!isTeam && (
             <>
-              {tournament.status === 'recruiting' && user && (
+              {tournament.status === 'recruiting' && user && !isParticipant && (
                 <Link href={`/tournaments/${id}/entry`}>
                   <Button>エントリーする</Button>
                 </Link>
               )}
+              {myParticipant && (
+                <CheckInButton
+                  participantId={myParticipant.id}
+                  checkedInAt={myParticipant.checked_in_at}
+                  tournamentStatus={tournament.status}
+                />
+              )}
               <Link href={`/tournaments/${id}/bracket`}>
-                <Button variant="outline">トーナメント表</Button>
+                <Button variant={isParticipant && tournament.status === 'in_progress' ? 'default' : 'outline'}>
+                  {isParticipant && tournament.status === 'in_progress' ? 'トーナメント表 / 結果報告' : 'トーナメント表'}
+                </Button>
               </Link>
             </>
           )}

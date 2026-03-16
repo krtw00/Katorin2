@@ -125,13 +125,18 @@ export type Database = {
           completed_at: string | null
           created_at: string
           id: string
+          loser_match_id: string | null
+          loser_match_slot: number | null
           match_number: number
           next_match_id: string | null
           next_match_slot: number | null
           player1_id: string | null
+          player1_report: Json | null
           player1_score: number | null
           player2_id: string | null
+          player2_report: Json | null
           player2_score: number | null
+          report_status: string | null
           round: number
           scheduled_at: string | null
           started_at: string | null
@@ -152,13 +157,18 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          loser_match_id?: string | null
+          loser_match_slot?: number | null
           match_number: number
           next_match_id?: string | null
           next_match_slot?: number | null
           player1_id?: string | null
+          player1_report?: Json | null
           player1_score?: number | null
           player2_id?: string | null
+          player2_report?: Json | null
           player2_score?: number | null
+          report_status?: string | null
           round: number
           scheduled_at?: string | null
           started_at?: string | null
@@ -179,13 +189,18 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          loser_match_id?: string | null
+          loser_match_slot?: number | null
           match_number?: number
           next_match_id?: string | null
           next_match_slot?: number | null
           player1_id?: string | null
+          player1_report?: Json | null
           player1_score?: number | null
           player2_id?: string | null
+          player2_report?: Json | null
           player2_score?: number | null
+          report_status?: string | null
           round?: number
           scheduled_at?: string | null
           started_at?: string | null
@@ -402,6 +417,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           description: string | null
+          discord_webhook_url: string | null
           entry_type: Database["public"]["Enums"]["entry_type"]
           id: string
           is_demo: boolean
@@ -422,6 +438,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          discord_webhook_url?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
           is_demo?: boolean
@@ -442,6 +459,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          discord_webhook_url?: string | null
           entry_type?: Database["public"]["Enums"]["entry_type"]
           id?: string
           is_demo?: boolean
@@ -918,6 +936,7 @@ export type Database = {
           current_round: number | null
           custom_fields: Json | null
           description: string | null
+          discord_webhook_url: string | null
           entry_deadline: string | null
           entry_limit_behavior: Database["public"]["Enums"]["entry_limit_behavior"]
           entry_mode: Database["public"]["Enums"]["entry_mode"]
@@ -961,6 +980,7 @@ export type Database = {
           current_round?: number | null
           custom_fields?: Json | null
           description?: string | null
+          discord_webhook_url?: string | null
           entry_deadline?: string | null
           entry_limit_behavior?: Database["public"]["Enums"]["entry_limit_behavior"]
           entry_mode?: Database["public"]["Enums"]["entry_mode"]
@@ -1004,6 +1024,7 @@ export type Database = {
           current_round?: number | null
           custom_fields?: Json | null
           description?: string | null
+          discord_webhook_url?: string | null
           entry_deadline?: string | null
           entry_limit_behavior?: Database["public"]["Enums"]["entry_limit_behavior"]
           entry_mode?: Database["public"]["Enums"]["entry_mode"]
@@ -1175,6 +1196,73 @@ export type Database = {
           },
         ]
       }
+      series_points: {
+        Row: {
+          id: string
+          series_id: string
+          tournament_id: string
+          team_id: string
+          points: number
+          wins: number
+          losses: number
+          round_diff: number
+          match_diff: number
+          total_rounds_won: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          series_id: string
+          tournament_id: string
+          team_id: string
+          points?: number
+          wins?: number
+          losses?: number
+          round_diff?: number
+          match_diff?: number
+          total_rounds_won?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          series_id?: string
+          tournament_id?: string
+          team_id?: string
+          points?: number
+          wins?: number
+          losses?: number
+          round_diff?: number
+          match_diff?: number
+          total_rounds_won?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_points_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_points_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_points_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       block_standings: {
@@ -1226,6 +1314,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_series_points: {
+        Args: { p_tournament_id: string }
+        Returns: undefined
+      }
       determine_match_winner_team: {
         Args: { p_match_id: string }
         Returns: string

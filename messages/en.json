@@ -187,7 +187,10 @@
       "entryPeriod": {
         "label": "Entry Period",
         "hint": "Entries will be accepted during this period"
-      }
+      },
+      "webhookLabel": "Webhook Notification",
+      "webhookHint": "Set a Discord Webhook URL to receive automatic notifications for tournament events",
+      "webhookInvalid": "Please enter a valid Discord Webhook URL (https://discord.com/api/webhooks/...)"
     },
     "detail": {
       "participants": "{current} / {max} participants",
@@ -342,7 +345,10 @@
       "calculationModeLabel": "Point Calculation Mode",
       "calculationModeAutoDesc": "Automatically calculate points when tournament completes",
       "calculationModeManualDesc": "Organizer manually confirms points",
-      "periodLabel": "Period"
+      "periodLabel": "Period",
+      "webhookLabel": "Discord Webhook Notification",
+      "webhookHint": "Set a Discord Webhook URL to receive automatic notifications for series events",
+      "webhookInvalid": "Please enter a valid Discord Webhook URL (https://discord.com/api/webhooks/...)"
     },
     "filter": {
       "search": "Search series...",

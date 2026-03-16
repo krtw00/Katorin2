@@ -30,9 +30,7 @@ export function ManualPointsConfirm({ tournaments, calculatedTournamentIds }: Pr
     setError('')
 
     try {
-      // Call the calculate_series_points function via SQL
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (supabase as any).rpc('calculate_series_points', {
+      const result = await supabase.rpc('calculate_series_points', {
         p_tournament_id: tournamentId,
       })
 

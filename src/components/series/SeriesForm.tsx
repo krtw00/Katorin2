@@ -33,6 +33,9 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
   const [error, setError] = useState('')
   const [coverUrl, setCoverUrl] = useState<string | null>(initialData?.cover_image_url || null)
 
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState(initialData?.discord_webhook_url || '')
+  const [webhookError, setWebhookError] = useState('')
+
   const [formData, setFormData] = useState<SeriesFormData>(() => {
     if (initialData) {
       return {
@@ -75,6 +78,15 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
       const configPresets = { wmgp: WMGP_CONFIG, rocket_cup: ROCKET_CUP_CONFIG, custom: {} }
       const seriesConfig = configPresets[formData.config_preset] || {}
 
+      // Webhook URL validation
+      const trimmedWebhookUrl = discordWebhookUrl.trim()
+      if (trimmedWebhookUrl && !trimmedWebhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        setWebhookError(t('webhookInvalid'))
+        setLoading(false)
+        return
+      }
+      setWebhookError('')
+
       const seriesData = {
         title: formData.title.trim(),
         description: formData.description.trim() || null,
@@ -82,6 +94,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         status: (asDraft ? 'draft' : 'in_progress') as 'draft' | 'in_progress',
         series_config: seriesConfig,
         cover_image_url: coverUrl,
+        discord_webhook_url: trimmedWebhookUrl || null,
       }
 
       if (mode === 'create') {
@@ -288,6 +301,29 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </CardContent>
             </Card>
           )}
+          {/* Discord Webhook */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('webhookLabel')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Input
+                id="discord_webhook_url"
+                value={discordWebhookUrl}
+                onChange={(e) => {
+                  setDiscordWebhookUrl(e.target.value)
+                  setWebhookError('')
+                }}
+                placeholder="https://discord.com/api/webhooks/..."
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('webhookHint')}
+              </p>
+              {webhookError && (
+                <p className="text-xs text-destructive">{webhookError}</p>
+              )}
+            </CardContent>
+          </Card>
         </form>
       </div>
     </div>
