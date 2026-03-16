@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Users, User, ChevronRight, Search } from 'lucide-react'
+import { Trophy, Users, User, ChevronRight, Search, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -255,6 +255,7 @@ export default async function SeriesDetailPage({ params }: Props) {
               申請管理 {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
             </TabsTrigger>
           )}
+          <TabsTrigger value="meta">メタ分析</TabsTrigger>
           <TabsTrigger value="scouting">スカウティング</TabsTrigger>
           <TabsTrigger value="overview">{t('detail.overview')}</TabsTrigger>
         </TabsList>
@@ -396,6 +397,22 @@ export default async function SeriesDetailPage({ params }: Props) {
                   {t('detail.noTournaments')}
                 </p>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="meta">
+          <Card>
+            <CardContent className="py-6 text-center">
+              <BarChart3 className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-4">
+                Week別のデッキ使用率ランキング・メタ変遷を確認できます
+              </p>
+              <Link href={`/series/${id}/meta`}>
+                <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                  メタ分析を開く
+                </button>
+              </Link>
             </CardContent>
           </Card>
         </TabsContent>
