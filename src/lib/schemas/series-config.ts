@@ -42,7 +42,8 @@ export function parseSeriesConfig(raw: unknown): SeriesConfig {
   return seriesConfigSchema.parse(raw)
 }
 
-export const WMGP_CONFIG: SeriesConfig = parseSeriesConfig({
+/** 総当たり星取戦プリセット: 3v3 BO3 / ブロック別総当たり / メイン3+サブ1 */
+export const ROUND_ROBIN_POINT_BATTLE_CONFIG: SeriesConfig = parseSeriesConfig({
   orderSize: 3,
   subCount: 1,
   playersPerRound: 3,
@@ -71,7 +72,11 @@ export const WMGP_CONFIG: SeriesConfig = parseSeriesConfig({
   maxMemberChanges: 2,
 })
 
-export const ROCKET_CUP_CONFIG: SeriesConfig = parseSeriesConfig({
+// レガシーエイリアス
+export const WMGP_CONFIG = ROUND_ROBIN_POINT_BATTLE_CONFIG
+
+/** Ban&Pickスイスドロープリセット: 5人→Ban2Pick3 / スイスドロー / デッキ被り禁止 */
+export const BAN_PICK_SWISS_CONFIG: SeriesConfig = parseSeriesConfig({
   orderSize: 5,
   subCount: 0,
   playersPerRound: 3,
@@ -96,3 +101,5 @@ export const ROCKET_CUP_CONFIG: SeriesConfig = parseSeriesConfig({
   },
   memberChangeAllowed: false,
 })
+
+export const ROCKET_CUP_CONFIG = BAN_PICK_SWISS_CONFIG

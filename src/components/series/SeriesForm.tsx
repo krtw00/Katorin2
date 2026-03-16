@@ -13,7 +13,7 @@ import {
   Series,
   SeriesFormData,
 } from '@/types/series'
-import { WMGP_CONFIG, ROCKET_CUP_CONFIG } from '@/lib/schemas/series-config'
+import { WMGP_CONFIG, ROCKET_CUP_CONFIG, type SeriesConfig } from '@/lib/schemas/series-config'
 import { uploadTournamentCover, isUploadError } from '@/lib/supabase/storage'
 import { useTranslations } from 'next-intl'
 
@@ -35,6 +35,21 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
 
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState(initialData?.discord_webhook_url || '')
   const [webhookError, setWebhookError] = useState('')
+
+  // カスタムルール設定
+  const initialConfig = initialData?.series_config as SeriesConfig | null
+  const [customConfig, setCustomConfig] = useState({
+    qualifierFormat: initialConfig?.qualifierFormat || 'round_robin' as 'round_robin' | 'swiss',
+    orderSize: initialConfig?.orderSize || 3,
+    subCount: initialConfig?.subCount || 1,
+    playersPerRound: initialConfig?.playersPerRound || 3,
+    matchFormat: initialConfig?.matchFormat || 'bo3' as 'bo1' | 'bo3' | 'bo5',
+    blockCount: initialConfig?.blockCount || 1,
+    roundsToWin: initialConfig?.roundsToWin || 2,
+    banPickEnabled: initialConfig?.banPickEnabled || false,
+    duplicateThemeAllowed: initialConfig?.duplicateThemeAllowed ?? true,
+    winPoints: initialConfig?.scoring?.winPoints || 3,
+  })
 
   const [formData, setFormData] = useState<SeriesFormData>(() => {
     if (initialData) {
@@ -75,8 +90,24 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         return
       }
 
-      const configPresets = { wmgp: WMGP_CONFIG, rocket_cup: ROCKET_CUP_CONFIG, custom: {} }
-      const seriesConfig = configPresets[formData.config_preset] || {}
+      const configPresets = { wmgp: WMGP_CONFIG, rocket_cup: ROCKET_CUP_CONFIG }
+      let seriesConfig
+      if (formData.config_preset === 'custom') {
+        seriesConfig = {
+          qualifierFormat: customConfig.qualifierFormat,
+          orderSize: customConfig.orderSize,
+          subCount: customConfig.subCount,
+          playersPerRound: customConfig.playersPerRound,
+          matchFormat: customConfig.matchFormat,
+          blockCount: customConfig.blockCount,
+          roundsToWin: customConfig.roundsToWin,
+          banPickEnabled: customConfig.banPickEnabled,
+          duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
+          scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: [] },
+        }
+      } else {
+        seriesConfig = configPresets[formData.config_preset] || {}
+      }
 
       // Webhook URL validation
       const trimmedWebhookUrl = discordWebhookUrl.trim()
@@ -279,9 +310,9 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { value: 'wmgp' as const, label: 'WMGP形式', desc: '3v3星取戦(BO3) / ブロック別総当たり / 3メイン+1サブ' },
-                  { value: 'rocket_cup' as const, label: 'ロケットカップ形式', desc: '5人Ban&Pick→3v3 / スイスドロー / デッキテーマ被り禁止' },
-                  { value: 'custom' as const, label: 'カスタム', desc: '後から手動で設定' },
+                  { value: 'wmgp' as const, label: '総当たり星取戦', desc: '3v3 BO3 / ブロック別総当たり / メイン3名+サブ1名' },
+                  { value: 'rocket_cup' as const, label: 'Ban&Pickスイスドロー', desc: '5名→Ban2Pick3で3v3 / スイスドロー / デッキテーマ被り禁止' },
+                  { value: 'custom' as const, label: 'カスタム', desc: '各要素を個別に設定' },
                 ].map(opt => (
                   <label key={opt.value} className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
                     <input
@@ -301,6 +332,97 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
               </CardContent>
             </Card>
           )}
+
+          {/* カスタムルール詳細設定 */}
+          {formData.entry_type === 'team' && formData.config_preset === 'custom' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">詳細ルール設定</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>予選形式</Label>
+                    <select
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                      value={customConfig.qualifierFormat}
+                      onChange={e => setCustomConfig(c => ({ ...c, qualifierFormat: e.target.value as 'round_robin' | 'swiss' }))}
+                    >
+                      <option value="round_robin">総当たり</option>
+                      <option value="swiss">スイスドロー</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>対戦形式</Label>
+                    <select
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                      value={customConfig.matchFormat}
+                      onChange={e => setCustomConfig(c => ({ ...c, matchFormat: e.target.value as 'bo1' | 'bo3' | 'bo5' }))}
+                    >
+                      <option value="bo1">BO1（1本勝負）</option>
+                      <option value="bo3">BO3（2本先取）</option>
+                      <option value="bo5">BO5（3本先取）</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>オーダー人数</Label>
+                    <Input type="number" min={1} max={10} value={customConfig.orderSize}
+                      onChange={e => setCustomConfig(c => ({ ...c, orderSize: +e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>サブ人数</Label>
+                    <Input type="number" min={0} max={5} value={customConfig.subCount}
+                      onChange={e => setCustomConfig(c => ({ ...c, subCount: +e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>1ラウンド出場数</Label>
+                    <Input type="number" min={1} max={10} value={customConfig.playersPerRound}
+                      onChange={e => setCustomConfig(c => ({ ...c, playersPerRound: +e.target.value }))} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>ブロック数</Label>
+                    <Input type="number" min={1} max={8} value={customConfig.blockCount}
+                      onChange={e => setCustomConfig(c => ({ ...c, blockCount: +e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>先取ラウンド数</Label>
+                    <Input type="number" min={1} max={5} value={customConfig.roundsToWin}
+                      onChange={e => setCustomConfig(c => ({ ...c, roundsToWin: +e.target.value }))} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>勝利ポイント</Label>
+                    <Input type="number" min={1} max={10} value={customConfig.winPoints}
+                      onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))} />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={customConfig.banPickEnabled}
+                      onChange={e => setCustomConfig(c => ({ ...c, banPickEnabled: e.target.checked }))}
+                      className="w-4 h-4" />
+                    <span className="text-sm">Ban & Pick を有効にする</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={customConfig.duplicateThemeAllowed}
+                      onChange={e => setCustomConfig(c => ({ ...c, duplicateThemeAllowed: e.target.checked }))}
+                      className="w-4 h-4" />
+                    <span className="text-sm">チーム内のデッキテーマ重複を許可</span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Discord Webhook */}
           <Card>
             <CardHeader>
