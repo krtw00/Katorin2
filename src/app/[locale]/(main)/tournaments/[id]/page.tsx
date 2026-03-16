@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
@@ -138,7 +136,7 @@ export default async function TournamentDetailPage({ params }: Props) {
   const progressPct = matchStats.total > 0 ? Math.round((matchStats.completed / matchStats.total) * 100) : 0
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
         {seriesInfo ? (
@@ -161,15 +159,9 @@ export default async function TournamentDetailPage({ params }: Props) {
       {/* ヘッダーカード */}
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-2xl">{tournament.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                主催: {organizerName}
-                {tournament.round_number && ` / 第${tournament.round_number}節`}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
               <Badge variant={statusVariant[tournament.status] || 'outline'}>
                 {tournamentStatusLabels[tournament.status]}
               </Badge>
@@ -177,6 +169,10 @@ export default async function TournamentDetailPage({ params }: Props) {
                 {isTeam ? 'チーム戦' : '個人戦'}
               </Badge>
             </div>
+            <p className="text-sm text-muted-foreground">
+              主催: {organizerName}
+              {tournament.round_number && ` / 第${tournament.round_number}節`}
+            </p>
           </div>
         </CardHeader>
 

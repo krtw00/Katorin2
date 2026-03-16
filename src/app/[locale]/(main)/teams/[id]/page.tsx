@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -75,7 +73,7 @@ export default async function TeamDetailPage({ params }: Props) {
     .limit(5)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
         <Link href="/teams">
@@ -84,33 +82,30 @@ export default async function TeamDetailPage({ params }: Props) {
           </Button>
         </Link>
 
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={team.avatar_url || undefined} alt={team.name} />
-              <AvatarFallback className="text-2xl">
-                {team.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">{team.name}</h1>
-              <p className="text-muted-foreground">
-                {t('leader')}: {team.leader.display_name}
-              </p>
-            </div>
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={team.avatar_url || undefined} alt={team.name} />
+            <AvatarFallback className="text-2xl">
+              {team.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-2xl font-bold">{team.name}</h1>
+            <p className="text-muted-foreground">
+              {t('leader')}: {team.leader.display_name}
+            </p>
           </div>
-
-          {isLeader && (
-            <div className="flex gap-2">
-              <Link href={`/teams/${id}/members`}>
-                <Button variant="outline">{t('manageMembers')}</Button>
-              </Link>
-              <Link href={`/teams/${id}/edit`}>
-                <Button variant="outline">{t('edit')}</Button>
-              </Link>
-            </div>
-          )}
         </div>
+        {isLeader && (
+          <div className="flex gap-2 mt-3">
+            <Link href={`/teams/${id}/members`}>
+              <Button variant="outline" size="sm">{t('manageMembers')}</Button>
+            </Link>
+            <Link href={`/teams/${id}/edit`}>
+              <Button variant="outline" size="sm">{t('edit')}</Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}

@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -69,7 +67,7 @@ export default async function ParticipantsPage({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
         <Link href={`/tournaments/${id}`}>
           <Button variant="ghost" size="sm" className="gap-1">

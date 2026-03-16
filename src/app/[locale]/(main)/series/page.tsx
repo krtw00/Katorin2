@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -94,7 +92,7 @@ export default async function SeriesPage({
   const grouped = seriesList ? groupByStatus(seriesList) : null
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
       <PageHeader
         title={t('title')}
         action={user ? (
