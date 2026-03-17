@@ -462,6 +462,57 @@ export function generateDoubleEliminationBracket(
   return matches
 }
 
+type TeamSeed = {
+  id: string
+  entry_number: number
+}
+
+function mapPlayerBracketToTeamBracket(matches: MatchInsert[]): MatchInsert[] {
+  return matches.map((match) => {
+    const winnerTeamId = match.status === 'bye'
+      ? match.player1_id || match.player2_id || null
+      : null
+
+    return {
+      ...match,
+      team1_id: match.player1_id ?? null,
+      team2_id: match.player2_id ?? null,
+      winner_team_id: winnerTeamId,
+      player1_id: null,
+      player2_id: null,
+      winner_id: null,
+    }
+  })
+}
+
+export function generateTeamSingleEliminationBracket(
+  roundId: string,
+  teams: TeamSeed[]
+): MatchInsert[] {
+  const participants = teams.map((team) => ({
+    user_id: team.id,
+    entry_number: team.entry_number,
+    seed: null,
+  })) as ParticipantWithUser[]
+
+  const playerBracket = generateSingleEliminationBracket(roundId, participants)
+  return mapPlayerBracketToTeamBracket(playerBracket)
+}
+
+export function generateTeamDoubleEliminationBracket(
+  roundId: string,
+  teams: TeamSeed[]
+): MatchInsert[] {
+  const participants = teams.map((team) => ({
+    user_id: team.id,
+    entry_number: team.entry_number,
+    seed: null,
+  })) as ParticipantWithUser[]
+
+  const playerBracket = generateDoubleEliminationBracket(roundId, participants)
+  return mapPlayerBracketToTeamBracket(playerBracket)
+}
+
 /**
  * Advance winner to next match
  * Updates the next match with the winner

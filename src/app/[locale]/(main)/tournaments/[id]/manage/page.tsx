@@ -713,6 +713,7 @@ export default function TournamentManagePage({ params }: Props) {
             sub_count: tournament.sub_count ?? 1,
             players_per_round: tournament.players_per_round ?? 3,
             current_round: tournament.current_round,
+            league_id: tournament.league_id,
           }}
           onUpdateAction={() => window.location.reload()}
         />
