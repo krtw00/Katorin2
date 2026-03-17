@@ -334,8 +334,188 @@ async function main() {
     .select('*', { count: 'exact', head: true })
   assert((count || 0) > 0, `individual_matches にデータあり (${count}件)`)
 
-  // 完了
+  // 予選完了
   await supabase.from('rounds').update({ status: 'completed' }).eq('id', tournamentId)
+
+  // ==== 決勝トーナメント ====
+  // ルールブック 1.2: 各ブロック1位 + 2位or3位 → ノックアウト方式
+  console.log('\n' + '='.repeat(60))
+  console.log('🏆 決勝トーナメント')
+  console.log('='.repeat(60))
+
+  // ---- Step 9: 決勝ラウンド作成 ----
+  console.log('\n📝 Step 9: 決勝ラウンド作成')
+  const { data: finalsRound } = await supabase.from('rounds').insert({
+    title: 'WMGP Season 8 決勝トーナメント',
+    organizer_id: teams[0].memberIds[0],
+    format: 'single_elimination',
+    match_format: 'bo3',
+    entry_type: 'team',
+    max_participants: 64,
+    visibility: 'public',
+    status: 'draft',
+    entry_mode: 'open',
+    league_id: null, // 同一リーグ（テストではleague未作成なのでnull）
+    is_finals: true,
+    source_round_id: tournamentId,
+    qualified_per_block: 2, // 各ブロック上位2チーム
+    round_order: 2,
+  }).select().single()
+  assert(!!finalsRound, '決勝ラウンド作成成功')
+  const finalsId = finalsRound!.id
+
+  // ---- Step 10: 進出チーム抽出 ----
+  console.log('\n📝 Step 10: 進出チーム抽出')
+  const blockAStandings = standings!.filter(s => s.block_id === blockA!.id)
+  const blockBStandings = standings!.filter(s => s.block_id === blockB!.id)
+
+  // 各ブロック上位2チーム
+  const qualifiedTeamIds: string[] = []
+  for (const blockStandings of [blockAStandings, blockBStandings]) {
+    const top2 = blockStandings.filter(s => s.rank != null && s.rank <= 2)
+    top2.forEach(s => { if (s.team_id) qualifiedTeamIds.push(s.team_id) })
+  }
+  assert(qualifiedTeamIds.length === 4, `進出チーム: ${qualifiedTeamIds.length}/4チーム`)
+
+  const qualifiedNames = qualifiedTeamIds.map(id => {
+    const team = teams.find(t => t.id === id)
+    return team ? team.name : id
+  })
+  console.log(`  進出チーム: ${qualifiedNames.join(', ')}`)
+
+  // ---- Step 11: team_entries に登録 ----
+  console.log('\n📝 Step 11: 決勝エントリー登録')
+  for (let i = 0; i < qualifiedTeamIds.length; i++) {
+    await supabase.from('team_entries').insert({
+      round_id: finalsId,
+      team_id: qualifiedTeamIds[i],
+      seed: i + 1,
+    })
+  }
+  const { data: finalsEntries } = await supabase.from('team_entries')
+    .select('*').eq('round_id', finalsId)
+  assert(finalsEntries?.length === 4, `決勝エントリー: ${finalsEntries?.length}/4`)
+
+  // ---- Step 12: ブラケット生成（シングルエリミ 4チーム → 準決勝2試合 + 決勝1試合） ----
+  console.log('\n📝 Step 12: ブラケット生成')
+
+  // 準決勝: A1 vs B2, B1 vs A2（クロスブロック）
+  // シード: A1=1, B1=2, A2=3, B2=4 → ブラケット: 1vs4, 2vs3
+  const semiFinal1 = await supabase.from('matches').insert({
+    round_id: finalsId,
+    round: 1, match_number: 1,
+    team1_id: qualifiedTeamIds[0], // A1
+    team2_id: qualifiedTeamIds[3], // B2
+    status: 'pending',
+  }).select().single()
+
+  const semiFinal2 = await supabase.from('matches').insert({
+    round_id: finalsId,
+    round: 1, match_number: 2,
+    team1_id: qualifiedTeamIds[1], // B1
+    team2_id: qualifiedTeamIds[2], // A2
+    status: 'pending',
+  }).select().single()
+
+  // 決勝戦（勝者同士）
+  const grandFinal = await supabase.from('matches').insert({
+    round_id: finalsId,
+    round: 2, match_number: 3,
+    team1_id: null, team2_id: null, // 勝者で埋める
+    status: 'pending',
+  }).select().single()
+
+  assert(!!semiFinal1.data && !!semiFinal2.data && !!grandFinal.data, 'ブラケット3試合作成')
+  console.log(`  準決勝1: ${qualifiedNames[0]} vs ${qualifiedNames[3]}`)
+  console.log(`  準決勝2: ${qualifiedNames[1]} vs ${qualifiedNames[2]}`)
+
+  // ---- Step 13: 準決勝実施 ----
+  console.log('\n📝 Step 13: 準決勝実施')
+  await supabase.from('rounds').update({ status: 'in_progress' }).eq('id', finalsId)
+
+  async function playFinalsWar(matchId: string, t1Id: string, t2Id: string): Promise<string> {
+    const t1 = teams.find(t => t.id === t1Id)!
+    const t2 = teams.find(t => t.id === t2Id)!
+
+    let t1RoundWins = 0, t2RoundWins = 0
+
+    for (let roundNum = 1; roundNum <= 3; roundNum++) {
+      if (t1RoundWins >= 2 || t2RoundWins >= 2) break
+
+      const { data: warRound } = await supabase.from('war_rounds').insert({
+        match_id: matchId, round_number: roundNum, status: 'in_progress',
+        started_at: new Date().toISOString(),
+      }).select().single()
+
+      let roundT1Wins = 0, roundT2Wins = 0
+      for (let seat = 0; seat < 3; seat++) {
+        const p1Win = Math.random() > 0.45
+        const p1Duel = p1Win ? 2 : (Math.random() > 0.5 ? 1 : 0)
+        const p2Duel = p1Win ? (Math.random() > 0.5 ? 1 : 0) : 2
+        if (p1Win) roundT1Wins++; else roundT2Wins++
+
+        await supabase.from('individual_matches').insert({
+          match_id: matchId, war_round_id: warRound!.id,
+          play_order: (roundNum - 1) * 3 + seat + 1,
+          player1_id: t1.memberIds[seat], player2_id: t2.memberIds[seat],
+          player1_score: p1Duel, player2_score: p2Duel,
+          player1_duel_wins: p1Duel, player2_duel_wins: p2Duel,
+          winner_id: p1Win ? t1.memberIds[seat] : t2.memberIds[seat],
+          status: 'completed',
+        })
+      }
+
+      const roundWinner = roundT1Wins >= 2 ? t1Id : t2Id
+      if (roundT1Wins >= 2) t1RoundWins++; else t2RoundWins++
+
+      await supabase.from('war_rounds').update({
+        team1_match_wins: roundT1Wins, team2_match_wins: roundT2Wins,
+        winner_team_id: roundWinner, status: 'completed',
+        completed_at: new Date().toISOString(),
+      }).eq('id', warRound!.id)
+    }
+
+    const winnerId = t1RoundWins >= 2 ? t1Id : t2Id
+    await supabase.from('matches').update({
+      team1_round_wins: t1RoundWins, team2_round_wins: t2RoundWins,
+      winner_team_id: winnerId, status: 'completed',
+      completed_at: new Date().toISOString(),
+    }).eq('id', matchId)
+
+    const winnerName = winnerId === t1Id ? t1.name : t2.name
+    console.log(`    ${t1.name} ${t1RoundWins}-${t2RoundWins} ${t2.name} → ${winnerName}勝利`)
+    return winnerId
+  }
+
+  const sf1Winner = await playFinalsWar(semiFinal1.data!.id, qualifiedTeamIds[0], qualifiedTeamIds[3])
+  const sf2Winner = await playFinalsWar(semiFinal2.data!.id, qualifiedTeamIds[1], qualifiedTeamIds[2])
+
+  // ---- Step 14: 決勝戦 ----
+  console.log('\n📝 Step 14: 決勝戦')
+  await supabase.from('matches').update({
+    team1_id: sf1Winner, team2_id: sf2Winner, status: 'pending',
+  }).eq('id', grandFinal.data!.id)
+
+  const champion = await playFinalsWar(grandFinal.data!.id, sf1Winner, sf2Winner)
+  const championName = teams.find(t => t.id === champion)!.name
+
+  // 決勝完了
+  await supabase.from('rounds').update({ status: 'completed' }).eq('id', finalsId)
+
+  console.log(`\n🏆🏆🏆 優勝: Team ${championName} 🏆🏆🏆`)
+
+  // ---- Step 15: 決勝データ検証 ----
+  console.log('\n📝 Step 15: 決勝データ検証')
+  const { data: finalsMatches } = await supabase.from('matches')
+    .select('*').eq('round_id', finalsId).order('match_number')
+  assert(finalsMatches?.length === 3, `決勝試合数: ${finalsMatches?.length}/3`)
+  assert(finalsMatches?.every(m => m.status === 'completed'), '全試合完了')
+  assert(finalsMatches?.[2]?.winner_team_id === champion, '決勝戦勝者=優勝チーム')
+
+  const { data: finalsWarRounds } = await supabase.from('war_rounds')
+    .select('*', { count: 'exact' })
+    .in('match_id', finalsMatches!.map(m => m.id))
+  assert((finalsWarRounds?.length || 0) > 0, `決勝war_rounds: ${finalsWarRounds?.length}件`)
 
   console.log(`\n${'='.repeat(60)}`)
   console.log(`📊 結果: ${pass} passed, ${fail} failed`)
