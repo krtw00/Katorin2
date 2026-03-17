@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -13,6 +14,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+  generateTeamSingleEliminationBracket,
+  generateTeamDoubleEliminationBracket,
+} from '@/lib/tournament/bracket-generator'
 
 type Tournament = {
   id: string
@@ -27,11 +32,13 @@ type Tournament = {
   sub_count: number
   players_per_round: number
   current_round: number | null
+  league_id?: string | null
 }
 
 type TeamEntry = {
   id: string
   team_id: string
+  entry_number: number
   block_id: string | null
   team: { id: string; name: string }
 }
@@ -64,24 +71,36 @@ type Props = {
 export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
   const t = useTranslations('tournament.teamManage')
   const tc = useTranslations('common')
+  const tl = useTranslations('labels')
+
   const [entries, setEntries] = useState<TeamEntry[]>([])
   const [blocks, setBlocks] = useState<Block[]>([])
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
   const [error, setError] = useState('')
   const [blockCount, setBlockCount] = useState(tournament.block_count || 2)
+  const [roundStatus, setRoundStatus] = useState(tournament.status)
 
   const supabase = createClient()
   const isRoundRobin = tournament.format === 'round_robin'
   const isSwiss = tournament.format === 'swiss'
+  const isSingleElimination = tournament.format === 'single_elimination'
+  const isDoubleElimination = tournament.format === 'double_elimination'
+  const isElimination = isSingleElimination || isDoubleElimination
+
+  useEffect(() => {
+    setRoundStatus(tournament.status)
+  }, [tournament.status])
 
   const loadData = useCallback(async () => {
     const [entriesRes, blocksRes, matchesRes] = await Promise.all([
       supabase
         .from('team_entries')
         .select('*, team:teams(id, name)')
-        .eq('round_id', tournament.id),
+        .eq('round_id', tournament.id)
+        .order('entry_number', { ascending: true }),
       supabase
         .from('round_blocks')
         .select('*')
@@ -101,7 +120,33 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
     setLoading(false)
   }, [supabase, tournament.id])
 
-  useEffect(() => { loadData() }, [loadData])
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const updateRoundStatus = async (nextStatus: 'in_progress' | 'completed') => {
+    setUpdatingStatus(true)
+    setError('')
+
+    try {
+      const { error: updateError } = await supabase
+        .from('rounds')
+        .update({ status: nextStatus })
+        .eq('id', tournament.id)
+
+      if (updateError) {
+        setError(updateError.message)
+        return
+      }
+
+      setRoundStatus(nextStatus)
+      onUpdateAction()
+    } catch {
+      setError(t('statusUpdateFailed'))
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
 
   // ブロック作成 + チーム振分け
   const handleCreateBlocks = async () => {
@@ -127,7 +172,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
             round_id: tournament.id,
             block_name: `Block ${blockNames[i] || i + 1}`,
             block_order: i + 1,
-            league_id: (tournament as Record<string, unknown>).league_id as string | null ?? null,
+            league_id: tournament.league_id ?? null,
           })
           .select()
           .single()
@@ -170,8 +215,8 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       let matchCounter = 0
 
       for (const block of blocks) {
-        const blockEntries = entries.filter(e => e.block_id === block.id)
-        const teamIds = blockEntries.map(e => e.team_id)
+        const blockEntries = entries.filter((e) => e.block_id === block.id)
+        const teamIds = blockEntries.map((e) => e.team_id)
 
         // 総当たりペアリング生成
         const teams = [...teamIds]
@@ -195,20 +240,56 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
               status: 'pending',
             })
           }
-          const last = teams.pop()!
-          teams.splice(1, 0, last)
+          const last = teams.pop()
+          if (last) {
+            teams.splice(1, 0, last)
+          }
         }
       }
-
-      await supabase
-        .from('rounds')
-        .update({ status: 'in_progress' })
-        .eq('id', tournament.id)
 
       await loadData()
       onUpdateAction()
     } catch {
       setError(t('generateFailed'))
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  // シングル / ダブルエリミブラケット生成
+  const handleGenerateEliminationBracket = async () => {
+    setGenerating(true)
+    setError('')
+
+    try {
+      if (entries.length < 2) {
+        setError(t('minTeams'))
+        return
+      }
+
+      await supabase.from('matches').delete().eq('round_id', tournament.id)
+
+      const seededTeams = [...entries]
+        .sort((a, b) => a.entry_number - b.entry_number)
+        .map((entry) => ({
+          id: entry.team_id,
+          entry_number: entry.entry_number,
+        }))
+
+      const bracketMatches = isDoubleElimination
+        ? generateTeamDoubleEliminationBracket(tournament.id, seededTeams)
+        : generateTeamSingleEliminationBracket(tournament.id, seededTeams)
+
+      const { error: insertError } = await supabase.from('matches').insert(bracketMatches)
+      if (insertError) {
+        setError(insertError.message)
+        return
+      }
+
+      await loadData()
+      onUpdateAction()
+    } catch {
+      setError(t('generateBracketFailed'))
     } finally {
       setGenerating(false)
     }
@@ -221,11 +302,13 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
     try {
       // 現在のラウンド数を確認
-      const currentRound = Math.max(...matches.map(m => m.round), 0)
+      const currentRound = Math.max(...matches.map((m) => m.round), 0)
       const nextRound = currentRound + 1
 
       // 未完了の試合がないか確認
-      const pendingMatches = matches.filter(m => m.round === currentRound && m.status !== 'completed')
+      const pendingMatches = matches.filter(
+        (m) => m.round === currentRound && m.status !== 'completed' && m.status !== 'bye'
+      )
       if (currentRound > 0 && pendingMatches.length > 0) {
         setError(t('pendingMatches', { round: currentRound, count: pendingMatches.length }))
         return
@@ -239,7 +322,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       // 過去のペアリングを収集
       const previousPairings = new Set<string>()
-      matches.forEach(m => {
+      matches.forEach((m) => {
         if (m.team1_id && m.team2_id) {
           const key = m.team1_id < m.team2_id
             ? `${m.team1_id}:${m.team2_id}`
@@ -249,13 +332,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       })
 
       // ペアリング用データ
-      const teamStandings = entries.map(e => {
-        const s = standings?.find(s => s.team_id === e.team_id)
+      const teamStandings = entries.map((e) => {
+        const s = standings?.find((row) => row.team_id === e.team_id)
         return {
           team_id: e.team_id,
           team_points: Number(s?.total_team_points || 0),
           win_points: Number(s?.total_win_points || 0),
-          had_bye: false,
         }
       })
 
@@ -294,7 +376,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       }
 
       // matches挿入
-      const maxMatchNumber = Math.max(...matches.map(m => m.match_number), 0)
+      const maxMatchNumber = Math.max(...matches.map((m) => m.match_number), 0)
       for (let i = 0; i < pairings.length; i++) {
         await supabase.from('matches').insert({
           round_id: tournament.id,
@@ -306,17 +388,10 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         })
       }
 
-      if (nextRound === 1) {
-        await supabase
-          .from('rounds')
-          .update({ status: 'in_progress', current_round: 1 })
-          .eq('id', tournament.id)
-      } else {
-        await supabase
-          .from('rounds')
-          .update({ current_round: nextRound })
-          .eq('id', tournament.id)
-      }
+      await supabase
+        .from('rounds')
+        .update({ current_round: nextRound })
+        .eq('id', tournament.id)
 
       await loadData()
       onUpdateAction()
@@ -329,9 +404,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
   if (loading) return <p>{tc('loading')}</p>
 
-  const completedMatchCount = matches.filter(m => m.status === 'completed').length
+  const resolvedMatchCount = matches.filter((m) => m.status === 'completed' || m.status === 'bye').length
   const totalMatchCount = matches.length
-  const currentRound = Math.max(...matches.map(m => m.round), 0)
+  const currentRound = Math.max(...matches.map((m) => m.round), 0)
+
+  const canStartRound = roundStatus === 'draft' && totalMatchCount > 0
+  const canCompleteRound = roundStatus === 'in_progress' && totalMatchCount > 0 && resolvedMatchCount === totalMatchCount
 
   return (
     <div className="space-y-6">
@@ -339,24 +417,66 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         <div className="bg-destructive/15 text-destructive px-4 py-3 rounded">{error}</div>
       )}
 
+      {/* ラウンドステータス管理 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('statusManage')}</CardTitle>
+          <CardDescription>
+            {t('currentStatus', { status: tl(`tournamentStatus.${roundStatus}`) })}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2 flex-wrap">
+            {roundStatus === 'draft' && (
+              <Button
+                onClick={() => updateRoundStatus('in_progress')}
+                disabled={!canStartRound || updatingStatus}
+              >
+                {t('startRound')}
+              </Button>
+            )}
+            {roundStatus === 'in_progress' && (
+              <Button
+                variant="secondary"
+                onClick={() => updateRoundStatus('completed')}
+                disabled={!canCompleteRound || updatingStatus}
+              >
+                {t('completeRound')}
+              </Button>
+            )}
+          </div>
+          {roundStatus === 'draft' && !canStartRound && (
+            <p className="text-sm text-muted-foreground">{t('startDisabled')}</p>
+          )}
+          {roundStatus === 'in_progress' && !canCompleteRound && (
+            <p className="text-sm text-muted-foreground">{t('completeDisabled')}</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* エントリーチーム */}
       <Card>
         <CardHeader>
           <CardTitle>{t('entryTeams')}</CardTitle>
-          <CardDescription>{entries.length}</CardDescription>
+          <CardDescription>
+            {entries.length}
+            {isElimination ? ` / ${t('seedOrder')}` : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {blocks.length > 0 ? (
             <div className="space-y-4">
-              {blocks.map(block => {
-                const blockEntries = entries.filter(e => e.block_id === block.id)
+              {blocks.map((block) => {
+                const blockEntries = entries
+                  .filter((e) => e.block_id === block.id)
+                  .sort((a, b) => a.entry_number - b.entry_number)
                 return (
                   <div key={block.id}>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">{block.block_name}</h4>
                     <div className="flex flex-wrap gap-2">
-                      {blockEntries.map(e => (
+                      {blockEntries.map((e) => (
                         <Badge key={e.id} variant="secondary">
-                          {(e.team as { name: string })?.name}
+                          #{e.entry_number} {(e.team as { name: string })?.name}
                         </Badge>
                       ))}
                     </div>
@@ -366,9 +486,9 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {entries.map(e => (
+              {entries.map((e) => (
                 <Badge key={e.id} variant="outline">
-                  {(e.team as { name: string })?.name}
+                  #{e.entry_number} {(e.team as { name: string })?.name}
                 </Badge>
               ))}
             </div>
@@ -377,7 +497,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       </Card>
 
       {/* ブロック管理（総当たり形式のみ） */}
-      {isRoundRobin && tournament.status === 'recruiting' && (
+      {isRoundRobin && roundStatus === 'draft' && (
         <Card>
           <CardHeader>
             <CardTitle>{t('blockDivision')}</CardTitle>
@@ -391,7 +511,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
                 min="1"
                 max="8"
                 value={blockCount}
-                onChange={(e) => setBlockCount(parseInt(e.target.value) || 2)}
+                onChange={(e) => setBlockCount(parseInt(e.target.value, 10) || 2)}
                 className="w-20"
               />
               <span className="text-sm text-muted-foreground">
@@ -405,8 +525,8 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         </Card>
       )}
 
-      {/* 対戦カード生成 */}
-      {isRoundRobin && blocks.length > 0 && matches.length === 0 && (
+      {/* 総当たり対戦カード生成 */}
+      {isRoundRobin && roundStatus === 'draft' && blocks.length > 0 && matches.length === 0 && (
         <Card>
           <CardHeader>
             <CardTitle>{t('generateMatches')}</CardTitle>
@@ -420,14 +540,34 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         </Card>
       )}
 
+      {/* シングル/ダブルエリミ ブラケット生成 */}
+      {isElimination && roundStatus === 'draft' && matches.length === 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('generateBracket')}</CardTitle>
+            <CardDescription>{t('generateBracketDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleGenerateEliminationBracket} disabled={generating}>
+              {generating ? tc('generating') : t('generateBracketButton')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* スイスドロー マッチメイキング */}
-      {isSwiss && (
+      {isSwiss && roundStatus !== 'completed' && (
         <Card>
           <CardHeader>
             <CardTitle>{t('swissProgress')}</CardTitle>
             <CardDescription>
               {currentRound > 0
-                ? t('swissRoundStatus', { current: currentRound, total: tournament.swiss_round_count || '?', completed: completedMatchCount, matches: totalMatchCount })
+                ? t('swissRoundStatus', {
+                  current: currentRound,
+                  total: tournament.swiss_round_count || '?',
+                  completed: resolvedMatchCount,
+                  matches: totalMatchCount,
+                })
                 : t('notStarted')}
             </CardDescription>
           </CardHeader>
@@ -448,11 +588,11 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         <Card>
           <CardHeader>
             <CardTitle>{t('matchProgress')}</CardTitle>
-            <CardDescription>{t('matchCount', { completed: completedMatchCount, total: totalMatchCount })}</CardDescription>
+            <CardDescription>{t('matchCount', { completed: resolvedMatchCount, total: totalMatchCount })}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {matches.slice(-10).map(m => {
+              {matches.slice(-10).map((m) => {
                 const t1Name = (m.team1 as { name: string } | null)?.name || 'TBD'
                 const t2Name = (m.team2 as { name: string } | null)?.name || 'TBD'
                 return (
@@ -462,24 +602,28 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
                       {m.status === 'completed' && (
                         <span className="font-mono">{m.team1_round_wins}-{m.team2_round_wins}</span>
                       )}
-                      <Badge variant={m.status === 'completed' ? 'secondary' : 'outline'}>
-                        {m.status === 'completed' ? t('matchCompleted') : t('matchPending')}
+                      <Badge variant={m.status === 'completed' || m.status === 'bye' ? 'secondary' : 'outline'}>
+                        {m.status === 'completed'
+                          ? t('matchCompleted')
+                          : m.status === 'bye'
+                            ? t('matchBye')
+                            : t('matchPending')}
                       </Badge>
-                      <a href={`/tournaments/${tournament.id}/wars/${m.id}`}>
+                      <Link href={`/tournaments/${tournament.id}/wars/${m.id}`}>
                         <Button variant="ghost" size="sm">{t('matchDetail')}</Button>
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )
               })}
             </div>
             <div className="mt-4 flex gap-2">
-              <a href={`/tournaments/${tournament.id}/wars`}>
+              <Link href={`/tournaments/${tournament.id}/wars`}>
                 <Button variant="outline">{t('warList')}</Button>
-              </a>
-              <a href={`/tournaments/${tournament.id}/standings`}>
+              </Link>
+              <Link href={`/tournaments/${tournament.id}/standings`}>
                 <Button variant="outline">{t('standings')}</Button>
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>

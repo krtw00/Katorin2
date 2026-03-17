@@ -11,7 +11,6 @@ import {
   LeagueWithOrganizer,
 } from '@/types/league'
 import { TournamentWithOrganizer } from '@/types/round'
-import { TournamentListItem } from '@/components/tournament/TournamentListItem'
 import { TeamApplicationForm } from '@/components/league/TeamApplicationForm'
 import { ApplicationManage } from '@/components/league/ApplicationManage'
 import { BannerImage } from '@/components/common/BannerImage'
@@ -20,6 +19,7 @@ import { MetaItem } from '@/components/common/MetaItem'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ManualPointsConfirm } from '@/components/league/ManualPointsConfirm'
 import { BlockAssignment } from '@/components/league/BlockAssignment'
+import { AddRoundDialog } from '@/components/league/AddRoundDialog'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -29,6 +29,7 @@ type Props = {
 export default async function SeriesDetailPage({ params }: Props) {
   const t = await getTranslations('leagues')
   const tl = await getTranslations('labels')
+  const tt = await getTranslations('tournament.detail')
   const { id } = await params
   const supabase = await createClient()
 
@@ -74,18 +75,12 @@ export default async function SeriesDetailPage({ params }: Props) {
   // 第2段: tournaments依存のクエリ + applicationsを並列取得
   const tournamentIds = tournaments?.map((t) => t.id) || []
 
-  const [standingsResult, participantCountsResult, applicationsResult, leaguePointsResult, teamEntriesResult] = await Promise.all([
+  const [standingsResult, applicationsResult, leaguePointsResult, teamEntriesResult] = await Promise.all([
     // block_standings
     tournamentIds.length > 0
       ? supabase.from('round_block_standings').select('*').in('round_id', tournamentIds)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       : Promise.resolve({ data: [] as any[] }),
-    // participant counts
-    tournamentIds.length > 0
-      ? supabase.from('participants').select('round_id').in('round_id', tournamentIds)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .then(r => r as any as { data: { round_id: string }[] | null })
-      : Promise.resolve({ data: [] as { round_id: string }[] }),
     // applications (RLS制限あり)
     user
       ? supabase
@@ -144,12 +139,6 @@ export default async function SeriesDetailPage({ params }: Props) {
   // Extract calculated tournament IDs
   const spData = ('data' in leaguePointsResult ? leaguePointsResult.data : []) as { round_id: string }[] | null
   const calculatedTournamentIds = [...new Set((spData || []).map(sp => sp.round_id))]
-
-  const countMap = new Map<string, number>()
-  const participantCounts = ('data' in participantCountsResult ? participantCountsResult.data : []) as { round_id: string }[] | null
-  participantCounts?.forEach((p) => {
-    countMap.set(p.round_id, (countMap.get(p.round_id) || 0) + 1)
-  })
 
   // applications処理
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -212,9 +201,15 @@ export default async function SeriesDetailPage({ params }: Props) {
             <Link href={`/leagues/${id}/edit`}>
               <Button variant="outline" size="sm">{t('detail.edit')}</Button>
             </Link>
-            <Link href={`/tournaments/new?league_id=${id}`}>
-              <Button size="sm">{t('detail.addTournament')}</Button>
-            </Link>
+            <AddRoundDialog
+              leagueId={id}
+              organizerId={league.organizer_id}
+              rounds={(tournaments || []).map((round) => ({
+                id: round.id,
+                title: round.title,
+                round_order: round.round_order,
+              }))}
+            />
           </div>
         )}
       </div>
@@ -401,11 +396,32 @@ export default async function SeriesDetailPage({ params }: Props) {
               {tournaments && tournaments.length > 0 ? (
                 <div className="divide-y">
                   {tournaments.map((tournament) => (
-                    <TournamentListItem
-                      key={tournament.id}
-                      tournament={tournament}
-                      participantCount={countMap.get(tournament.id) || 0}
-                    />
+                    <div key={tournament.id} className="flex items-center justify-between gap-3 px-2 py-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2 flex-wrap">
+                          <Link href={`/tournaments/${tournament.id}`} className="truncate text-sm font-medium hover:underline">
+                            {tournament.title}
+                          </Link>
+                          <StatusIndicator status={tournament.status} showDot showIcon={false} />
+                          <Badge variant="secondary">
+                            {tl('tournamentFormat.' + tournament.format)}
+                          </Badge>
+                          {tournament.is_finals && (
+                            <Badge>{t('detail.finalsBadge')}</Badge>
+                          )}
+                        </div>
+                        {tournament.round_order && (
+                          <p className="text-xs text-muted-foreground">
+                            {tt('roundLabel', { n: tournament.round_order })}
+                          </p>
+                        )}
+                      </div>
+                      <Link href={`/tournaments/${tournament.id}/manage`}>
+                        <Button variant="outline" size="sm">
+                          {t('detail.manage')}
+                        </Button>
+                      </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
