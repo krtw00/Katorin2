@@ -31,18 +31,19 @@
 - next/og で画像出力API
 
 ## データモデル
-- **シリーズ** (`series`): 複数節にまたがる長期イベント（WMGP, ロケットカップ等）
-- **大会** (`tournaments`): シリーズ内の1節、または単発イベント（将軍CS等）
+- **リーグ** (`leagues`): 複数ラウンドにまたがる長期イベント（WMGP, ロケットカップ等）
+- **ラウンド** (`rounds`): リーグ内の1節（予選Week、決勝トーナメント等）
 - **War** (`matches`): チーム対チームの試合全体
-- ルール設定は `series.series_config` (JSONB) でシリーズごとに柔軟に変更可能
-- 設定取得は `getTournamentConfig()` で統一（シリーズ/単発を自動判定）
-- 設計書: `docs/plan-series-refactor.md`
+- ルール設定は `leagues.league_config` (JSONB) でリーグごとに柔軟に変更可能
+- 設定取得は `getTournamentConfig()` で統一（リーグ/単発を自動判定）
+- 設計書: `docs/plan-league-system.md`
 
 ## 対応大会形式
-- 個人戦シングルエリミネーション
+- 個人戦シングルエリミネーション / ダブルエリミネーション
 - チーム戦スイスドロー（ロケットカップ形式: Ban&Pick、デッキテーマ被り禁止）
 - チーム戦ブロック別総当たり（WMGP形式: 3v3星取戦BO3、6段階タイブレーカー）
-- ルールプリセット: `src/lib/schemas/series-config.ts` に `WMGP_CONFIG` / `ROCKET_CUP_CONFIG`
+- チーム戦シングルエリミネーション（決勝トーナメント）
+- ルール設定: `src/lib/schemas/league-config.ts` に `WMGP_CONFIG` / `ROCKET_CUP_CONFIG`
 
 ## デモアカウント
 | 役割 | メール | パスワード | 用途 |
@@ -53,23 +54,65 @@
 デモデータ投入: `npx tsx scripts/seed-demo-data.ts`（冪等、再実行可能）
 
 ## 注意事項
-- `pnpm db:types` 実行後、database.ts末尾のレガシーexport（TournamentFormat等）が消えるので手動で再追加が必要
+- `pnpm db:types` 実行後、先頭に `Connecting to db 5432` が出力されるので手動で削除が必要
 - ローカルでは `supabase gen types typescript --local` を使う（`--linked` はクラウドDB参照）
 - Discordトークンがgit履歴に残っている可能性あり（パスワード変更でトークン無効化済み前提）
 
 ## 判断・決定事項
-- 「シリーズ」と「大会」は明確に分離（series/tournament）
-- Ban&PickはDiscord管理、Katorinは結果記録のみ
-- チームはシリーズ所属 or 単発大会所属（排他）、未所属も可（申請前）
+- 「リーグ」と「ラウンド」で分離（leagues/rounds）。旧名: シリーズ/大会
+- Ban&Pick・オーダー管理はDiscord管理、Katorinは結果記録のみ
+- チームはリーグ所属 or 単発ラウンド所属（排他）、未所属も可（申請前）
 - チームエントリーは申請→主催者承認フロー（team_applications テーブル）
-- チーム/メンバーの閲覧はシリーズ/大会の公開設定に連動（RLS）
-- 画像テーマはseries.theme_config or tournaments.theme_config (JSONB)
+- チーム/メンバーの閲覧はリーグ/ラウンドの公開設定に連動（RLS）
+- 画像テーマはleagues.theme_config or rounds.theme_config (JSONB)
 - ストレージはCloudflare R2（バケット: katorin2-assets）
 - 元ネタ「水界の秘石カトリン」＋依頼者の岩石族コミュニティに合わせたデザイン
 - デモデータ（is_demo=true）は関係者のみ閲覧可能（RLS制限）
-- 大会一覧にはシリーズ配下の大会を表示しない（series_id IS NULLフィルタ）
+- ラウンド一覧にはリーグ配下のラウンドを表示しない（league_id IS NULLフィルタ）
 
-## セッションメモ（2026-03-17）
+## セッションメモ（2026-03-17 午後）
+
+### 完了した作業
+
+#### リーグシステム Phase 2〜7 全完了
+- **Phase 2**: アプリ層リネーム（series→leagues, tournaments→rounds）73ファイル
+- **Phase 3**: ラウンド形式柔軟化（AddRoundDialog, エリミ分岐, ステータス管理）
+- **Phase 4**: チーム戦ブラケット表示（TeamRow, BracketMatch型拡張）
+- **Phase 5**: 決勝進出（finals-promotion.ts, FinalsPromotionButton）
+- **Phase 6**: 没収試合・BYE・タイブレーカー設定UI
+- **Phase 7**: テストスクリプト・E2Eのリーグ対応更新
+
+#### WMGPフロー完全検証
+- テストスクリプト18/18パス（予選総当たり+決勝ノックアウト）
+- ルールブック準拠: ブロック別総当たり→各ブロック上位2チーム→シングルエリミ
+- 3v3星取戦BO3、2ラウンド先取、6段階タイブレーカー順位
+
+#### クリーンアップ
+- database.ts再生成（is_forfeit/is_bye/is_finals等の新カラム反映）
+- as anyキャスト4箇所除去
+- ブラケットページのチーム戦統合（isTeamBattle + teams join）
+- Vercelデプロイ成功 + 本番DBマイグレーション適用
+
+### 判断・決定事項
+- オーダー管理はスコープ外（Discord管理の領分）、Katorinは試合結果記録のみ
+- WMGPフローをまず確実に通し、そこから汎用化する方針
+- Codex CLIのworktree並列実行パターンを確立（旧コードベースからの分岐に注意）
+
+### 未解決の問題
+- ルート構造変更（/tournaments/[id] → /leagues/[leagueId]/rounds/[roundId]）未着手
+- byeScore/forfeitScoreのフォームUI未実装（スキーマのみ）
+- 単発大会のスコープ（#34）: 依頼者相談待ち
+- 通知機能（#13）: ブラウザ通知のみ or メールまでやるか未決定
+
+### 次回の優先事項
+1. UI通し確認（ブラウザでWMGPフローを実際に操作）
+2. デモデータ更新（決勝ラウンド・BYE・没収試合のサンプル追加）
+3. ルート構造のネスト化検討（/leagues/[id]/rounds/[roundId]）
+4. ロケットカップ形式のフロー検証
+
+---
+
+## セッションメモ（2026-03-17 午前）
 
 ### 完了した作業
 
