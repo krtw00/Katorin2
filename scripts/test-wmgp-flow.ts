@@ -509,7 +509,7 @@ async function main() {
   const { data: finalsMatches } = await supabase.from('matches')
     .select('*').eq('round_id', finalsId).order('match_number')
   assert(finalsMatches?.length === 3, `決勝試合数: ${finalsMatches?.length}/3`)
-  assert(finalsMatches?.every(m => m.status === 'completed'), '全試合完了')
+  assert(finalsMatches?.every(m => m.status === 'completed') ?? false, '全試合完了')
   assert(finalsMatches?.[2]?.winner_team_id === champion, '決勝戦勝者=優勝チーム')
 
   const { data: finalsWarRounds } = await supabase.from('war_rounds')

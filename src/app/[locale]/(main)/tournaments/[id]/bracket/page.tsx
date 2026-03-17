@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { MatchWithPlayers, Tournament } from '@/types/round'
+import { Tournament } from '@/types/round'
 import { RealtimeBracket } from '@/components/tournament/RealtimeBracket'
 
 type Props = {
@@ -20,7 +20,6 @@ export default async function TournamentBracketPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // Fetch tournament
   const { data: tournament, error: tournamentError } = (await supabase
     .from('rounds')
     .select('*')
@@ -31,17 +30,24 @@ export default async function TournamentBracketPage({ params }: Props) {
     notFound()
   }
 
-  // Fetch matches with player details
+  const isTeamBattle = tournament.entry_type === 'team'
+
+  // Fetch matches with player/team details
+  const selectFields = isTeamBattle
+    ? `*,
+       player1:profiles!matches_player1_id_fkey(*),
+       player2:profiles!matches_player2_id_fkey(*),
+       winner:profiles!matches_winner_id_fkey(*),
+       team1:teams!matches_team1_id_fkey(id, name, avatar_url),
+       team2:teams!matches_team2_id_fkey(id, name, avatar_url)`
+    : `*,
+       player1:profiles!matches_player1_id_fkey(*),
+       player2:profiles!matches_player2_id_fkey(*),
+       winner:profiles!matches_winner_id_fkey(*)`
+
   const { data: matches, error: matchesError } = await supabase
     .from('matches')
-    .select(
-      `
-      *,
-      player1:profiles!matches_player1_id_fkey(*),
-      player2:profiles!matches_player2_id_fkey(*),
-      winner:profiles!matches_winner_id_fkey(*)
-    `
-    )
+    .select(selectFields)
     .eq('round_id', id)
     .order('round', { ascending: true })
     .order('match_number', { ascending: true })
@@ -50,7 +56,6 @@ export default async function TournamentBracketPage({ params }: Props) {
     console.error('Error fetching matches:', matchesError)
   }
 
-  // Check if current user is the organizer
   const { data: { user } } = await supabase.auth.getUser()
   const isOrganizer = user?.id === tournament.organizer_id
 
@@ -83,9 +88,10 @@ export default async function TournamentBracketPage({ params }: Props) {
         <CardContent>
           <RealtimeBracket
             tournamentId={id}
-            initialMatches={(matches as MatchWithPlayers[]) || []}
+            initialMatches={(matches || []) as never[]}
             isOrganizer={isOrganizer}
             currentUserId={user?.id ?? null}
+            isTeamBattle={isTeamBattle}
           />
         </CardContent>
       </Card>
