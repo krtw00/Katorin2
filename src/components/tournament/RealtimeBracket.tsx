@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { MatchWithPlayers } from '@/types/round'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
 import { createClient } from '@/lib/supabase/client'
 import { handleError } from '@/lib/errors/handleError'
 import { getLoserId } from '@/lib/tournament/bracket-generator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -22,9 +24,21 @@ import { MatchReportDialog } from '@/components/tournament/MatchReportDialog'
 
 type Props = {
   tournamentId: string
-  initialMatches: MatchWithPlayers[]
+  initialMatches: BracketMatch[]
   isOrganizer?: boolean
   currentUserId?: string | null
+  isTeamBattle?: boolean
+}
+
+type TeamSummary = {
+  id: string
+  name: string
+  avatar_url: string | null
+}
+
+type BracketMatch = MatchWithPlayers & {
+  team1?: TeamSummary | TeamSummary[] | null
+  team2?: TeamSummary | TeamSummary[] | null
 }
 
 type MatchPosition = {
@@ -74,6 +88,65 @@ function PlayerRow({ player, playerId, score, isWinner }: PlayerRowProps) {
   )
 }
 
+type TeamRowProps = {
+  team: TeamSummary | null
+  teamId: string | null
+  wins: number
+  opponentWins: number
+  isWinner: boolean
+}
+
+function normalizeTeam(team: TeamSummary | TeamSummary[] | null | undefined) {
+  if (Array.isArray(team)) return team[0] ?? null
+  return team ?? null
+}
+
+function getWinnerDisplayName(match: BracketMatch, isTeamBattle: boolean) {
+  if (!isTeamBattle) return match.winner?.display_name ?? null
+  const team1 = normalizeTeam(match.team1)
+  const team2 = normalizeTeam(match.team2)
+  if (match.winner_team_id === match.team1_id) return team1?.name ?? null
+  if (match.winner_team_id === match.team2_id) return team2?.name ?? null
+  return null
+}
+
+function TeamRow({ team, teamId, wins, opponentWins, isWinner }: TeamRowProps) {
+  return (
+    <div
+      className={`
+        flex items-center justify-between gap-2 px-2 py-1.5
+        ${isWinner ? 'bg-green-100 dark:bg-green-900/50' : ''}
+      `}
+    >
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Avatar className="h-5 w-5">
+          <AvatarImage src={team?.avatar_url || undefined} alt={team?.name || 'TBD'} />
+          <AvatarFallback className="text-[10px]">
+            {team?.name?.charAt(0).toUpperCase() || '?'}
+          </AvatarFallback>
+        </Avatar>
+        <span
+          className={`
+            truncate text-sm
+            ${isWinner ? 'font-bold text-green-700 dark:text-green-300' : ''}
+            ${!team ? 'text-muted-foreground italic' : ''}
+          `}
+        >
+          {team?.name || 'TBD'}
+        </span>
+      </div>
+      <span
+        className={`
+          font-mono text-xs min-w-[2.8rem] text-right
+          ${isWinner ? 'font-bold' : 'text-muted-foreground'}
+        `}
+      >
+        {teamId ? `${wins}-${opponentWins}` : '-'}
+      </span>
+    </div>
+  )
+}
+
 function MatchCard({
   match,
   onPositionChange,
@@ -81,13 +154,17 @@ function MatchCard({
   isClickable,
   isParticipant,
   onReport,
+  isTeamBattle = false,
+  href,
 }: {
-  match: MatchWithPlayers
+  match: BracketMatch
   onPositionChange: (id: string, rect: DOMRect) => void
   onClick?: () => void
   isClickable?: boolean
   isParticipant?: boolean
   onReport?: () => void
+  isTeamBattle?: boolean
+  href?: string
 }) {
   const t = useTranslations('bracket')
   const tLabels = useTranslations('labels')

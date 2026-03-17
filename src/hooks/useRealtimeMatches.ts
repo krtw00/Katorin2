@@ -6,15 +6,35 @@ import { RealtimeChannel } from '@supabase/supabase-js'
 import { MatchWithPlayers } from '@/types/round'
 import { parseMatchesWithPlayers } from '@/lib/types/guards'
 
+type UseRealtimeMatchesOptions = {
+  isTeamBattle?: boolean
+}
+
 export function useRealtimeMatches(
   tournamentId: string,
-  initialMatches: MatchWithPlayers[]
+  initialMatches: MatchWithPlayers[],
+  { isTeamBattle = false }: UseRealtimeMatchesOptions = {}
 ) {
   const [matches, setMatches] = useState<MatchWithPlayers[]>(initialMatches)
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let channel: RealtimeChannel
+    const matchSelect = isTeamBattle
+      ? `
+        *,
+        player1:profiles!matches_player1_id_fkey(*),
+        player2:profiles!matches_player2_id_fkey(*),
+        winner:profiles!matches_winner_id_fkey(*),
+        team1:teams!matches_team1_id_fkey(id, name, avatar_url),
+        team2:teams!matches_team2_id_fkey(id, name, avatar_url)
+      `
+      : `
+        *,
+        player1:profiles!matches_player1_id_fkey(*),
+        player2:profiles!matches_player2_id_fkey(*),
+        winner:profiles!matches_winner_id_fkey(*)
+      `
 
     const setupRealtimeSubscription = async () => {
       // Subscribe to match changes for this tournament
@@ -32,14 +52,7 @@ export function useRealtimeMatches(
             // Refetch matches when there's a change
             const { data: updatedMatches } = await supabase
               .from('matches')
-              .select(
-                `
-                *,
-                player1:profiles!matches_player1_id_fkey(*),
-                player2:profiles!matches_player2_id_fkey(*),
-                winner:profiles!matches_winner_id_fkey(*)
-              `
-              )
+              .select(matchSelect)
               .eq('round_id', tournamentId)
               .order('round', { ascending: true })
               .order('match_number', { ascending: true })
@@ -63,7 +76,7 @@ export function useRealtimeMatches(
         supabase.removeChannel(channel)
       }
     }
-  }, [tournamentId, supabase])
+  }, [tournamentId, supabase, isTeamBattle])
 
   return matches
 }
