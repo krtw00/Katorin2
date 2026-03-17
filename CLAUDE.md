@@ -69,6 +69,88 @@
 - デモデータ（is_demo=true）は関係者のみ閲覧可能（RLS制限）
 - 大会一覧にはシリーズ配下の大会を表示しない（series_id IS NULLフィルタ）
 
+## セッションメモ（2026-03-17）
+
+### 完了した作業
+
+#### E2Eテスト・バグ修正
+- Playwright E2Eテスト追加（シリーズ一連フロー7ステップ）
+- RLSバグ修正: 主催者がチームのseries_id更新できない問題（031マイグレーション）
+
+#### i18n（国際化）
+- ハードコード日本語350箇所をnext-intl翻訳キーに置換（31ファイル）
+- 翻訳キー569→853（284キー追加、ja/en完全対応）
+- types/のラベルマップ削除→labels名前空間に移行
+
+#### Issue整理
+- 8件新規起票（#32-#39）
+- クローズ: #32(テストスクリプト更新)、#21(ローディング改善)、#20(チームアバター)、#19(プロフィール編集)、#37(マイページアクション)
+- #16(チーム戦ブラケット)を再オープン→リーグシステム設計に統合
+
+#### マイページアクション実装
+- 個人戦/チーム戦の「次の試合」「結果報告待ち」をアクションカードに表示
+
+#### リーグシステム Phase 1（DBマイグレーション）
+- テーブル物理リネーム: series→leagues, tournaments→rounds, tournament_blocks→round_blocks, series_points→league_points
+- カラムリネーム: series_id→league_id, tournament_id→round_id, series_config→league_config等
+- 新規カラム: rounds(is_finals, source_round_id等), matches(is_forfeit, is_bye)
+- RLSポリシー71件、ビュー、関数、トリガー全更新
+- 設計書: docs/plan-league-system.md（92点レビュー済み）
+
+### 作業中
+
+#### リーグシステム Phase 2（アプリ層リネーム）
+- **git stash** に保存: `WIP: Phase 2 リーグリネーム（ビルド未通過）`
+- Codexで8ステップのリネームスクリプト実行済み（Step 1-7完了、Step 8ビルド検証で失敗）
+- 残問題:
+  1. `src/types/league.ts` が旧テーブル名 `Database['public']['Tables']['series']` を参照（database.ts再生成で'leagues'に変わったため不整合）
+  2. `parseSeriesConfig` → `parseLeagueConfig` のリネーム漏れ（tournament-config.tsは手動修正済み）
+  3. leagues/配下のページファイルの一部importが旧パスのまま
+- 次回の手順:
+  1. `git stash pop` でWIP復元
+  2. `src/types/league.ts` の `Database['public']['Tables']['series']` → `Database['public']['Tables']['leagues']` に修正
+  3. 残りのimport/クエリ漏れを `grep` で全数確認→修正
+  4. `pnpm build` が通るまで繰り返し修正
+  5. ビルド通過後コミット
+
+### 判断・決定事項
+- 「シリーズ」→「リーグ」、「大会」→「ラウンド」に全面改名
+- テーブル名は物理リネーム（本番未運用のため破壊的変更OK）
+- 各ラウンドの形式（総当たり/スイス/エリミ）は運営が自由に設定可能
+- Ban&Pick/オーダー変更はDiscord管理、Katorinは結果記録のみ
+- Codex CLIでコーディング委譲する運用フロー構築（scripts/codex-league-rename.sh）
+
+### 未解決の問題
+- Phase 2のビルドエラー（stashに保存中）
+- 通知機能（#13）: ブラウザ通知のみ or メールまでやるか未決定
+- 単発大会のスコープ（#34）: 依頼者相談待ち
+
+### Codex失敗の原因分析と改善策
+
+#### 原因
+Phase 2を8つの独立した `codex exec` に分割したが、順序依存がある作業だった:
+1. **database.ts再生成のタイミング**: どのステップにも含めなかった。Supabaseクエリが新テーブル名を使うのに型定義は旧名のまま→型エラー大量発生
+2. **各ステップが前ステップの結果を見ない**: `codex exec` は毎回新プロセス。Step 4の変更をStep 5は知らない→同じファイルを二重に触って矛盾
+3. **置換の順序問題**: re-exportファイルがあるのにimport側がどちらを使うか統一されなかった
+
+#### 改善策（次回のPhase 2やり直し方針）
+```
+❌ 8つの独立した codex exec
+✅ sed/perl一括置換 → git mv → codex exec 1回（ビルド修正のみ）
+```
+具体手順:
+1. `git stash drop` でWIPを破棄（中途半端な状態なので）
+2. `supabase gen types typescript --local > src/types/database.ts` で型再生成
+3. `sed -i` でテーブル名・カラム名・importパスを全ファイル一括置換（Codex不要、bashの方が確実）
+4. `git mv` でファイル/ディレクトリの物理移動
+5. Codexには「pnpm buildが通るまでビルドエラーを全て修正して」だけ投げる
+
+### 次回の優先事項
+1. **Phase 2 やり直し**: 上記改善策でsed一括置換→git mv→Codexビルド修正
+2. **Phase 3-7**: ラウンド形式柔軟化、チーム戦ブラケット、決勝進出等
+3. E2Eテスト・テストスクリプトのリーグ対応更新
+4. Vercelデプロイ確認
+
 ## セッションメモ（2026-03-16）
 
 ### 完了した作業
