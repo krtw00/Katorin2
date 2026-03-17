@@ -52,7 +52,7 @@ export async function deleteTestUsers(emailPattern: string) {
 
 /** テストデータのクリーンアップ */
 export async function cleanupTestData(prefix: string) {
-  await adminClient.from('series').delete().ilike('title', `${prefix}%`)
-  await adminClient.from('tournaments').delete().ilike('title', `${prefix}%`)
+  await adminClient.from('leagues').delete().ilike('title', `${prefix}%`)
+  await adminClient.from('rounds').delete().ilike('title', `${prefix}%`)
   await adminClient.from('teams').delete().ilike('name', `${prefix}%`)
 }

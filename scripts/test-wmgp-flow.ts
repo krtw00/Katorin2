@@ -81,10 +81,10 @@ async function main() {
 
   // ---- Step 2: 大会作成 + ブロック分け ----
   console.log('\n📝 Step 2: WMGP大会作成 (2ブロック)')
-  const { data: tournament } = await supabase.from('tournaments').insert({
+  const { data: tournament } = await supabase.from('rounds').insert({
     title: 'WMGP Season 8 テスト',
     organizer_id: teams[0].memberIds[0],
-    tournament_format: 'round_robin',
+    format: 'round_robin',
     match_format: 'bo3',
     entry_type: 'team',
     max_participants: 64,
@@ -98,11 +98,11 @@ async function main() {
   const tournamentId = tournament!.id
 
   // ブロック作成
-  const { data: blockA } = await supabase.from('tournament_blocks')
-    .insert({ tournament_id: tournamentId, block_name: 'Block A', block_order: 1 })
+  const { data: blockA } = await supabase.from('round_blocks')
+    .insert({ round_id: tournamentId, block_name: 'Block A', block_order: 1 })
     .select().single()
-  const { data: blockB } = await supabase.from('tournament_blocks')
-    .insert({ tournament_id: tournamentId, block_name: 'Block B', block_order: 2 })
+  const { data: blockB } = await supabase.from('round_blocks')
+    .insert({ round_id: tournamentId, block_name: 'Block B', block_order: 2 })
     .select().single()
   assert(!!blockA && !!blockB, '2ブロック作成')
 
@@ -110,7 +110,7 @@ async function main() {
   for (let i = 0; i < 8; i++) {
     const blockId = i < 4 ? blockA!.id : blockB!.id
     await supabase.from('team_entries').insert({
-      tournament_id: tournamentId, team_id: teams[i].id, block_id: blockId,
+      round_id: tournamentId, team_id: teams[i].id, block_id: blockId,
     })
   }
   console.log(`  Block A: ${teamNames.slice(0, 4).join(', ')}`)
@@ -127,7 +127,7 @@ async function main() {
   assert(pairingsB.length === 6, `Block B: ${pairingsB.length}/6 試合`)
 
   // ---- Step 4: 各試合実施 ----
-  await supabase.from('tournaments').update({ status: 'in_progress' }).eq('id', tournamentId)
+  await supabase.from('rounds').update({ status: 'in_progress' }).eq('id', tournamentId)
 
   // 累計スコア
   const scores = new Map<string, {
@@ -149,7 +149,7 @@ async function main() {
 
     // match作成
     const { data: match } = await supabase.from('matches').insert({
-      tournament_id: tournamentId,
+      round_id: tournamentId,
       round: pairing.week,
       match_number: matchNumber,
       team1_id: pairing.team1_id,
@@ -178,7 +178,7 @@ async function main() {
       if (t1RoundWins >= 2 || t2RoundWins >= 2) break
 
       const { data: warRound } = await supabase.from('war_rounds').insert({
-        match_id: match!.id, round_number: roundNum, status: 'in_progress',
+        match_id: match!.id, round_order: roundNum, status: 'in_progress',
         started_at: new Date().toISOString(),
       }).select().single()
 
@@ -299,9 +299,9 @@ async function main() {
   // ---- Step 6: block_standings ビュー確認 ----
   console.log('\n📝 block_standings ビュー確認')
   const { data: standings } = await supabase
-    .from('block_standings')
+    .from('round_block_standings')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .order('rank', { ascending: true })
 
   assert(standings?.length === 8, `ランキング: ${standings?.length}/8チーム`)
@@ -335,7 +335,7 @@ async function main() {
   assert((count || 0) > 0, `individual_matches にデータあり (${count}件)`)
 
   // 完了
-  await supabase.from('tournaments').update({ status: 'completed' }).eq('id', tournamentId)
+  await supabase.from('rounds').update({ status: 'completed' }).eq('id', tournamentId)
 
   console.log(`\n${'='.repeat(60)}`)
   console.log(`📊 結果: ${pass} passed, ${fail} failed`)
