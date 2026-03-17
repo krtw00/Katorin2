@@ -148,11 +148,11 @@ async function main() {
   assert(roundCount === 3, `スイスドロー: ${roundCount}ラウンド`)
 
   const { data: tournament } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .insert({
       title: 'ロケットカップ形式テスト大会',
       organizer_id: teams[0].memberIds[0],
-      tournament_format: 'swiss',
+      format: 'swiss',
       match_format: 'bo1',
       entry_type: 'team',
       max_participants: 16,
@@ -170,7 +170,7 @@ async function main() {
   console.log('\n📝 Step 3: 8チームエントリー')
   for (const team of teams) {
     const { error } = await supabase.from('team_entries').insert({
-      tournament_id: tournamentId,
+      round_id: tournamentId,
       team_id: team.id,
     })
     assert(!error, `${team.name} エントリー成功`)
@@ -207,7 +207,7 @@ async function main() {
       console.log(`  ${t1.name} vs ${t2.name}`)
 
       const { data: match } = await supabase.from('matches').insert({
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round,
         match_number: i + 1,
         team1_id: p.team1_id,
@@ -301,8 +301,8 @@ async function main() {
 
       // swiss_standings に記録
       await supabase.from('swiss_standings').insert([
-        { tournament_id: tournamentId, team_id: p.team1_id, round, team_points: t1Wins >= 5 ? 1 : 0, win_points: t1Wins },
-        { tournament_id: tournamentId, team_id: p.team2_id, round, team_points: t2Wins >= 5 ? 1 : 0, win_points: t2Wins },
+        { round_id: tournamentId, team_id: p.team1_id, round, team_points: t1Wins >= 5 ? 1 : 0, win_points: t1Wins },
+        { round_id: tournamentId, team_id: p.team2_id, round, team_points: t2Wins >= 5 ? 1 : 0, win_points: t2Wins },
       ])
     }
 
@@ -338,9 +338,9 @@ async function main() {
   // ---- Step 10: swiss_rankings ビュー確認 ----
   console.log('\n📝 swiss_rankings ビュー確認')
   const { data: rankings } = await supabase
-    .from('swiss_rankings')
+    .from('round_swiss_rankings')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .order('rank', { ascending: true })
 
   assert(rankings?.length === 8, `ランキング: ${rankings?.length}/8チーム`)
@@ -351,7 +351,7 @@ async function main() {
   }
 
   // ---- Step 11: 大会完了 ----
-  await supabase.from('tournaments').update({ status: 'completed' }).eq('id', tournamentId)
+  await supabase.from('rounds').update({ status: 'completed' }).eq('id', tournamentId)
 
   console.log(`\n${'='.repeat(60)}`)
   console.log(`📊 結果: ${pass} passed, ${fail} failed`)

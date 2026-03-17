@@ -80,7 +80,7 @@ test.describe.serial('シリーズ一連フロー', () => {
   test('Step 1: 主催者がシリーズを作成', async ({ page }) => {
     await loginAs(page, ORGANIZER_EMAIL)
 
-    await page.goto('/ja/series/new')
+    await page.goto('/ja/leagues/new')
     await page.waitForLoadState('networkidle')
 
     // 基本情報入力
@@ -90,7 +90,7 @@ test.describe.serial('シリーズ一連フロー', () => {
     // 「シリーズを作成」ボタンをクリック
     await page.click('button:has-text("シリーズを作成")')
 
-    // router.pushが /series/UUID にリダイレクト（localeプレフィックスなし→404の可能性）
+    // router.pushが /leagues/UUID にリダイレクト（localeプレフィックスなし→404の可能性）
     // URLにシリーズIDが含まれるまで待機
     await page.waitForURL(/\/series\/[a-f0-9-]+/, { timeout: 30_000 })
 
@@ -101,14 +101,14 @@ test.describe.serial('シリーズ一連フロー', () => {
     seriesId = match![1]
 
     // localeプレフィックス付きで再アクセス（ローカルdev時の既知問題回避）
-    await page.goto(`/ja/series/${seriesId}`, { waitUntil: 'networkidle' })
+    await page.goto(`/ja/leagues/${seriesId}`, { waitUntil: 'networkidle' })
     await expect(page.locator('h1')).toContainText(`${PREFIX}テストシリーズ`, { timeout: 10_000 })
   })
 
   test('Step 2: リーダー1がエントリー申請', async ({ page }) => {
     await loginAs(page, LEADER1_EMAIL)
 
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     // 「チーム」タブをクリック
@@ -133,7 +133,7 @@ test.describe.serial('シリーズ一連フロー', () => {
   test('Step 3: リーダー2もエントリー申請', async ({ page }) => {
     await loginAs(page, LEADER2_EMAIL)
 
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     await page.click('button[role="tab"]:has-text("チーム")')
@@ -150,7 +150,7 @@ test.describe.serial('シリーズ一連フロー', () => {
   test('Step 4: 主催者が申請を承認', async ({ page }) => {
     await loginAs(page, ORGANIZER_EMAIL)
 
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     // 「申請管理」タブ
@@ -182,10 +182,10 @@ test.describe.serial('シリーズ一連フロー', () => {
     await page.click('button[role="tab"]:has-text("申請管理")')
     await expect(page.locator('text=承認').first()).toBeVisible({ timeout: 5_000 })
 
-    // RLSの制約でUI経由のteams.series_id更新が失敗するため、
+    // RLSの制約でUI経由のteams.league_id更新が失敗するため、
     // admin APIで確実にチームをシリーズに紐づける
-    await adminClient.from('teams').update({ series_id: seriesId }).eq('id', team1Id)
-    await adminClient.from('teams').update({ series_id: seriesId }).eq('id', team2Id)
+    await adminClient.from('teams').update({ league_id: seriesId }).eq('id', team1Id)
+    await adminClient.from('teams').update({ league_id: seriesId }).eq('id', team2Id)
 
     // チームタブで2チーム確認
     await page.reload({ waitUntil: 'networkidle' })
@@ -197,21 +197,21 @@ test.describe.serial('シリーズ一連フロー', () => {
   test('Step 5: ブロック作成・振り分け（API経由）+ 大会・試合をシード', async ({
     page,
   }) => {
-    // 大会作成（シリーズ配下） - ブロックはtournament_idが必須なので先に大会を作る
+    // 大会作成（シリーズ配下） - ブロックはround_idが必須なので先に大会を作る
     const { data: tournament, error: tError } = await adminClient
-      .from('tournaments')
+      .from('rounds')
       .insert({
         title: `${PREFIX}Week 1`,
         organizer_id: organizerId,
-        series_id: seriesId,
-        tournament_format: 'round_robin',
+        league_id: seriesId,
+        format: 'round_robin',
         match_format: 'bo3',
         entry_type: 'team',
         max_participants: 16,
         visibility: 'public',
         status: 'in_progress',
         entry_mode: 'open',
-        round_number: 1,
+        round_order: 1,
       })
       .select()
       .single()
@@ -221,10 +221,10 @@ test.describe.serial('シリーズ一連フロー', () => {
 
     // ブロック作成
     const { data: blockA, error: blockError } = await adminClient
-      .from('tournament_blocks')
+      .from('round_blocks')
       .insert({
-        tournament_id: tournamentId,
-        series_id: seriesId,
+        round_id: tournamentId,
+        league_id: seriesId,
         block_name: 'Block A',
         block_order: 1,
       })
@@ -235,15 +235,15 @@ test.describe.serial('シリーズ一連フロー', () => {
 
     // チームエントリー + ブロック割り当て
     await adminClient.from('team_entries').insert([
-      { tournament_id: tournamentId, team_id: team1Id, block_id: blockA!.id },
-      { tournament_id: tournamentId, team_id: team2Id, block_id: blockA!.id },
+      { round_id: tournamentId, team_id: team1Id, block_id: blockA!.id },
+      { round_id: tournamentId, team_id: team2Id, block_id: blockA!.id },
     ])
 
     // 対戦(War)作成
     const { data: match } = await adminClient
       .from('matches')
       .insert({
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round: 1,
         match_number: 1,
         team1_id: team1Id,
@@ -259,7 +259,7 @@ test.describe.serial('シリーズ一連フロー', () => {
       .from('war_rounds')
       .insert({
         match_id: match!.id,
-        round_number: 1,
+        round_order: 1,
         status: 'completed',
         team1_match_wins: 2,
         team2_match_wins: 1,
@@ -316,15 +316,15 @@ test.describe.serial('シリーズ一連フロー', () => {
 
     // 順位表ビューの確認（APIで）
     const { data: standings } = await adminClient
-      .from('block_standings')
+      .from('round_block_standings')
       .select('*')
-      .eq('tournament_id', tournamentId)
+      .eq('round_id', tournamentId)
 
     expect(standings?.length).toBe(2)
 
     // シリーズ詳細ページで順位表を確認
     await loginAs(page, ORGANIZER_EMAIL)
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     // 順位表タブ（デフォルト表示）
@@ -345,7 +345,7 @@ test.describe.serial('シリーズ一連フロー', () => {
 
   test('Step 6: チームタブでブロック振り分けUIが表示', async ({ page }) => {
     await loginAs(page, ORGANIZER_EMAIL)
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     await page.click('button[role="tab"]:has-text("チーム")')
@@ -362,7 +362,7 @@ test.describe.serial('シリーズ一連フロー', () => {
 
   test('Step 7: メタ分析リンクが表示', async ({ page }) => {
     await loginAs(page, ORGANIZER_EMAIL)
-    await page.goto(`/ja/series/${seriesId}`)
+    await page.goto(`/ja/leagues/${seriesId}`)
     await page.waitForLoadState('networkidle')
 
     await page.click('button[role="tab"]:has-text("メタ分析")')

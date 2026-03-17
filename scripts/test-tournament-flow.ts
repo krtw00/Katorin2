@@ -37,7 +37,7 @@ function generateSingleEliminationBracket(
 ) {
   type MatchInsert = {
     id: string
-    tournament_id: string
+    round_id: string
     round: number
     match_number: number
     player1_id: string | null
@@ -120,7 +120,7 @@ function generateSingleEliminationBracket(
 
       matches.push({
         id: generatedMatchId,
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round,
         match_number: matchNumber,
         player1_id: matchData.player1 || null,
@@ -201,8 +201,8 @@ async function cleanup() {
   await supabase.from('matches').delete().neq('id', '')
   await supabase.from('participants').delete().neq('id', '')
   await supabase.from('tournament_invites').delete().neq('id', '')
-  await supabase.from('series_points').delete().neq('id', '')
-  await supabase.from('tournaments').delete().neq('id', '')
+  await supabase.from('league_points').delete().neq('id', '')
+  await supabase.from('rounds').delete().neq('id', '')
   await supabase.from('notifications').delete().neq('id', '')
 
   // Delete test users (profiles are cascade-deleted via trigger or FK)
@@ -241,12 +241,12 @@ async function testFullTournament(): Promise<string[]> {
   // 2. 大会作成（主催者: Alice）
   console.log('\n📝 Step 2: 大会作成')
   const { data: tournament, error: createError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .insert({
       title: 'テスト大会: 8人シングルエリミ',
       description: '自動テスト用大会',
       organizer_id: userIds[0],
-      tournament_format: 'single_elimination',
+      format: 'single_elimination',
       match_format: 'bo3',
       max_participants: 8,
       visibility: 'public',
@@ -263,7 +263,7 @@ async function testFullTournament(): Promise<string[]> {
   // 3. ステータス遷移: draft → recruiting
   console.log('\n📝 Step 3: ステータス遷移 draft → recruiting')
   const { error: recruitError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .update({ status: 'recruiting' })
     .eq('id', tournamentId)
   assert(!recruitError, `draft → recruiting 成功`)
@@ -274,7 +274,7 @@ async function testFullTournament(): Promise<string[]> {
     const { error: entryError } = await supabase
       .from('participants')
       .insert({
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         user_id: userIds[i],
         display_name: names[i],
       })
@@ -285,7 +285,7 @@ async function testFullTournament(): Promise<string[]> {
   const { data: participants } = await supabase
     .from('participants')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .order('created_at', { ascending: true })
   assert(participants?.length === 8, `参加者数: ${participants?.length}/8`)
 
@@ -317,7 +317,7 @@ async function testFullTournament(): Promise<string[]> {
   assert(!insertMatchError, `マッチデータ挿入成功`)
 
   // ステータス: in_progress
-  await supabase.from('tournaments').update({ status: 'in_progress' }).eq('id', tournamentId)
+  await supabase.from('rounds').update({ status: 'in_progress' }).eq('id', tournamentId)
 
   // 6. 1回戦結果入力
   console.log('\n📝 Step 6: 1回戦結果入力')
@@ -361,7 +361,7 @@ async function testFullTournament(): Promise<string[]> {
   const { data: round2Matches } = await supabase
     .from('matches')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .eq('round', 2)
     .order('match_number', { ascending: true })
 
@@ -404,7 +404,7 @@ async function testFullTournament(): Promise<string[]> {
   const { data: finalMatches } = await supabase
     .from('matches')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .eq('round', 3)
 
   const finalMatch = finalMatches![0]
@@ -421,7 +421,7 @@ async function testFullTournament(): Promise<string[]> {
   // 9. 大会完了
   console.log('\n📝 Step 9: 大会完了')
   const { error: completeError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .update({ status: 'completed' })
     .eq('id', tournamentId)
   assert(!completeError, `ステータス: completed`)
@@ -431,12 +431,12 @@ async function testFullTournament(): Promise<string[]> {
   const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .eq('status', 'completed')
   assert(allMatches?.length === 7, `全試合完了: ${allMatches?.length}/7`)
 
   const { data: finalTournament } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .select('*')
     .eq('id', tournamentId)
     .single()
@@ -458,12 +458,12 @@ async function testByeTournament(sharedUserIds: string[]) {
   // 大会作成
   console.log('\n📝 Step 1: 5人大会作成')
   const { data: tournament, error: createError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .insert({
       title: 'テスト大会: 5人BYEテスト',
       description: 'BYE自動進出テスト',
       organizer_id: userIds[0],
-      tournament_format: 'single_elimination',
+      format: 'single_elimination',
       match_format: 'bo3',
       max_participants: 8,
       visibility: 'public',
@@ -481,7 +481,7 @@ async function testByeTournament(sharedUserIds: string[]) {
   // エントリー
   for (let i = 0; i < 5; i++) {
     await supabase.from('participants').insert({
-      tournament_id: tournamentId,
+      round_id: tournamentId,
       user_id: userIds[i],
       display_name: names[i],
     })
@@ -490,7 +490,7 @@ async function testByeTournament(sharedUserIds: string[]) {
   const { data: participants } = await supabase
     .from('participants')
     .select('*')
-    .eq('tournament_id', tournamentId)
+    .eq('round_id', tournamentId)
     .order('created_at', { ascending: true })
 
   // ブラケット生成
@@ -539,7 +539,7 @@ async function testByeTournament(sharedUserIds: string[]) {
   const { error: insertError } = await supabase.from('matches').insert(bracketMatches)
   assert(!insertError, `マッチデータ挿入成功`)
 
-  await supabase.from('tournaments').update({ status: 'in_progress' }).eq('id', tournamentId)
+  await supabase.from('rounds').update({ status: 'in_progress' }).eq('id', tournamentId)
 
   // 2回戦の試合確認
   const round2 = bracketMatches.filter((m) => m.round === 2)
@@ -567,12 +567,12 @@ async function testInviteOnlyTournament(sharedUserIds: string[]) {
   // 招待制大会作成
   console.log('\n📝 Step 1: 招待制大会作成')
   const { data: tournament, error: createError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .insert({
       title: 'テスト大会: 招待制',
       description: '招待制テスト',
       organizer_id: userIds[0],
-      tournament_format: 'single_elimination',
+      format: 'single_elimination',
       match_format: 'bo1',
       max_participants: 8,
       visibility: 'public',
@@ -589,7 +589,7 @@ async function testInviteOnlyTournament(sharedUserIds: string[]) {
   const { error: inviteError } = await supabase
     .from('tournament_invites')
     .insert({
-      tournament_id: tournament!.id,
+      round_id: tournament!.id,
       user_id: userIds[1],
       invited_by: userIds[0],
     })
@@ -599,7 +599,7 @@ async function testInviteOnlyTournament(sharedUserIds: string[]) {
   const { data: invites } = await supabase
     .from('tournament_invites')
     .select('*')
-    .eq('tournament_id', tournament!.id)
+    .eq('round_id', tournament!.id)
   assert(invites?.length === 1, `招待数: ${invites?.length}/1`)
   assert(invites?.[0].status === 'pending', `招待ステータス: pending`)
 
@@ -627,11 +627,11 @@ async function testCustomFieldEntry(sharedUserIds: string[]) {
   ]
 
   const { data: tournament } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .insert({
       title: 'テスト大会: カスタムフィールド',
       organizer_id: userIds[0],
-      tournament_format: 'single_elimination',
+      format: 'single_elimination',
       match_format: 'bo3',
       max_participants: 8,
       visibility: 'public',
@@ -649,7 +649,7 @@ async function testCustomFieldEntry(sharedUserIds: string[]) {
   const { error: entryError } = await supabase
     .from('participants')
     .insert({
-      tournament_id: tournament!.id,
+      round_id: tournament!.id,
       user_id: userIds[1],
       display_name: 'TestPlayer',
       custom_data: { deck_name: '天威勇者', consent: '同意する' },
@@ -660,7 +660,7 @@ async function testCustomFieldEntry(sharedUserIds: string[]) {
   const { data: participant } = await supabase
     .from('participants')
     .select('*')
-    .eq('tournament_id', tournament!.id)
+    .eq('round_id', tournament!.id)
     .eq('user_id', userIds[1])
     .single()
   const customData = participant?.custom_data as Record<string, string> | null
