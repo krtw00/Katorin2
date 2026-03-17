@@ -30,7 +30,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 大会を作成
-INSERT INTO tournaments (id, title, description, organizer_id, visibility, status, tournament_format, match_format, max_participants, entry_start_at, entry_deadline, start_at, current_round, custom_fields)
+INSERT INTO rounds (id, title, description, organizer_id, visibility, status, format, match_format, max_participants, entry_start_at, entry_deadline, start_at, current_round, custom_fields)
 VALUES
   -- 進行中の大会（8人トーナメント）
   ('aaaa0001-0001-0001-0001-000000000001',
@@ -64,7 +64,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 進行中大会の参加者（8人）
-INSERT INTO participants (id, tournament_id, user_id, entry_number, seed, display_name, custom_data)
+INSERT INTO participants (id, round_id, user_id, entry_number, seed, display_name, custom_data)
 VALUES
   ('bbbb0001-0001-0001-0001-000000000001', 'aaaa0001-0001-0001-0001-000000000001', '11111111-1111-1111-1111-111111111111', 1, 1, '田中太郎', '{"deck_name": "青眼"}'),
   ('bbbb0002-0002-0002-0002-000000000002', 'aaaa0001-0001-0001-0001-000000000001', '22222222-2222-2222-2222-222222222222', 2, 2, '山田花子', '{"deck_name": "ラビュリンス"}'),
@@ -77,7 +77,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 募集中大会の参加者（4人エントリー済み）
-INSERT INTO participants (id, tournament_id, user_id, entry_number, display_name, custom_data)
+INSERT INTO participants (id, round_id, user_id, entry_number, display_name, custom_data)
 VALUES
   ('bbbb0011-0011-0011-0011-000000000011', 'aaaa0002-0002-0002-0002-000000000002', '33333333-3333-3333-3333-333333333333', 1, '鈴木一郎', '{"deck_name": "烙印ビーステッド"}'),
   ('bbbb0012-0012-0012-0012-000000000012', 'aaaa0002-0002-0002-0002-000000000002', '44444444-4444-4444-4444-444444444444', 2, '佐藤健', '{"deck_name": "R-ACE"}'),
@@ -88,12 +88,12 @@ ON CONFLICT (id) DO NOTHING;
 -- 8人シングルエリミネーションのトーナメント表
 
 -- 決勝戦 (Round 3)
-INSERT INTO matches (id, tournament_id, round, match_number, status)
+INSERT INTO matches (id, round_id, round, match_number, status)
 VALUES ('cccc0007-0007-0007-0007-000000000007', 'aaaa0001-0001-0001-0001-000000000001', 3, 1, 'pending')
 ON CONFLICT (id) DO NOTHING;
 
 -- 準決勝 (Round 2)
-INSERT INTO matches (id, tournament_id, round, match_number, player1_id, player2_id, status, next_match_id, next_match_slot)
+INSERT INTO matches (id, round_id, round, match_number, player1_id, player2_id, status, next_match_id, next_match_slot)
 VALUES
   ('cccc0005-0005-0005-0005-000000000005', 'aaaa0001-0001-0001-0001-000000000001', 2, 1,
    '11111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333',
@@ -104,7 +104,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 1回戦 (Round 1) - 全て完了
-INSERT INTO matches (id, tournament_id, round, match_number, player1_id, player2_id, player1_score, player2_score, winner_id, status, next_match_id, next_match_slot, completed_at)
+INSERT INTO matches (id, round_id, round, match_number, player1_id, player2_id, player1_score, player2_score, winner_id, status, next_match_id, next_match_slot, completed_at)
 VALUES
   ('cccc0001-0001-0001-0001-000000000001', 'aaaa0001-0001-0001-0001-000000000001', 1, 1,
    '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222',
