@@ -1085,6 +1085,37 @@
       "wins": "Wins",
       "losses": "Losses",
       "pointsUnit": "pts"
+    },
+    "finals": {
+      "promote": "Confirm finalists",
+      "promoting": "Confirming...",
+      "confirmTitle": "Confirm promoted teams",
+      "confirmDescription": "{count} teams will advance to finals",
+      "promoted": "Promoted teams registered",
+      "noQualified": "No teams met the qualification criteria",
+      "sourceNotCompleted": "Source round is not completed"
+    },
+    "forfeit": {
+      "mark": "Mark as forfeit",
+      "confirm": "Do you want to mark this match as forfeit?",
+      "marked": "Forfeit"
+    },
+    "bye": {
+      "label": "Bye",
+      "auto": "Auto BYE"
+    },
+    "tiebreaker": {
+      "title": "Tiebreaker settings",
+      "hint": "Higher items have priority",
+      "options": {
+        "win_points": "Win points",
+        "round_diff": "Round differential",
+        "match_diff": "Match differential",
+        "individual_diff": "Individual match differential",
+        "total_rounds_won": "Total rounds won",
+        "head_to_head": "Head-to-head",
+        "team_points": "Team points"
+      }
     }
   }
 }

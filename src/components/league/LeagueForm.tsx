@@ -13,7 +13,7 @@ import {
   Series,
   LeagueFormData,
 } from '@/types/league'
-import { type LeagueConfig } from '@/lib/schemas/league-config'
+import { TIEBREAKER_OPTIONS, type LeagueConfig } from '@/lib/schemas/league-config'
 import { uploadTournamentCover, isUploadError } from '@/lib/supabase/storage'
 import { useTranslations } from 'next-intl'
 
@@ -25,6 +25,7 @@ type Props = {
 
 export function LeagueForm({ mode, initialData, onSuccess }: Props) {
   const t = useTranslations('leagues.form')
+  const tLeague = useTranslations('leagues')
   const router = useRouter()
   const supabase = createClient()
 
@@ -54,6 +55,9 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
     banPickEnabled: initialConfig?.banPickEnabled || false,
     duplicateThemeAllowed: initialConfig?.duplicateThemeAllowed ?? true,
     winPoints: initialConfig?.scoring?.winPoints || 3,
+    tiebreakers: ((initialConfig?.scoring?.tiebreakers || []) as string[]).filter((value): value is (typeof TIEBREAKER_OPTIONS)[number] =>
+      (TIEBREAKER_OPTIONS as readonly string[]).includes(value)
+    ),
   })
 
   const [formData, setFormData] = useState<LeagueFormData>(() => {
@@ -71,6 +75,32 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
 
   const updateFormData = (field: keyof LeagueFormData, value: LeagueFormData[keyof LeagueFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const addTiebreaker = (option: (typeof TIEBREAKER_OPTIONS)[number]) => {
+    setCustomConfig((prev) => {
+      if (prev.tiebreakers.includes(option)) return prev
+      return { ...prev, tiebreakers: [...prev.tiebreakers, option] }
+    })
+  }
+
+  const removeTiebreaker = (index: number) => {
+    setCustomConfig((prev) => ({
+      ...prev,
+      tiebreakers: prev.tiebreakers.filter((_, i) => i !== index),
+    }))
+  }
+
+  const moveTiebreaker = (index: number, direction: -1 | 1) => {
+    setCustomConfig((prev) => {
+      const targetIndex = index + direction
+      if (targetIndex < 0 || targetIndex >= prev.tiebreakers.length) return prev
+      const next = [...prev.tiebreakers]
+      const current = next[index]
+      next[index] = next[targetIndex]
+      next[targetIndex] = current
+      return { ...prev, tiebreakers: next }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent, asDraft = false) => {
@@ -101,7 +131,7 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
         roundsToWin: customConfig.roundsToWin,
         banPickEnabled: customConfig.banPickEnabled,
         duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
-        scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: [] },
+        scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: customConfig.tiebreakers },
       }
 
       // Webhook URL validation
@@ -412,6 +442,80 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
                       onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))}
                       className="max-w-[120px]" />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* タイブレーカー */}
+              <Card className={rulesDisabled ? 'opacity-60 pointer-events-none' : ''}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{tLeague('tiebreaker.title')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-xs text-muted-foreground">{tLeague('tiebreaker.hint')}</p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {TIEBREAKER_OPTIONS.map((option) => {
+                      const checked = customConfig.tiebreakers.includes(option)
+                      return (
+                        <label key={option} className="flex items-center gap-2 rounded border px-3 py-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                addTiebreaker(option)
+                                return
+                              }
+
+                              const index = customConfig.tiebreakers.indexOf(option)
+                              if (index >= 0) removeTiebreaker(index)
+                            }}
+                          />
+                          <span>{tLeague('tiebreaker.options.' + option)}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+
+                  {customConfig.tiebreakers.length > 0 && (
+                    <div className="space-y-2 rounded border p-3">
+                      {customConfig.tiebreakers.map((option, index) => (
+                        <div key={option + '-' + index} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="min-w-0 truncate">
+                            {index + 1}. {tLeague('tiebreaker.options.' + option)}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => moveTiebreaker(index, -1)}
+                              disabled={index === 0}
+                            >
+                              ↑
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => moveTiebreaker(index, 1)}
+                              disabled={index === customConfig.tiebreakers.length - 1}
+                            >
+                              ↓
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeTiebreaker(index)}
+                              aria-label="remove tiebreaker"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
