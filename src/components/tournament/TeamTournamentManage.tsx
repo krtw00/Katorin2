@@ -251,7 +251,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
                 winner_team_id: byeTeamId,
                 team1_round_wins: 2,
                 team2_round_wins: 0,
-              } as any)
+              })
 
               if (byeInsertError) {
                 setError(byeInsertError.message)
@@ -269,7 +269,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
               team2_id: t2,
               block_id: block.id,
               status: 'pending',
-            } as any)
+            })
 
             if (matchInsertError) {
               setError(matchInsertError.message)
@@ -459,7 +459,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
           team1_id: pairings[i].team1_id,
           team2_id: pairings[i].team2_id,
           status: 'pending',
-        } as any)
+        })
 
         if (pairInsertError) {
           setError(pairInsertError.message)
@@ -479,7 +479,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
           winner_team_id: byeTeamId,
           team1_round_wins: 2,
           team2_round_wins: 0,
-        } as any)
+        })
 
         if (byeInsertError) {
           setError(byeInsertError.message)
