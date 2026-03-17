@@ -59,6 +59,9 @@ type Match = {
   team2_round_wins: number
   status: string
   block_id: string | null
+  is_forfeit: boolean | null
+  is_bye: boolean | null
+  winner_team_id: string | null
   team1: { name: string } | null
   team2: { name: string } | null
 }
@@ -72,6 +75,8 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
   const t = useTranslations('tournament.teamManage')
   const tc = useTranslations('common')
   const tl = useTranslations('labels')
+  const tf = useTranslations('leagues.forfeit')
+  const tb = useTranslations('leagues.bye')
 
   const [entries, setEntries] = useState<TeamEntry[]>([])
   const [blocks, setBlocks] = useState<Block[]>([])
@@ -82,6 +87,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
   const [error, setError] = useState('')
   const [blockCount, setBlockCount] = useState(tournament.block_count || 2)
   const [roundStatus, setRoundStatus] = useState(tournament.status)
+  const [forfeitProcessingId, setForfeitProcessingId] = useState<string | null>(null)
 
   const supabase = createClient()
   const isRoundRobin = tournament.format === 'round_robin'
@@ -227,10 +233,35 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
           for (let i = 0; i < n / 2; i++) {
             const t1 = teams[i]
             const t2 = teams[n - 1 - i]
-            if (t1 === 'BYE' || t2 === 'BYE') continue
+
+            if (t1 === 'BYE' || t2 === 'BYE') {
+              const byeTeamId = t1 === 'BYE' ? t2 : t1
+              if (!byeTeamId || byeTeamId === 'BYE') continue
+
+              matchCounter++
+              const { error: byeInsertError } = await supabase.from('matches').insert({
+                round_id: tournament.id,
+                round: week + 1,
+                match_number: matchCounter,
+                team1_id: byeTeamId,
+                team2_id: null,
+                block_id: block.id,
+                status: 'completed',
+                is_bye: true,
+                winner_team_id: byeTeamId,
+                team1_round_wins: 2,
+                team2_round_wins: 0,
+              } as any)
+
+              if (byeInsertError) {
+                setError(byeInsertError.message)
+                return
+              }
+              continue
+            }
 
             matchCounter++
-            await supabase.from('matches').insert({
+            const { error: matchInsertError } = await supabase.from('matches').insert({
               round_id: tournament.id,
               round: week + 1,
               match_number: matchCounter,
@@ -238,7 +269,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
               team2_id: t2,
               block_id: block.id,
               status: 'pending',
-            })
+            } as any)
+
+            if (matchInsertError) {
+              setError(matchInsertError.message)
+              return
+            }
           }
           const last = teams.pop()
           if (last) {
@@ -307,7 +343,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       // 未完了の試合がないか確認
       const pendingMatches = matches.filter(
-        (m) => m.round === currentRound && m.status !== 'completed' && m.status !== 'bye'
+        (m) => m.round === currentRound && m.status !== 'completed' && m.status !== 'bye' && !m.is_bye
       )
       if (currentRound > 0 && pendingMatches.length > 0) {
         setError(t('pendingMatches', { round: currentRound, count: pendingMatches.length }))
@@ -322,12 +358,18 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       // 過去のペアリングを収集
       const previousPairings = new Set<string>()
+      const previousByeTeams = new Set<string>()
       matches.forEach((m) => {
         if (m.team1_id && m.team2_id) {
           const key = m.team1_id < m.team2_id
             ? `${m.team1_id}:${m.team2_id}`
             : `${m.team2_id}:${m.team1_id}`
           previousPairings.add(key)
+        }
+
+        if (m.is_bye) {
+          const byeTeamId = m.winner_team_id || m.team1_id || m.team2_id
+          if (byeTeamId) previousByeTeams.add(byeTeamId)
         }
       })
 
@@ -347,6 +389,23 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         return b.win_points - a.win_points
       })
 
+      // 奇数チームならBYEチームを選出（前ラウンドBYE経験は優先的に除外）
+      let byeTeamId: string | null = null
+      if (teamStandings.length % 2 === 1) {
+        for (let i = teamStandings.length - 1; i >= 0; i--) {
+          if (!previousByeTeams.has(teamStandings[i].team_id)) {
+            byeTeamId = teamStandings[i].team_id
+            teamStandings.splice(i, 1)
+            break
+          }
+        }
+
+        if (!byeTeamId && teamStandings.length > 0) {
+          byeTeamId = teamStandings[teamStandings.length - 1].team_id
+          teamStandings.pop()
+        }
+      }
+
       // ペアリング
       const pairings: { team1_id: string; team2_id: string }[] = []
       const used = new Set<string>()
@@ -361,31 +420,71 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
         // 上位からペアリング
         for (const team of teamStandings) {
           if (used.has(team.team_id)) continue
+
+          let opponentId: string | null = null
+
           for (const opp of teamStandings) {
             if (opp.team_id === team.team_id || used.has(opp.team_id)) continue
             const key = team.team_id < opp.team_id
               ? `${team.team_id}:${opp.team_id}`
               : `${opp.team_id}:${team.team_id}`
             if (previousPairings.has(key)) continue
-            pairings.push({ team1_id: team.team_id, team2_id: opp.team_id })
-            used.add(team.team_id)
-            used.add(opp.team_id)
+            opponentId = opp.team_id
             break
           }
+
+          if (!opponentId) {
+            for (const opp of teamStandings) {
+              if (opp.team_id === team.team_id || used.has(opp.team_id)) continue
+              opponentId = opp.team_id
+              break
+            }
+          }
+
+          if (!opponentId) continue
+
+          pairings.push({ team1_id: team.team_id, team2_id: opponentId })
+          used.add(team.team_id)
+          used.add(opponentId)
         }
       }
 
       // matches挿入
       const maxMatchNumber = Math.max(...matches.map((m) => m.match_number), 0)
       for (let i = 0; i < pairings.length; i++) {
-        await supabase.from('matches').insert({
+        const { error: pairInsertError } = await supabase.from('matches').insert({
           round_id: tournament.id,
           round: nextRound,
           match_number: maxMatchNumber + i + 1,
           team1_id: pairings[i].team1_id,
           team2_id: pairings[i].team2_id,
           status: 'pending',
-        })
+        } as any)
+
+        if (pairInsertError) {
+          setError(pairInsertError.message)
+          return
+        }
+      }
+
+      if (byeTeamId) {
+        const { error: byeInsertError } = await supabase.from('matches').insert({
+          round_id: tournament.id,
+          round: nextRound,
+          match_number: maxMatchNumber + pairings.length + 1,
+          team1_id: byeTeamId,
+          team2_id: null,
+          status: 'completed',
+          is_bye: true,
+          winner_team_id: byeTeamId,
+          team1_round_wins: 2,
+          team2_round_wins: 0,
+        } as any)
+
+        if (byeInsertError) {
+          setError(byeInsertError.message)
+          return
+        }
       }
 
       await supabase
@@ -402,9 +501,51 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
     }
   }
 
+  const handleMarkForfeit = async (match: Match) => {
+    if (!match.team1_id || !match.team2_id) {
+      setError('Error')
+      return
+    }
+
+    if (!window.confirm(tf('confirm'))) return
+
+    const team1Name = (match.team1 as { name: string } | null)?.name || 'Team 1'
+    const team2Name = (match.team2 as { name: string } | null)?.name || 'Team 2'
+    const team1Wins = window.confirm(`${team1Name} > ${team2Name}?`)
+    const winnerTeamId = team1Wins ? match.team1_id : match.team2_id
+
+    setForfeitProcessingId(match.id)
+    setError('')
+
+    try {
+      const { error: updateError } = await supabase
+        .from('matches')
+        .update({
+          status: 'completed',
+          is_forfeit: true,
+          winner_team_id: winnerTeamId,
+          team1_round_wins: team1Wins ? 2 : 0,
+          team2_round_wins: team1Wins ? 0 : 2,
+        })
+        .eq('id', match.id)
+
+      if (updateError) {
+        setError(updateError.message)
+        return
+      }
+
+      await loadData()
+      onUpdateAction()
+    } catch {
+      setError('Error')
+    } finally {
+      setForfeitProcessingId(null)
+    }
+  }
+
   if (loading) return <p>{tc('loading')}</p>
 
-  const resolvedMatchCount = matches.filter((m) => m.status === 'completed' || m.status === 'bye').length
+  const resolvedMatchCount = matches.filter((m) => m.status === 'completed' || m.status === 'bye' || m.is_bye).length
   const totalMatchCount = matches.length
   const currentRound = Math.max(...matches.map((m) => m.round), 0)
 
@@ -594,28 +735,44 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
             <div className="space-y-2">
               {matches.slice(-10).map((m) => {
                 const t1Name = (m.team1 as { name: string } | null)?.name || 'TBD'
-                const t2Name = (m.team2 as { name: string } | null)?.name || 'TBD'
+                const t2Name = m.is_bye ? tb('auto') : (m.team2 as { name: string } | null)?.name || 'TBD'
+                const isResolved = m.status === 'completed' || m.status === 'bye' || m.is_bye
                 return (
-                  <div key={m.id} className="flex items-center justify-between p-2 border rounded text-sm">
+                  <div key={m.id} className="flex items-center justify-between gap-2 rounded border p-2 text-sm">
                     <span>R{m.round} - {t1Name} vs {t2Name}</span>
                     <div className="flex items-center gap-2">
-                      {m.status === 'completed' && (
+                      {isResolved && (
                         <span className="font-mono">{m.team1_round_wins}-{m.team2_round_wins}</span>
                       )}
-                      <Badge variant={m.status === 'completed' || m.status === 'bye' ? 'secondary' : 'outline'}>
-                        {m.status === 'completed'
-                          ? t('matchCompleted')
-                          : m.status === 'bye'
-                            ? t('matchBye')
+                      <Badge variant={isResolved ? 'secondary' : 'outline'}>
+                        {m.is_bye || m.status === 'bye'
+                          ? tb('label')
+                          : m.status === 'completed'
+                            ? t('matchCompleted')
                             : t('matchPending')}
                       </Badge>
-                      <Link href={`/tournaments/${tournament.id}/wars/${m.id}`}>
-                        <Button variant="ghost" size="sm">{t('matchDetail')}</Button>
-                      </Link>
+                      {m.is_forfeit && <Badge variant="destructive">{tf('marked')}</Badge>}
+                      {!isResolved && !m.is_bye && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleMarkForfeit(m)}
+                          disabled={forfeitProcessingId === m.id}
+                        >
+                          {tf('mark')}
+                        </Button>
+                      )}
+                      {!m.is_bye && (
+                        <Link href={`/tournaments/${tournament.id}/wars/${m.id}`}>
+                          <Button variant="ghost" size="sm">{t('matchDetail')}</Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 )
               })}
+
             </div>
             <div className="mt-4 flex gap-2">
               <Link href={`/tournaments/${tournament.id}/wars`}>

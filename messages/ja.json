@@ -1085,6 +1085,37 @@
       "orderStatus": "オーダー提出状況",
       "notSubmitted": "{count}件未提出",
       "unknown": "不明"
+    },
+    "finals": {
+      "promote": "進出チーム確定",
+      "promoting": "確定中...",
+      "confirmTitle": "決勝進出チーム確認",
+      "confirmDescription": "{count}チームが決勝に進出します",
+      "promoted": "進出チームを登録しました",
+      "noQualified": "進出条件を満たすチームがありません",
+      "sourceNotCompleted": "進出元ラウンドが完了していません"
+    },
+    "forfeit": {
+      "mark": "没収にする",
+      "confirm": "この試合を没収にしますか？",
+      "marked": "没収"
+    },
+    "bye": {
+      "label": "不戦勝",
+      "auto": "自動BYE"
+    },
+    "tiebreaker": {
+      "title": "タイブレーカー設定",
+      "hint": "上位のものが優先されます",
+      "options": {
+        "win_points": "勝点",
+        "round_diff": "ラウンド得失点差",
+        "match_diff": "マッチ得失点差",
+        "individual_diff": "個人マッチ得失点差",
+        "total_rounds_won": "ラウンド総得点",
+        "head_to_head": "直接対決",
+        "team_points": "チームポイント"
+      }
     }
   }
 }

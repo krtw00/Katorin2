@@ -1,10 +1,36 @@
 import { z } from 'zod'
 
+export const TIEBREAKER_OPTIONS = [
+  'win_points',
+  'round_diff',
+  'match_diff',
+  'individual_diff',
+  'total_rounds_won',
+  'head_to_head',
+  'team_points',
+] as const
+
+const byeScoreSchema = z.object({
+  roundWins: z.number().min(0).default(2),
+  roundLosses: z.number().min(0).default(0),
+  matchWins: z.number().min(0).default(0),
+  matchLosses: z.number().min(0).default(0),
+})
+
+const forfeitScoreSchema = z.object({
+  winnerRoundWins: z.number().min(0).default(2),
+  loserRoundWins: z.number().min(0).default(0),
+  winnerMatchWins: z.number().min(0).default(0),
+  loserMatchWins: z.number().min(0).default(0),
+})
+
 const scoringSchema = z.object({
   winPoints: z.number().default(3),
   lossPoints: z.number().default(0),
   teamPointThreshold: z.number().optional(),
   tiebreakers: z.array(z.string()).default([]),
+  byeScore: byeScoreSchema.default({ roundWins: 2, roundLosses: 0, matchWins: 0, matchLosses: 0 }),
+  forfeitScore: forfeitScoreSchema.default({ winnerRoundWins: 2, loserRoundWins: 0, winnerMatchWins: 0, loserMatchWins: 0 }),
 })
 
 const finalsSchema = z.object({
@@ -29,7 +55,13 @@ export const leagueConfigSchema = z.object({
   roundCount: z.number().min(1).optional(),
   matchFormat: z.enum(['bo1', 'bo3', 'bo5']).default('bo3'),
 
-  scoring: scoringSchema.default({ winPoints: 3, lossPoints: 0, tiebreakers: [] }),
+  scoring: scoringSchema.default({
+    winPoints: 3,
+    lossPoints: 0,
+    tiebreakers: [],
+    byeScore: { roundWins: 2, roundLosses: 0, matchWins: 0, matchLosses: 0 },
+    forfeitScore: { winnerRoundWins: 2, loserRoundWins: 0, winnerMatchWins: 0, loserMatchWins: 0 },
+  }),
   finals: finalsSchema.optional(),
 
   memberChangeAllowed: z.boolean().default(false),
@@ -57,12 +89,15 @@ export const ROUND_ROBIN_POINT_BATTLE_CONFIG: LeagueConfig = parseLeagueConfig({
     winPoints: 3,
     lossPoints: 0,
     tiebreakers: [
-      'totalRoundDiff',
-      'roundMatchDiff',
-      'duelDiff',
-      'totalRoundScore',
-      'headToHead',
+      'win_points',
+      'round_diff',
+      'match_diff',
+      'individual_diff',
+      'total_rounds_won',
+      'head_to_head',
     ],
+    byeScore: { roundWins: 2, roundLosses: 0, matchWins: 0, matchLosses: 0 },
+    forfeitScore: { winnerRoundWins: 2, loserRoundWins: 0, winnerMatchWins: 0, loserMatchWins: 0 },
   },
   finals: {
     format: 'single_elimination',
@@ -93,7 +128,9 @@ export const BAN_PICK_SWISS_CONFIG: LeagueConfig = parseLeagueConfig({
     winPoints: 1,
     lossPoints: 0,
     teamPointThreshold: 5,
-    tiebreakers: ['teamPoints', 'winPoints', 'headToHead'],
+    tiebreakers: ['team_points', 'win_points', 'head_to_head'],
+    byeScore: { roundWins: 2, roundLosses: 0, matchWins: 0, matchLosses: 0 },
+    forfeitScore: { winnerRoundWins: 2, loserRoundWins: 0, winnerMatchWins: 0, loserMatchWins: 0 },
   },
   finals: {
     format: 'single_elimination',

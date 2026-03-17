@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ManualPointsConfirm } from '@/components/league/ManualPointsConfirm'
 import { BlockAssignment } from '@/components/league/BlockAssignment'
 import { AddRoundDialog } from '@/components/league/AddRoundDialog'
+import { FinalsPromotionButton } from '@/components/league/FinalsPromotionButton'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -71,6 +72,9 @@ export default async function SeriesDetailPage({ params }: Props) {
   }
 
   const isOrganizer = user?.id === league.organizer_id
+  const sourceRoundStatusMap = new Map(
+    (tournaments || []).map((round) => [round.id, round.status])
+  )
 
   // 第2段: tournaments依存のクエリ + applicationsを並列取得
   const tournamentIds = tournaments?.map((t) => t.id) || []
@@ -395,34 +399,53 @@ export default async function SeriesDetailPage({ params }: Props) {
             <CardContent className="p-2">
               {tournaments && tournaments.length > 0 ? (
                 <div className="divide-y">
-                  {tournaments.map((tournament) => (
-                    <div key={tournament.id} className="flex items-center justify-between gap-3 px-2 py-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center gap-2 flex-wrap">
-                          <Link href={`/tournaments/${tournament.id}`} className="truncate text-sm font-medium hover:underline">
-                            {tournament.title}
-                          </Link>
-                          <StatusIndicator status={tournament.status} showDot showIcon={false} />
-                          <Badge variant="secondary">
-                            {tl('tournamentFormat.' + tournament.format)}
-                          </Badge>
-                          {tournament.is_finals && (
-                            <Badge>{t('detail.finalsBadge')}</Badge>
+                  {tournaments.map((tournament) => {
+                    const sourceRoundStatus = tournament.source_round_id
+                      ? sourceRoundStatusMap.get(tournament.source_round_id)
+                      : undefined
+
+                    return (
+                      <div key={tournament.id} className="flex items-center justify-between gap-3 px-2 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2 flex-wrap">
+                            <Link href={`/tournaments/${tournament.id}`} className="truncate text-sm font-medium hover:underline">
+                              {tournament.title}
+                            </Link>
+                            <StatusIndicator status={tournament.status} showDot showIcon={false} />
+                            <Badge variant="secondary">
+                              {tl('tournamentFormat.' + tournament.format)}
+                            </Badge>
+                            {tournament.is_finals && (
+                              <Badge>{t('detail.finalsBadge')}</Badge>
+                            )}
+                          </div>
+                          {tournament.round_order && (
+                            <p className="text-xs text-muted-foreground">
+                              {tt('roundLabel', { n: tournament.round_order })}
+                            </p>
                           )}
                         </div>
-                        {tournament.round_order && (
-                          <p className="text-xs text-muted-foreground">
-                            {tt('roundLabel', { n: tournament.round_order })}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {isOrganizer && tournament.is_finals && tournament.source_round_id && (
+                            <FinalsPromotionButton
+                              finalsRound={{
+                                id: tournament.id,
+                                source_round_id: tournament.source_round_id,
+                                qualified_per_block: tournament.qualified_per_block,
+                                qualified_total: tournament.qualified_total,
+                                source_round_status: sourceRoundStatus ?? 'draft',
+                              }}
+                            />
+                          )}
+                          <Link href={`/tournaments/${tournament.id}/manage`}>
+                            <Button variant="outline" size="sm">
+                              {t('detail.manage')}
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                      <Link href={`/tournaments/${tournament.id}/manage`}>
-                        <Button variant="outline" size="sm">
-                          {t('detail.manage')}
-                        </Button>
-                      </Link>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
