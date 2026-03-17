@@ -2,15 +2,15 @@ import { Database } from './database'
 
 // Helper types from database
 export type Profile = Database['public']['Tables']['profiles']['Row']
-export type Tournament = Database['public']['Tables']['tournaments']['Row']
+export type Tournament = Database['public']['Tables']['rounds']['Row']
 export type TournamentStatus = Database['public']['Enums']['tournament_status']
 export type TournamentFormat = Database['public']['Enums']['tournament_format']
 export type Participant = Database['public']['Tables']['participants']['Row']
 export type Match = Database['public']['Tables']['matches']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 
-export type TournamentInsert = Database['public']['Tables']['tournaments']['Insert']
-export type TournamentUpdate = Database['public']['Tables']['tournaments']['Update']
+export type TournamentInsert = Database['public']['Tables']['rounds']['Insert']
+export type TournamentUpdate = Database['public']['Tables']['rounds']['Update']
 export type ParticipantInsert = Database['public']['Tables']['participants']['Insert']
 export type MatchInsert = Database['public']['Tables']['matches']['Insert']
 export type MatchUpdate = Database['public']['Tables']['matches']['Update']

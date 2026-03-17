@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { MatchWithPlayers } from '@/types/tournament'
+import { MatchWithPlayers } from '@/types/round'
 import { useRealtimeMatches } from '@/hooks/useRealtimeMatches'
 import { createClient } from '@/lib/supabase/client'
 import { handleError } from '@/lib/errors/handleError'

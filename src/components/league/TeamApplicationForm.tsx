@@ -14,7 +14,7 @@ import {
 import { useTranslations } from 'next-intl'
 
 type Props = {
-  seriesId: string
+  leagueId: string
 }
 
 type MyTeam = {
@@ -24,8 +24,8 @@ type MyTeam = {
   alreadyInSeries: boolean
 }
 
-export function TeamApplicationForm({ seriesId }: Props) {
-  const t = useTranslations('series.application')
+export function TeamApplicationForm({ leagueId }: Props) {
+  const t = useTranslations('leagues.application')
   const [teams, setTeams] = useState<MyTeam[]>([])
   const [selectedTeamId, setSelectedTeamId] = useState('')
   const [message, setMessage] = useState('')
@@ -44,14 +44,14 @@ export function TeamApplicationForm({ seriesId }: Props) {
       // 自分がリーダーのチーム
       const { data: myTeams } = await supabase
         .from('teams')
-        .select('id, name, series_id')
+        .select('id, name, league_id')
         .eq('leader_id', user.id)
 
       // このシリーズへの既存申請
       const { data: applications } = await supabase
         .from('team_applications')
         .select('team_id, status')
-        .eq('series_id', seriesId)
+        .eq('league_id', leagueId)
 
       const appliedTeamIds = new Set((applications || []).map(a => a.team_id))
 
@@ -59,12 +59,12 @@ export function TeamApplicationForm({ seriesId }: Props) {
         id: t.id,
         name: t.name,
         alreadyApplied: appliedTeamIds.has(t.id),
-        alreadyInSeries: t.series_id === seriesId,
+        alreadyInSeries: t.league_id === leagueId,
       })))
       setLoading(false)
     }
     load()
-  }, [seriesId, supabase])
+  }, [leagueId, supabase])
 
   const availableTeams = teams.filter(t => !t.alreadyApplied && !t.alreadyInSeries)
 
@@ -76,7 +76,7 @@ export function TeamApplicationForm({ seriesId }: Props) {
     const { error: insertError } = await supabase
       .from('team_applications')
       .insert({
-        series_id: seriesId,
+        league_id: leagueId,
         team_id: selectedTeamId,
         message: message.trim() || null,
       })

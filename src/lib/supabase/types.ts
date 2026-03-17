@@ -29,7 +29,7 @@ export interface SupabaseArrayResponse<T> {
  * 使用例:
  * ```ts
  * const result = await safeSupabaseSingle<Tournament>(
- *   supabase.from('tournaments').select('*').eq('id', id).single()
+ *   supabase.from('rounds').select('*').eq('id', id).single()
  * )
  * ```
  */
@@ -60,7 +60,7 @@ export async function safeSupabaseSingle<T>(
  * 使用例:
  * ```ts
  * const tournaments = await safeSupabaseArray<Tournament>(
- *   supabase.from('tournaments').select('*')
+ *   supabase.from('rounds').select('*')
  * )
  * ```
  */
@@ -86,7 +86,7 @@ export async function safeSupabaseArray<T>(
  * 使用例:
  * ```ts
  * const tournament = await safeSupabaseMutation<Tournament>(
- *   supabase.from('tournaments').insert(data).select().single()
+ *   supabase.from('rounds').insert(data).select().single()
  * )
  * ```
  */
@@ -113,7 +113,7 @@ export async function safeSupabaseMutation<T>(
  * ```ts
  * const tournament = await withErrorHandling(async () => {
  *   return await safeSupabaseSingle<Tournament>(
- *     supabase.from('tournaments').select('*').eq('id', id).single()
+ *     supabase.from('rounds').select('*').eq('id', id).single()
  *   )
  * })
  * ```
@@ -137,7 +137,7 @@ export async function withErrorHandling<T>(
  * 使用例:
  * ```ts
  * const tournament = await safeSupabaseOptional<Tournament>(
- *   supabase.from('tournaments').select('*').eq('id', id).single()
+ *   supabase.from('rounds').select('*').eq('id', id).single()
  * )
  * // tournament は Tournament | null
  * ```

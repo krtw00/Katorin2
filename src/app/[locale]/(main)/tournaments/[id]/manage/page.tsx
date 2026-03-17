@@ -17,8 +17,8 @@ import { Badge } from '@/components/ui/badge'
 import {
   Tournament,
   ParticipantWithUser,
-} from '@/types/tournament'
-import { Tables, InviteStatus } from '@/types/database'
+} from '@/types/round'
+import { Tables, Enums } from '@/types/database'
 import { generateSingleEliminationBracket, generateDoubleEliminationBracket } from '@/lib/tournament/bracket-generator'
 import { TeamTournamentManage } from '@/components/tournament/TeamTournamentManage'
 
@@ -26,6 +26,7 @@ type Profile = Tables<'profiles'>
 type TournamentInvite = Tables<'tournament_invites'> & {
   user: Profile
 }
+type InviteStatus = Enums<'invite_status'>
 
 type Props = {
   params: Promise<{ id: string }>
@@ -76,7 +77,7 @@ export default function TournamentManagePage({ params }: Props) {
 
       // Load tournament
       const { data: tournamentData, error: tournamentError } = await supabase
-        .from('tournaments')
+        .from('rounds')
         .select('*')
         .eq('id', id)
         .single()
@@ -104,7 +105,7 @@ export default function TournamentManagePage({ params }: Props) {
           *,
           user:profiles(*)
         `)
-        .eq('tournament_id', id)
+        .eq('round_id', id)
         .order('created_at', { ascending: true })
 
       setParticipants((participantsData as ParticipantWithUser[]) || [])
@@ -117,7 +118,7 @@ export default function TournamentManagePage({ params }: Props) {
             *,
             user:profiles!tournament_invites_user_id_fkey(*)
           `)
-          .eq('tournament_id', id)
+          .eq('round_id', id)
           .order('created_at', { ascending: false })
 
         setInvites((invitesData as TournamentInvite[]) || [])
@@ -175,7 +176,7 @@ export default function TournamentManagePage({ params }: Props) {
       const { data: invite, error: insertError } = await supabase
         .from('tournament_invites')
         .insert({
-          tournament_id: tournament.id,
+          round_id: tournament.id,
           user_id: userId,
           invited_by: user.id,
         })
@@ -267,7 +268,7 @@ export default function TournamentManagePage({ params }: Props) {
       }
 
       // Generate bracket based on tournament format
-      const bracketMatches = tournament.tournament_format === 'double_elimination'
+      const bracketMatches = tournament.format === 'double_elimination'
         ? generateDoubleEliminationBracket(tournament.id, eligibleParticipants)
         : generateSingleEliminationBracket(tournament.id, eligibleParticipants)
 
@@ -283,7 +284,7 @@ export default function TournamentManagePage({ params }: Props) {
 
       // Update tournament status
       const { error: updateError } = await supabase
-        .from('tournaments')
+        .from('rounds')
         .update({ status: 'in_progress' })
         .eq('id', tournament.id)
 
@@ -311,7 +312,7 @@ export default function TournamentManagePage({ params }: Props) {
 
     try {
       const { error: deleteError } = await supabase
-        .from('tournaments')
+        .from('rounds')
         .delete()
         .eq('id', tournament.id)
 
@@ -462,7 +463,7 @@ export default function TournamentManagePage({ params }: Props) {
                   onClick={async () => {
                     setError('')
                     const { error: updateError } = await supabase
-                      .from('tournaments')
+                      .from('rounds')
                       .update({ status: 'recruiting' })
                       .eq('id', tournament.id)
                     if (updateError) {
@@ -489,7 +490,7 @@ export default function TournamentManagePage({ params }: Props) {
                       if (!confirm(t('completeConfirm'))) return
                       setError('')
                       const { error: updateError } = await supabase
-                        .from('tournaments')
+                        .from('rounds')
                         .update({ status: 'completed' })
                         .eq('id', tournament.id)
                       if (updateError) {
@@ -515,7 +516,7 @@ export default function TournamentManagePage({ params }: Props) {
               {tournament.status === 'completed' && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">{t('tournamentCompleted')}</p>
-                  {tournament.series_id && (
+                  {tournament.league_id && (
                     <p className="text-sm text-green-600">{t('pointsCalculated')}</p>
                   )}
                 </div>
@@ -704,7 +705,7 @@ export default function TournamentManagePage({ params }: Props) {
             title: tournament.title,
             status: tournament.status,
             entry_type: tournament.entry_type,
-            tournament_format: tournament.tournament_format,
+            format: tournament.format,
             block_count: tournament.block_count ?? null,
             swiss_round_count: tournament.swiss_round_count ?? null,
             rounds_to_win: tournament.rounds_to_win ?? null,
@@ -763,4 +764,3 @@ export default function TournamentManagePage({ params }: Props) {
     </div>
   )
 }
-

@@ -35,8 +35,8 @@ function getRankDisplay(rank: number): string {
   return `${rank}`
 }
 
-export function SeriesRankingTable({ rankings, showDetails = false }: Props) {
-  const t = useTranslations('series.ranking')
+export function LeagueRankingTable({ rankings, showDetails = false }: Props) {
+  const t = useTranslations('leagues.ranking')
 
   if (rankings.length === 0) {
     return (

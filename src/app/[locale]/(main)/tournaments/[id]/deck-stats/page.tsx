@@ -34,23 +34,23 @@ export default async function DeckStatsPage({ params }: Props) {
   const supabase = await createClient()
 
   const { data: tournament, error } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .select(`
       *,
-      series:series(id, title)
+      league:leagues(id, title)
     `)
     .eq('id', id)
     .single()
 
   if (error || !tournament) notFound()
 
-  const seriesInfo = tournament.series as { id: string; title: string } | null
+  const leagueInfo = tournament.league as { id: string; title: string } | null
 
-  // この大会のwar_ordersを取得（matchesを介してtournament_idで絞る）
+  // この大会のwar_ordersを取得（matchesを介してround_idで絞る）
   const { data: matches } = await supabase
     .from('matches')
     .select('id')
-    .eq('tournament_id', id)
+    .eq('round_id', id)
 
   const matchIds = matches?.map(m => m.id) || []
 
@@ -82,18 +82,18 @@ export default async function DeckStatsPage({ params }: Props) {
   // シリーズ全体の累計（シリーズ配下の場合）
   let seriesStats: DeckStat[] = []
   let seriesTotalOrders = 0
-  if (seriesInfo) {
+  if (leagueInfo) {
     const { data: allTournaments } = await supabase
-      .from('tournaments')
+      .from('rounds')
       .select('id')
-      .eq('series_id', seriesInfo.id)
+      .eq('league_id', leagueInfo.id)
 
     const allTournamentIds = allTournaments?.map(t => t.id) || []
     if (allTournamentIds.length > 0) {
       const { data: allMatches } = await supabase
         .from('matches')
         .select('id')
-        .in('tournament_id', allTournamentIds)
+        .in('round_id', allTournamentIds)
 
       const allMatchIds = allMatches?.map(m => m.id) || []
       if (allMatchIds.length > 0) {
@@ -126,11 +126,11 @@ export default async function DeckStatsPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        {seriesInfo ? (
+        {leagueInfo ? (
           <>
-            <Link href="/series" className="hover:text-foreground transition-colors">シリーズ</Link>
+            <Link href="/leagues" className="hover:text-foreground transition-colors">シリーズ</Link>
             <span>/</span>
-            <Link href={`/series/${seriesInfo.id}`} className="hover:text-foreground transition-colors">{seriesInfo.title}</Link>
+            <Link href={`/leagues/${leagueInfo.id}`} className="hover:text-foreground transition-colors">{leagueInfo.title}</Link>
             <span>/</span>
             <Link href={`/tournaments/${id}`} className="hover:text-foreground transition-colors">{tournament.title}</Link>
             <span>/</span>
@@ -215,11 +215,11 @@ export default async function DeckStatsPage({ params }: Props) {
       </Card>
 
       {/* シリーズ累計 */}
-      {seriesInfo && seriesStats.length > 0 && (
+      {leagueInfo && seriesStats.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">シリーズ累計: {seriesInfo.title}</CardTitle>
+              <CardTitle className="text-lg">シリーズ累計: {leagueInfo.title}</CardTitle>
               <Badge variant="outline">{seriesTotalOrders}件</Badge>
             </div>
           </CardHeader>

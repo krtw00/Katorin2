@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from 'react'
 import { TournamentFormData } from './useTournamentFormState'
-import { CustomField } from '@/types/tournament'
+import { CustomField } from '@/types/round'
 import { createValidationError } from '@/lib/errors/handleError'
 
 export interface ValidationError {

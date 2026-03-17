@@ -33,8 +33,8 @@ export async function GET(
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('title, theme_config, tournament_format')
+    .from('rounds')
+    .select('title, theme_config, format')
     .eq('id', tournamentId)
     .single()
 
@@ -46,7 +46,7 @@ export async function GET(
   let blockName = ''
   if (blockId) {
     const { data: block } = await supabase
-      .from('tournament_blocks')
+      .from('round_blocks')
       .select('block_name')
       .eq('id', blockId)
       .single()
@@ -66,16 +66,16 @@ export async function GET(
 
   let standings: Standing[] = []
 
-  if (tournament.tournament_format === 'round_robin') {
-    let query = supabase.from('block_standings').select('*').eq('tournament_id', tournamentId)
+  if (tournament.format === 'round_robin') {
+    let query = supabase.from('round_block_standings').select('*').eq('round_id', tournamentId)
     if (blockId) query = query.eq('block_id', blockId)
     const { data } = await query
     standings = (data || []).sort((a, b) => a.rank - b.rank) as Standing[]
   } else {
     const { data } = await supabase
-      .from('swiss_rankings')
+      .from('round_swiss_rankings')
       .select('*')
-      .eq('tournament_id', tournamentId)
+      .eq('round_id', tournamentId)
     standings = (data || []).sort((a, b) => a.rank - b.rank).map(s => ({
       team_name: s.team_name,
       wins: 0,

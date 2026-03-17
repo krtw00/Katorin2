@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
-import { TournamentWithOrganizer, Profile, TournamentStatus } from '@/types/tournament'
+import { TournamentWithOrganizer, Profile, TournamentStatus } from '@/types/round'
 import { ActionCard, NoActionsCard, ActionType } from '@/components/tournament/ActionCard'
 import {
   TournamentListItem,
@@ -47,11 +47,11 @@ export default async function MyPage() {
 
   // Get tournaments organized by user
   const { data: organizedTournaments } = (await supabase
-    .from('tournaments')
+    .from('rounds')
     .select(
       `
       *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
+      organizer:profiles!rounds_organizer_id_fkey(*)
     `
     )
     .eq('organizer_id', user.id)
@@ -65,9 +65,9 @@ export default async function MyPage() {
     .select(
       `
       *,
-      tournament:tournaments(
+      tournament:rounds(
         *,
-        organizer:profiles!tournaments_organizer_id_fkey(*)
+        organizer:profiles!rounds_organizer_id_fkey(*)
       )
     `
     )
@@ -85,14 +85,14 @@ export default async function MyPage() {
 
   const { data: participantCounts } = (await supabase
     .from('participants')
-    .select('tournament_id')
-    .in('tournament_id', allTournamentIds)) as {
-    data: { tournament_id: string }[] | null
+    .select('round_id')
+    .in('round_id', allTournamentIds)) as {
+    data: { round_id: string }[] | null
   }
 
   const countMap = new Map<string, number>()
   participantCounts?.forEach((p) => {
-    countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
+    countMap.set(p.round_id, (countMap.get(p.round_id) || 0) + 1)
   })
 
   // Get user's team IDs (for team matches)
@@ -111,21 +111,21 @@ export default async function MyPage() {
   const [{ data: individualInProgress }, { data: teamInProgress }, { data: individualPendingReport }, { data: teamPendingReport }] = await Promise.all([
     supabase
       .from('matches')
-      .select('id, match_number, round, tournament_id, player1_id, player2_id, status, tournament:tournaments(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
+      .select('id, match_number, round, round_id, player1_id, player2_id, status, tournament:rounds(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
       .eq('status', 'in_progress')
       .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`),
     // Get in_progress matches (team: user's team is team1/team2)
     userTeamIds.length > 0
       ? supabase
           .from('matches')
-          .select('id, match_number, round, tournament_id, team1_id, team2_id, status, tournament:tournaments(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
+          .select('id, match_number, round, round_id, team1_id, team2_id, status, tournament:rounds(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
           .eq('status', 'in_progress')
           .or(userTeamIds.map(id => `team1_id.eq.${id},team2_id.eq.${id}`).join(','))
       : Promise.resolve({ data: null }),
     // Get completed matches with pending result report (individual)
     supabase
       .from('matches')
-      .select('id, match_number, round, tournament_id, player1_id, player2_id, status, winner_id, report_status, tournament:tournaments(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
+      .select('id, match_number, round, round_id, player1_id, player2_id, status, winner_id, report_status, tournament:rounds(id, title), player1:profiles!matches_player1_id_fkey(display_name), player2:profiles!matches_player2_id_fkey(display_name)')
       .eq('status', 'completed')
       .is('winner_id', null)
       .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`),
@@ -133,7 +133,7 @@ export default async function MyPage() {
     userTeamIds.length > 0
       ? supabase
           .from('matches')
-          .select('id, match_number, round, tournament_id, team1_id, team2_id, status, winner_team_id, report_status, tournament:tournaments(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
+          .select('id, match_number, round, round_id, team1_id, team2_id, status, winner_team_id, report_status, tournament:rounds(id, title), team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
           .eq('status', 'completed')
           .is('winner_team_id', null)
           .or(userTeamIds.map(id => `team1_id.eq.${id},team2_id.eq.${id}`).join(','))

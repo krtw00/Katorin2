@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TournamentForm } from '@/components/tournament/TournamentForm'
-import { Tournament } from '@/types/tournament'
+import { Tournament } from '@/types/round'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -33,7 +33,7 @@ export default function EditTournamentPage({ params }: Props) {
 
       // Fetch tournament
       const { data: tournamentData, error: tournamentError } = await supabase
-        .from('tournaments')
+        .from('rounds')
         .select('*')
         .eq('id', id)
         .single()

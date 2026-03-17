@@ -38,7 +38,7 @@ export async function GET(
   // War(match)データ取得
   const { data: match } = await supabase
     .from('matches')
-    .select('*, tournament:tournaments(*)')
+    .select('*, tournament:rounds(*)')
     .eq('id', matchId)
     .single()
 

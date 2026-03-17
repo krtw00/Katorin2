@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Tournament, CustomField } from '@/types/tournament'
+import { Tournament, CustomField } from '@/types/round'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { uploadEntryImage, isUploadError } from '@/lib/supabase/storage'
@@ -49,7 +49,7 @@ export default function TournamentEntryPage({ params }: Props) {
     const loadTournament = async () => {
       const { id } = await params
       const { data, error } = (await supabase
-        .from('tournaments')
+        .from('rounds')
         .select('*')
         .eq('id', id)
         .single()) as { data: Tournament | null; error: unknown }
@@ -110,7 +110,7 @@ export default function TournamentEntryPage({ params }: Props) {
       const { data: existing } = await supabase
         .from('participants')
         .select('id')
-        .eq('tournament_id', tournament.id)
+        .eq('round_id', tournament.id)
         .eq('user_id', user.id)
         .single()
 
@@ -123,7 +123,7 @@ export default function TournamentEntryPage({ params }: Props) {
       const { count } = await supabase
         .from('participants')
         .select('*', { count: 'exact', head: true })
-        .eq('tournament_id', tournament.id)
+        .eq('round_id', tournament.id)
 
       if (count && count >= tournament.max_participants) {
         setError(t('capacityFull'))
@@ -160,7 +160,7 @@ export default function TournamentEntryPage({ params }: Props) {
       const { error: insertError } = await supabase
         .from('participants')
         .insert({
-          tournament_id: tournament.id,
+          round_id: tournament.id,
           user_id: user.id,
           display_name: displayName.trim(),
           custom_data: finalCustomData,

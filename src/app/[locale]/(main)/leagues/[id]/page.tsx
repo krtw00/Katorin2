@@ -8,18 +8,18 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  SeriesWithOrganizer,
-} from '@/types/series'
-import { TournamentWithOrganizer } from '@/types/tournament'
+  LeagueWithOrganizer,
+} from '@/types/league'
+import { TournamentWithOrganizer } from '@/types/round'
 import { TournamentListItem } from '@/components/tournament/TournamentListItem'
-import { TeamApplicationForm } from '@/components/series/TeamApplicationForm'
-import { ApplicationManage } from '@/components/series/ApplicationManage'
+import { TeamApplicationForm } from '@/components/league/TeamApplicationForm'
+import { ApplicationManage } from '@/components/league/ApplicationManage'
 import { BannerImage } from '@/components/common/BannerImage'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { MetaItem } from '@/components/common/MetaItem'
 import { EmptyState } from '@/components/common/EmptyState'
-import { ManualPointsConfirm } from '@/components/series/ManualPointsConfirm'
-import { BlockAssignment } from '@/components/series/BlockAssignment'
+import { ManualPointsConfirm } from '@/components/league/ManualPointsConfirm'
+import { BlockAssignment } from '@/components/league/BlockAssignment'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -27,80 +27,80 @@ type Props = {
 }
 
 export default async function SeriesDetailPage({ params }: Props) {
-  const t = await getTranslations('series')
+  const t = await getTranslations('leagues')
   const tl = await getTranslations('labels')
   const { id } = await params
   const supabase = await createClient()
 
   // 並列取得: series, tournaments, blocks, teams, user を同時にフェッチ
   const [
-    { data: series, error },
+    { data: league, error },
     { data: tournaments },
     { data: blocks },
     { data: seriesTeams },
     { data: { user } },
   ] = await Promise.all([
     supabase
-      .from('series')
-      .select(`*, organizer:profiles!series_organizer_id_fkey(*)`)
+      .from('leagues')
+      .select(`*, organizer:profiles!leagues_organizer_id_fkey(*)`)
       .eq('id', id)
       .single()
-      .then(r => r as unknown as { data: SeriesWithOrganizer | null; error: unknown }),
+      .then(r => r as unknown as { data: LeagueWithOrganizer | null; error: unknown }),
     supabase
-      .from('tournaments')
-      .select(`*, organizer:profiles!tournaments_organizer_id_fkey(*)`)
-      .eq('series_id', id)
-      .order('round_number', { ascending: true })
+      .from('rounds')
+      .select(`*, organizer:profiles!rounds_organizer_id_fkey(*)`)
+      .eq('league_id', id)
+      .order('round_order', { ascending: true })
       .order('start_at', { ascending: true })
       .then(r => r as unknown as { data: TournamentWithOrganizer[] | null }),
     supabase
-      .from('tournament_blocks')
+      .from('round_blocks')
       .select('*')
-      .eq('series_id', id)
+      .eq('league_id', id)
       .order('block_order', { ascending: true }),
     supabase
       .from('teams')
       .select('id, name, leader_id, avatar_url')
-      .eq('series_id', id),
+      .eq('league_id', id),
     supabase.auth.getUser(),
   ])
 
-  if (error || !series) {
+  if (error || !league) {
     notFound()
   }
 
-  const isOrganizer = user?.id === series.organizer_id
+  const isOrganizer = user?.id === league.organizer_id
 
   // 第2段: tournaments依存のクエリ + applicationsを並列取得
   const tournamentIds = tournaments?.map((t) => t.id) || []
 
-  const [standingsResult, participantCountsResult, applicationsResult, seriesPointsResult, teamEntriesResult] = await Promise.all([
+  const [standingsResult, participantCountsResult, applicationsResult, leaguePointsResult, teamEntriesResult] = await Promise.all([
     // block_standings
     tournamentIds.length > 0
-      ? supabase.from('block_standings').select('*').in('tournament_id', tournamentIds)
+      ? supabase.from('round_block_standings').select('*').in('round_id', tournamentIds)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       : Promise.resolve({ data: [] as any[] }),
     // participant counts
     tournamentIds.length > 0
-      ? supabase.from('participants').select('tournament_id').in('tournament_id', tournamentIds)
+      ? supabase.from('participants').select('round_id').in('round_id', tournamentIds)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .then(r => r as any as { data: { tournament_id: string }[] | null })
-      : Promise.resolve({ data: [] as { tournament_id: string }[] }),
+          .then(r => r as any as { data: { round_id: string }[] | null })
+      : Promise.resolve({ data: [] as { round_id: string }[] }),
     // applications (RLS制限あり)
     user
       ? supabase
           .from('team_applications')
           .select('*, team:teams(id, name, leader_id, leader:profiles!teams_leader_id_fkey(display_name))')
-          .eq('series_id', id)
+          .eq('league_id', id)
           .order('applied_at', { ascending: false })
       : Promise.resolve({ data: null }),
     // series_points (auto-calculated)
     tournamentIds.length > 0
-      ? supabase.from('series_points').select('tournament_id').eq('series_id', id)
-      : Promise.resolve({ data: [] as { tournament_id: string }[] }),
+      ? supabase.from('league_points').select('round_id').eq('league_id', id)
+      : Promise.resolve({ data: [] as { round_id: string }[] }),
     // team_entries のblock_id（ブロック振り分け用）
     tournamentIds.length > 0
-      ? supabase.from('team_entries').select('team_id, block_id').eq('tournament_id', tournamentIds[0])
+      ? supabase.from('team_entries').select('team_id, block_id').eq('round_id', tournamentIds[0])
       : Promise.resolve({ data: [] as { team_id: string; block_id: string | null }[] }),
   ])
 
@@ -142,13 +142,13 @@ export default async function SeriesDetailPage({ params }: Props) {
   }
 
   // Extract calculated tournament IDs
-  const spData = ('data' in seriesPointsResult ? seriesPointsResult.data : []) as { tournament_id: string }[] | null
-  const calculatedTournamentIds = [...new Set((spData || []).map(sp => sp.tournament_id))]
+  const spData = ('data' in leaguePointsResult ? leaguePointsResult.data : []) as { round_id: string }[] | null
+  const calculatedTournamentIds = [...new Set((spData || []).map(sp => sp.round_id))]
 
   const countMap = new Map<string, number>()
-  const participantCounts = ('data' in participantCountsResult ? participantCountsResult.data : []) as { tournament_id: string }[] | null
+  const participantCounts = ('data' in participantCountsResult ? participantCountsResult.data : []) as { round_id: string }[] | null
   participantCounts?.forEach((p) => {
-    countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
+    countMap.set(p.round_id, (countMap.get(p.round_id) || 0) + 1)
   })
 
   // applications処理
@@ -189,9 +189,9 @@ export default async function SeriesDetailPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6">
       {/* Hero Banner */}
       <BannerImage
-        src={series.cover_image_url}
-        alt={series.title}
-        id={series.id}
+        src={league.cover_image_url}
+        alt={league.title}
+        id={league.id}
         variant="hero"
         priority
         className="mb-4"
@@ -200,19 +200,19 @@ export default async function SeriesDetailPage({ params }: Props) {
       {/* Header */}
       <div className="mb-4">
         <div className="flex items-center gap-2 flex-wrap mb-1">
-          <h1 className="text-xl font-bold sm:text-2xl">{series.title}</h1>
-          <StatusIndicator status={series.status} label={tl(`seriesStatus.${series.status}`)} size="md" />
+          <h1 className="text-xl font-bold sm:text-2xl">{league.title}</h1>
+          <StatusIndicator status={league.status} label={tl(`seriesStatus.${league.status}`)} size="md" />
           <Badge variant="outline" className="text-xs">
-            {series.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
+            {league.entry_type === 'individual' ? t('entryType.individual') : t('entryType.team')}
           </Badge>
         </div>
-        <MetaItem icon={User} className="text-sm">{series.organizer.display_name}</MetaItem>
+        <MetaItem icon={User} className="text-sm">{league.organizer.display_name}</MetaItem>
         {isOrganizer && (
           <div className="flex gap-2 mt-3">
-            <Link href={`/series/${id}/edit`}>
+            <Link href={`/leagues/${id}/edit`}>
               <Button variant="outline" size="sm">{t('detail.edit')}</Button>
             </Link>
-            <Link href={`/tournaments/new?series_id=${id}`}>
+            <Link href={`/tournaments/new?league_id=${id}`}>
               <Button size="sm">{t('detail.addTournament')}</Button>
             </Link>
           </div>
@@ -241,9 +241,9 @@ export default async function SeriesDetailPage({ params }: Props) {
         </Card>
         <Card>
           <CardContent className="p-3 flex items-center gap-2">
-            <StatusIndicator status={series.status} showIcon showDot={false} className="shrink-0" />
+            <StatusIndicator status={league.status} showIcon showDot={false} className="shrink-0" />
             <div>
-              <div className="text-lg font-bold leading-none">{tl(`seriesStatus.${series.status}`)}</div>
+              <div className="text-lg font-bold leading-none">{tl(`seriesStatus.${league.status}`)}</div>
               <div className="text-xs text-muted-foreground">{t('detail.status')}</div>
             </div>
           </CardContent>
@@ -270,7 +270,7 @@ export default async function SeriesDetailPage({ params }: Props) {
           {isOrganizer && tournaments && tournaments.length > 0 && (
             <div className="mb-6">
               <ManualPointsConfirm
-                seriesId={id}
+                leagueId={id}
                 tournaments={tournaments}
                 calculatedTournamentIds={calculatedTournamentIds}
               />
@@ -342,13 +342,13 @@ export default async function SeriesDetailPage({ params }: Props) {
           <div className="space-y-4">
             {/* エントリー申請フォーム（ログインユーザー向け） */}
             {user && !isOrganizer && (
-              <TeamApplicationForm seriesId={id} />
+              <TeamApplicationForm leagueId={id} />
             )}
 
             {/* ブロック振り分け（主催者向け） */}
             {isOrganizer && seriesTeams && seriesTeams.length > 0 && blocks && blocks.length > 0 && (
               <BlockAssignment
-                seriesId={id}
+                leagueId={id}
                 teams={seriesTeams}
                 blocks={blocks}
                 teamBlockMap={teamBlockMap}
@@ -391,7 +391,7 @@ export default async function SeriesDetailPage({ params }: Props) {
         {/* 申請管理（主催者のみ） */}
         {isOrganizer && (
           <TabsContent value="applications">
-            <ApplicationManage seriesId={id} applications={applications} />
+            <ApplicationManage leagueId={id} applications={applications} />
           </TabsContent>
         )}
 
@@ -424,7 +424,7 @@ export default async function SeriesDetailPage({ params }: Props) {
               <p className="text-sm text-muted-foreground mb-4">
                 {t('detail.metaDescription')}
               </p>
-              <Link href={`/series/${id}/meta`}>
+              <Link href={`/leagues/${id}/meta`}>
                 <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
                   {t('detail.openMeta')}
                 </button>
@@ -440,7 +440,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground whitespace-pre-wrap">
-                {series.description || t('detail.noDescription')}
+                {league.description || t('detail.noDescription')}
               </p>
             </CardContent>
           </Card>

@@ -1,8 +1,12 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Tournament } from '@/types/tournament'
-import { TournamentFormat, MatchFormat, Visibility } from '@/types/database'
+import { Tournament } from '@/types/round'
+import { Enums } from '@/types/database'
+
+type TournamentFormat = Enums<'tournament_format'>
+type MatchFormat = Enums<'match_format'>
+type Visibility = Enums<'visibility'>
 
 export interface TournamentFormData {
   title: string
@@ -35,7 +39,7 @@ function createInitialFormData(initialData?: Tournament): TournamentFormData {
     return {
       title: initialData.title,
       description: initialData.description || '',
-      tournament_format: initialData.tournament_format,
+      tournament_format: initialData.format,
       match_format: initialData.match_format,
       max_participants: initialData.max_participants,
       entry_limit_behavior: initialData.entry_limit_behavior,

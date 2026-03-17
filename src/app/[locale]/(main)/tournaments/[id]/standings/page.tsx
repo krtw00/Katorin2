@@ -29,28 +29,28 @@ export default async function StandingsPage({ params }: Props) {
   // 全クエリを並列取得
   const [{ data: tournament }, { data: blocks }, { data: blockStandings }, { data: swissRankings }] = await Promise.all([
     supabase
-      .from('tournaments')
+      .from('rounds')
       .select('*')
       .eq('id', id)
       .single(),
     supabase
-      .from('tournament_blocks')
+      .from('round_blocks')
       .select('*')
-      .eq('tournament_id', id)
+      .eq('round_id', id)
       .order('block_order', { ascending: true }),
     supabase
-      .from('block_standings')
+      .from('round_block_standings')
       .select('*')
-      .eq('tournament_id', id),
+      .eq('round_id', id),
     supabase
-      .from('swiss_rankings')
+      .from('round_swiss_rankings')
       .select('*')
-      .eq('tournament_id', id),
+      .eq('round_id', id),
   ])
 
   if (!tournament) notFound()
 
-  const isRoundRobin = tournament.tournament_format === 'round_robin'
+  const isRoundRobin = tournament.format === 'round_robin'
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

@@ -19,7 +19,7 @@ type Tournament = {
   title: string
   status: string
   entry_type: string
-  tournament_format: string
+  format: string
   block_count: number | null
   swiss_round_count: number | null
   rounds_to_win: number | null
@@ -73,24 +73,24 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
   const [blockCount, setBlockCount] = useState(tournament.block_count || 2)
 
   const supabase = createClient()
-  const isRoundRobin = tournament.tournament_format === 'round_robin'
-  const isSwiss = tournament.tournament_format === 'swiss'
+  const isRoundRobin = tournament.format === 'round_robin'
+  const isSwiss = tournament.format === 'swiss'
 
   const loadData = useCallback(async () => {
     const [entriesRes, blocksRes, matchesRes] = await Promise.all([
       supabase
         .from('team_entries')
         .select('*, team:teams(id, name)')
-        .eq('tournament_id', tournament.id),
+        .eq('round_id', tournament.id),
       supabase
-        .from('tournament_blocks')
+        .from('round_blocks')
         .select('*')
-        .eq('tournament_id', tournament.id)
+        .eq('round_id', tournament.id)
         .order('block_order'),
       supabase
         .from('matches')
         .select('*, team1:teams!matches_team1_id_fkey(name), team2:teams!matches_team2_id_fkey(name)')
-        .eq('tournament_id', tournament.id)
+        .eq('round_id', tournament.id)
         .order('round')
         .order('match_number'),
     ])
@@ -115,19 +115,19 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       }
 
       // 既存ブロック削除
-      await supabase.from('tournament_blocks').delete().eq('tournament_id', tournament.id)
+      await supabase.from('round_blocks').delete().eq('round_id', tournament.id)
 
       // ブロック作成
       const blockNames = 'ABCDEFGH'.split('')
       const newBlocks = []
       for (let i = 0; i < blockCount; i++) {
         const { data } = await supabase
-          .from('tournament_blocks')
+          .from('round_blocks')
           .insert({
-            tournament_id: tournament.id,
+            round_id: tournament.id,
             block_name: `Block ${blockNames[i] || i + 1}`,
             block_order: i + 1,
-            series_id: (tournament as Record<string, unknown>).series_id as string | null ?? null,
+            league_id: (tournament as Record<string, unknown>).league_id as string | null ?? null,
           })
           .select()
           .single()
@@ -146,7 +146,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       // tournament更新
       await supabase
-        .from('tournaments')
+        .from('rounds')
         .update({ block_count: blockCount })
         .eq('id', tournament.id)
 
@@ -165,7 +165,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
     try {
       // 既存matches削除
-      await supabase.from('matches').delete().eq('tournament_id', tournament.id)
+      await supabase.from('matches').delete().eq('round_id', tournament.id)
 
       let matchCounter = 0
 
@@ -186,7 +186,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
             matchCounter++
             await supabase.from('matches').insert({
-              tournament_id: tournament.id,
+              round_id: tournament.id,
               round: week + 1,
               match_number: matchCounter,
               team1_id: t1,
@@ -201,7 +201,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       }
 
       await supabase
-        .from('tournaments')
+        .from('rounds')
         .update({ status: 'in_progress' })
         .eq('id', tournament.id)
 
@@ -233,9 +233,9 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       // 現在のスタンディングを取得
       const { data: standings } = await supabase
-        .from('swiss_rankings')
+        .from('round_swiss_rankings')
         .select('*')
-        .eq('tournament_id', tournament.id)
+        .eq('round_id', tournament.id)
 
       // 過去のペアリングを収集
       const previousPairings = new Set<string>()
@@ -297,7 +297,7 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
       const maxMatchNumber = Math.max(...matches.map(m => m.match_number), 0)
       for (let i = 0; i < pairings.length; i++) {
         await supabase.from('matches').insert({
-          tournament_id: tournament.id,
+          round_id: tournament.id,
           round: nextRound,
           match_number: maxMatchNumber + i + 1,
           team1_id: pairings[i].team1_id,
@@ -308,12 +308,12 @@ export function TeamTournamentManage({ tournament, onUpdateAction }: Props) {
 
       if (nextRound === 1) {
         await supabase
-          .from('tournaments')
+          .from('rounds')
           .update({ status: 'in_progress', current_round: 1 })
           .eq('id', tournament.id)
       } else {
         await supabase
-          .from('tournaments')
+          .from('rounds')
           .update({ current_round: nextRound })
           .eq('id', tournament.id)
       }

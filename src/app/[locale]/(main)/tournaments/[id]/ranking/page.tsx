@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TournamentRanking } from '@/components/tournament/TournamentRanking'
-import { MatchWithPlayers, ParticipantWithUser } from '@/types/tournament'
+import { MatchWithPlayers, ParticipantWithUser } from '@/types/round'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -22,7 +22,7 @@ export default async function TournamentRankingPage({ params }: Props) {
 
   // Fetch tournament
   const { data: tournament, error: tournamentError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .select('*')
     .eq('id', id)
     .single()
@@ -38,7 +38,7 @@ export default async function TournamentRankingPage({ params }: Props) {
       *,
       user:profiles(*)
     `)
-    .eq('tournament_id', id)
+    .eq('round_id', id)
     .order('seed', { ascending: true })
 
   if (participantsError) {
@@ -54,7 +54,7 @@ export default async function TournamentRankingPage({ params }: Props) {
       player2:profiles!matches_player2_id_fkey(*),
       winner:profiles!matches_winner_id_fkey(*)
     `)
-    .eq('tournament_id', id)
+    .eq('round_id', id)
     .order('round', { ascending: true })
     .order('match_number', { ascending: true })
 

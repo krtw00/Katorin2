@@ -13,7 +13,7 @@ const finalsSchema = z.object({
   qualifiedPerBlock: z.array(z.union([z.number(), z.string()])).optional(),
 })
 
-export const seriesConfigSchema = z.object({
+export const leagueConfigSchema = z.object({
   orderSize: z.number().min(1).max(10).default(3),
   subCount: z.number().min(0).max(5).default(1),
   playersPerRound: z.number().min(1).max(10).default(3),
@@ -36,14 +36,14 @@ export const seriesConfigSchema = z.object({
   maxMemberChanges: z.number().min(0).optional(),
 })
 
-export type SeriesConfig = z.infer<typeof seriesConfigSchema>
+export type LeagueConfig = z.infer<typeof leagueConfigSchema>
 
-export function parseSeriesConfig(raw: unknown): SeriesConfig {
-  return seriesConfigSchema.parse(raw)
+export function parseLeagueConfig(raw: unknown): LeagueConfig {
+  return leagueConfigSchema.parse(raw)
 }
 
 /** 総当たり星取戦プリセット: 3v3 BO3 / ブロック別総当たり / メイン3+サブ1 */
-export const ROUND_ROBIN_POINT_BATTLE_CONFIG: SeriesConfig = parseSeriesConfig({
+export const ROUND_ROBIN_POINT_BATTLE_CONFIG: LeagueConfig = parseLeagueConfig({
   orderSize: 3,
   subCount: 1,
   playersPerRound: 3,
@@ -76,7 +76,7 @@ export const ROUND_ROBIN_POINT_BATTLE_CONFIG: SeriesConfig = parseSeriesConfig({
 export const WMGP_CONFIG = ROUND_ROBIN_POINT_BATTLE_CONFIG
 
 /** Ban&Pickスイスドロープリセット: 5人→Ban2Pick3 / スイスドロー / デッキ被り禁止 */
-export const BAN_PICK_SWISS_CONFIG: SeriesConfig = parseSeriesConfig({
+export const BAN_PICK_SWISS_CONFIG: LeagueConfig = parseLeagueConfig({
   orderSize: 5,
   subCount: 0,
   playersPerRound: 3,

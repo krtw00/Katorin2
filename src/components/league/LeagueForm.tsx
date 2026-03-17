@@ -11,9 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/ui/image-upload'
 import {
   Series,
-  SeriesFormData,
-} from '@/types/series'
-import { type SeriesConfig } from '@/lib/schemas/series-config'
+  LeagueFormData,
+} from '@/types/league'
+import { type LeagueConfig } from '@/lib/schemas/league-config'
 import { uploadTournamentCover, isUploadError } from '@/lib/supabase/storage'
 import { useTranslations } from 'next-intl'
 
@@ -23,8 +23,8 @@ type Props = {
   onSuccess?: () => void
 }
 
-export function SeriesForm({ mode, initialData, onSuccess }: Props) {
-  const t = useTranslations('series.form')
+export function LeagueForm({ mode, initialData, onSuccess }: Props) {
+  const t = useTranslations('leagues.form')
   const router = useRouter()
   const supabase = createClient()
 
@@ -42,7 +42,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
   const [webhookError, setWebhookError] = useState('')
 
   // カスタムルール設定
-  const initialConfig = initialData?.series_config as SeriesConfig | null
+  const initialConfig = initialData?.league_config as LeagueConfig | null
   const [customConfig, setCustomConfig] = useState({
     qualifierFormat: initialConfig?.qualifierFormat || 'round_robin' as 'round_robin' | 'swiss',
     orderSize: initialConfig?.orderSize || 3,
@@ -56,7 +56,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
     winPoints: initialConfig?.scoring?.winPoints || 3,
   })
 
-  const [formData, setFormData] = useState<SeriesFormData>(() => {
+  const [formData, setFormData] = useState<LeagueFormData>(() => {
     if (initialData) {
       return {
         title: initialData.title,
@@ -69,7 +69,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
     }
   })
 
-  const updateFormData = (field: keyof SeriesFormData, value: SeriesFormData[keyof SeriesFormData]) => {
+  const updateFormData = (field: keyof LeagueFormData, value: LeagueFormData[keyof LeagueFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -119,14 +119,14 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         entry_type: 'team' as const,
         visibility: 'public' as const,
         status: (asDraft ? 'draft' : 'in_progress') as 'draft' | 'in_progress',
-        series_config: seriesConfig,
+        league_config: seriesConfig,
         cover_image_url: coverUrl,
         discord_webhook_url: trimmedWebhookUrl || null,
       }
 
       if (mode === 'create') {
         const { data, error: insertError } = await supabase
-          .from('series')
+          .from('leagues')
           .insert({
             ...seriesData,
             organizer_id: user.id,
@@ -139,10 +139,10 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
           return
         }
 
-        router.push(`/series/${data.id}`)
+        router.push(`/leagues/${data.id}`)
       } else {
         const { data, error: updateError } = await supabase
-          .from('series')
+          .from('leagues')
           .update(seriesData)
           .eq('id', initialData!.id)
           .select()
@@ -156,7 +156,7 @@ export function SeriesForm({ mode, initialData, onSuccess }: Props) {
         if (onSuccess) {
           onSuccess()
         } else {
-          router.push(`/series/${data.id}`)
+          router.push(`/leagues/${data.id}`)
         }
       }
     } catch (err) {

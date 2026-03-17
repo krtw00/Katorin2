@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 
 const NAV_LINKS = [
   { href: '/tournaments', icon: Trophy, labelKey: 'tournaments' as const },
-  { href: '/series', icon: Layers, labelKey: 'series' as const },
+  { href: '/leagues', icon: Layers, labelKey: 'leagues' as const },
   { href: '/teams', icon: Users, labelKey: 'teams' as const },
   { href: '/my', icon: User, labelKey: 'mypage' as const, authOnly: true },
 ]

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MatchWithPlayers, ParticipantWithUser } from '@/types/tournament'
+import { MatchWithPlayers, ParticipantWithUser } from '@/types/round'
 
 type Props = {
   participants: ParticipantWithUser[]

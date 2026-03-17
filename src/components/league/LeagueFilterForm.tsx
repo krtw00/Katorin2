@@ -9,8 +9,8 @@ import { useTranslations } from 'next-intl'
 
 type FilterStatus = 'all' | 'active' | 'completed'
 
-export function SeriesFilterForm() {
-  const t = useTranslations('series')
+export function LeagueFilterForm() {
+  const t = useTranslations('leagues')
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -40,7 +40,7 @@ export function SeriesFilterForm() {
       }
 
       startTransition(() => {
-        router.push(`/series${params.toString() ? `?${params.toString()}` : ''}`, {
+        router.push(`/leagues${params.toString() ? `?${params.toString()}` : ''}`, {
           scroll: false,
         })
       })

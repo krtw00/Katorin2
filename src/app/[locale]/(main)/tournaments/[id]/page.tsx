@@ -26,11 +26,11 @@ export default async function TournamentDetailPage({ params }: Props) {
   // tournament と user を並列取得
   const [{ data: tournament, error }, { data: { user } }] = await Promise.all([
     supabase
-      .from('tournaments')
+      .from('rounds')
       .select(`
         *,
-        organizer:profiles!tournaments_organizer_id_fkey(*),
-        series:series(id, title)
+        organizer:profiles!rounds_organizer_id_fkey(*),
+        league:leagues(id, title)
       `)
       .eq('id', id)
       .single(),
@@ -43,7 +43,7 @@ export default async function TournamentDetailPage({ params }: Props) {
   const isTeam = tournament.entry_type === 'team'
 
   // シリーズ情報
-  const seriesInfo = tournament.series as { id: string; title: string } | null
+  const leagueInfo = tournament.league as { id: string; title: string } | null
 
   // チーム戦 / 個人戦のデータを並列取得
   let blocks: { id: string; block_name: string }[] = []
@@ -56,25 +56,25 @@ export default async function TournamentDetailPage({ params }: Props) {
   let disputedCount = 0
 
   if (isTeam) {
-    const blockFilter = tournament.series_id
-      ? `tournament_id.eq.${id},series_id.eq.${tournament.series_id}`
-      : `tournament_id.eq.${id}`
+    const blockFilter = tournament.league_id
+      ? `round_id.eq.${id},league_id.eq.${tournament.league_id}`
+      : `round_id.eq.${id}`
 
     const [configResult, { data: b }, { count: tc }, { data: matches }] = await Promise.all([
       getTournamentConfig(supabase, id),
       supabase
-        .from('tournament_blocks')
+        .from('round_blocks')
         .select('id, block_name')
         .or(blockFilter)
         .order('block_order'),
       supabase
         .from('team_entries')
         .select('*', { count: 'exact', head: true })
-        .eq('tournament_id', id),
+        .eq('round_id', id),
       supabase
         .from('matches')
         .select('status')
-        .eq('tournament_id', id),
+        .eq('round_id', id),
     ])
     config = configResult
     blocks = b || []
@@ -87,7 +87,7 @@ export default async function TournamentDetailPage({ params }: Props) {
       supabase
         .from('participants')
         .select('*', { count: 'exact', head: true })
-        .eq('tournament_id', id),
+        .eq('round_id', id),
     ])
     config = configResult
     participantCount = count || 0
@@ -96,7 +96,7 @@ export default async function TournamentDetailPage({ params }: Props) {
       const { data: mp } = await supabase
         .from('participants')
         .select('id, checked_in_at')
-        .eq('tournament_id', id)
+        .eq('round_id', id)
         .eq('user_id', user.id)
         .single()
       myParticipant = mp
@@ -107,7 +107,7 @@ export default async function TournamentDetailPage({ params }: Props) {
       const { data: disputedMatches } = await supabase
         .from('matches')
         .select('id')
-        .eq('tournament_id', id)
+        .eq('round_id', id)
         .eq('report_status', 'disputed')
       disputedCount = disputedMatches?.length || 0
     }
@@ -136,11 +136,11 @@ export default async function TournamentDetailPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        {seriesInfo ? (
+        {leagueInfo ? (
           <>
-            <Link href="/series" className="hover:text-foreground transition-colors">{t('nav.series')}</Link>
+            <Link href="/leagues" className="hover:text-foreground transition-colors">{t('nav.leagues')}</Link>
             <span>/</span>
-            <Link href={`/series/${seriesInfo.id}`} className="hover:text-foreground transition-colors">{seriesInfo.title}</Link>
+            <Link href={`/leagues/${leagueInfo.id}`} className="hover:text-foreground transition-colors">{leagueInfo.title}</Link>
             <span>/</span>
             <span className="text-foreground">{tournament.title}</span>
           </>
@@ -168,7 +168,7 @@ export default async function TournamentDetailPage({ params }: Props) {
             </div>
             <p className="text-sm text-muted-foreground">
               {t('tournament.detail.organizer')}: {organizerName}
-              {tournament.round_number && ` / ${t('tournament.detail.roundLabel', { n: tournament.round_number })}`}
+              {tournament.round_order && ` / ${t('tournament.detail.roundLabel', { n: tournament.round_order })}`}
             </p>
           </div>
         </CardHeader>
@@ -224,7 +224,7 @@ export default async function TournamentDetailPage({ params }: Props) {
           <div className="border rounded-lg divide-y text-sm">
             <div className="flex justify-between px-4 py-2.5">
               <span className="text-muted-foreground">{t('tournament.detail.format')}</span>
-              <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
+              <span>{t('labels.tournamentFormat.' + tournament.format)}</span>
             </div>
             <div className="flex justify-between px-4 py-2.5">
               <span className="text-muted-foreground">{t('tournament.detail.matchFormat')}</span>

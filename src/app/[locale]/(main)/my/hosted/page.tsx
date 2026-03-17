@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { TournamentWithOrganizer, TournamentStatus } from '@/types/tournament'
+import { TournamentWithOrganizer, TournamentStatus } from '@/types/round'
 import {
   TournamentListItem,
   TournamentListSection,
@@ -24,11 +24,11 @@ export default async function HostedTournamentsPage() {
 
   // Get tournaments organized by user
   const { data: tournaments } = (await supabase
-    .from('tournaments')
+    .from('rounds')
     .select(
       `
       *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
+      organizer:profiles!rounds_organizer_id_fkey(*)
     `
     )
     .eq('organizer_id', user.id)
@@ -45,13 +45,13 @@ export default async function HostedTournamentsPage() {
   if (tournamentIds.length > 0) {
     const { data: participantCounts } = (await supabase
       .from('participants')
-      .select('tournament_id')
-      .in('tournament_id', tournamentIds)) as {
-      data: { tournament_id: string }[] | null
+      .select('round_id')
+      .in('round_id', tournamentIds)) as {
+      data: { round_id: string }[] | null
     }
 
     participantCounts?.forEach((p) => {
-      countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
+      countMap.set(p.round_id, (countMap.get(p.round_id) || 0) + 1)
     })
   }
 

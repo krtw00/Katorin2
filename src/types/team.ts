@@ -1,5 +1,5 @@
 import { Database } from './database'
-import { Profile } from './tournament'
+import { Profile } from './round'
 
 // DB型（マイグレーション適用後、database.tsに追加される想定）
 export type TeamRole = 'leader' | 'member'
@@ -58,7 +58,7 @@ export type TeamInviteInsert = Omit<TeamInvite, 'id' | 'use_count' | 'created_at
 // TeamEntry テーブル型
 export type TeamEntry = {
   id: string
-  tournament_id: string
+  round_id: string
   team_id: string
   entry_number: number
   check_in_status: CheckInStatus
@@ -168,7 +168,7 @@ export type WarOrderWithUser = WarOrder & {
 
 export type SwissStanding = {
   id: string
-  tournament_id: string
+  round_id: string
   team_id: string
   round: number
   team_points: number
@@ -182,7 +182,7 @@ export type SwissStandingInsert = Omit<SwissStanding, 'id' | 'created_at'> & {
 }
 
 export type SwissRanking = {
-  tournament_id: string
+  round_id: string
   team_id: string
   team_name: string
   team_avatar_url: string | null
@@ -195,7 +195,7 @@ export type SwissRanking = {
 
 export type WarMatch = {
   id: string
-  tournament_id: string
+  round_id: string
   round: number
   match_number: number
   team1_id: string | null

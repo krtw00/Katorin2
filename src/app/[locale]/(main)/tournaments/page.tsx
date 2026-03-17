@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy } from 'lucide-react'
 import Link from 'next/link'
-import { TournamentWithOrganizer } from '@/types/tournament'
+import { TournamentWithOrganizer } from '@/types/round'
 import type { PostgrestError } from '@supabase/supabase-js'
 import {
   TournamentListItem,
@@ -45,15 +45,15 @@ export default async function TournamentsPage({
 
   // Fetch tournaments with organizer profile
   let tournamentsQuery = supabase
-    .from('tournaments')
+    .from('rounds')
     .select(
       `
       *,
-      organizer:profiles!tournaments_organizer_id_fkey(*)
+      organizer:profiles!rounds_organizer_id_fkey(*)
     `
     )
     .eq('visibility', 'public')
-    .is('series_id', null)  // シリーズ配下の大会は除外（シリーズ詳細から辿る）
+    .is('league_id', null)  // シリーズ配下の大会は除外（シリーズ詳細から辿る）
     .order('created_at', { ascending: false })
 
   // Apply search filter if query exists
@@ -88,13 +88,13 @@ export default async function TournamentsPage({
   const tournamentIds = tournaments?.map((t) => t.id) || []
   const { data: participantCounts } = (await supabase
     .from('participants')
-    .select('tournament_id')
-    .in('tournament_id', tournamentIds)) as { data: { tournament_id: string }[] | null }
+    .select('round_id')
+    .in('round_id', tournamentIds)) as { data: { round_id: string }[] | null }
 
   // Count participants per tournament
   const countMap = new Map<string, number>()
   participantCounts?.forEach((p) => {
-    countMap.set(p.tournament_id, (countMap.get(p.tournament_id) || 0) + 1)
+    countMap.set(p.round_id, (countMap.get(p.round_id) || 0) + 1)
   })
 
   // Get current user

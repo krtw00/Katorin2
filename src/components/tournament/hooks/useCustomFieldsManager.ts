@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CustomField } from '@/types/tournament'
+import { CustomField } from '@/types/round'
 
 /**
  * ラベルからキーを自動生成

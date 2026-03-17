@@ -26,27 +26,27 @@ type WeekDeckData = {
 }
 
 export default async function SeriesMetaPage({ params }: Props) {
-  const t = await getTranslations('series.meta')
+  const t = await getTranslations('leagues.meta')
   const tNav = await getTranslations('nav')
-  const ts = await getTranslations('series.detail')
+  const ts = await getTranslations('leagues.detail')
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: series, error }, { data: tournaments }] = await Promise.all([
+  const [{ data: league, error }, { data: tournaments }] = await Promise.all([
     supabase
-      .from('series')
+      .from('leagues')
       .select('id, title')
       .eq('id', id)
       .single(),
     supabase
-      .from('tournaments')
-      .select('id, title, round_number')
-      .eq('series_id', id)
-      .order('round_number', { ascending: true })
+      .from('rounds')
+      .select('id, title, round_order')
+      .eq('league_id', id)
+      .order('round_order', { ascending: true })
       .order('start_at', { ascending: true }),
   ])
 
-  if (error || !series) notFound()
+  if (error || !league) notFound()
 
   const tournamentList = tournaments || []
   const tournamentIds = tournamentList.map(t => t.id)
@@ -59,25 +59,25 @@ export default async function SeriesMetaPage({ params }: Props) {
   const { data: teams } = await supabase
     .from('teams')
     .select('id, name')
-    .eq('series_id', id)
+    .eq('league_id', id)
 
   const teamList = teams || []
 
   // matches + orders 取得
-  type MatchRow = { id: string; tournament_id: string; team1_id: string | null; team2_id: string | null }
+  type MatchRow = { id: string; round_id: string; team1_id: string | null; team2_id: string | null }
   let allMatches: MatchRow[] = []
 
   if (tournamentIds.length > 0) {
     const { data: matches } = await supabase
       .from('matches')
-      .select('id, tournament_id, team1_id, team2_id')
-      .in('tournament_id', tournamentIds)
+      .select('id, round_id, team1_id, team2_id')
+      .in('round_id', tournamentIds)
 
     allMatches = (matches as MatchRow[] | null) || []
 
     if (allMatches.length) {
       for (const m of allMatches) {
-        matchTournamentMap.set(m.id, m.tournament_id)
+        matchTournamentMap.set(m.id, m.round_id)
       }
       const matchIds = allMatches.map(m => m.id)
       const { data: orders } = await supabase
@@ -97,13 +97,13 @@ export default async function SeriesMetaPage({ params }: Props) {
     const teamStatuses = new Map<string, OrderStatus>()
     for (const tid of tournamentIds) {
       // このWeekでこのチームの試合があるか
-      const hasMatch = allMatches.some(m => m.tournament_id === tid && (m.team1_id === t.id || m.team2_id === t.id))
+      const hasMatch = allMatches.some(m => m.round_id === tid && (m.team1_id === t.id || m.team2_id === t.id))
       if (!hasMatch) {
         teamStatuses.set(tid, 'no_match')
         continue
       }
       // オーダー提出済みか
-      const matchIdsForWeek = allMatches.filter(m => m.tournament_id === tid && (m.team1_id === t.id || m.team2_id === t.id)).map(m => m.id)
+      const matchIdsForWeek = allMatches.filter(m => m.round_id === tid && (m.team1_id === t.id || m.team2_id === t.id)).map(m => m.id)
       const hasOrder = allOrders.some(o => matchIdsForWeek.includes(o.match_id) && (o as { team_id?: string }).team_id === t.id)
       teamStatuses.set(tid, hasOrder ? 'submitted' : 'missing')
     }
@@ -120,7 +120,7 @@ export default async function SeriesMetaPage({ params }: Props) {
   const weekDataMap = new Map<string, WeekDeckData>()
   for (const t of tournamentList) {
     weekDataMap.set(t.id, {
-      week: t.round_number || 0,
+      week: t.round_order || 0,
       tournamentTitle: t.title,
       tournamentId: t.id,
       decks: new Map(),
@@ -211,9 +211,9 @@ export default async function SeriesMetaPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/series" className="hover:text-foreground transition-colors">{tNav('series')}</Link>
+        <Link href="/leagues" className="hover:text-foreground transition-colors">{tNav('leagues')}</Link>
         <span>/</span>
-        <Link href={`/series/${id}`} className="hover:text-foreground transition-colors">{series.title}</Link>
+        <Link href={`/leagues/${id}`} className="hover:text-foreground transition-colors">{league.title}</Link>
         <span>/</span>
         <span className="text-foreground">{t('title')}</span>
       </nav>
@@ -223,7 +223,7 @@ export default async function SeriesMetaPage({ params }: Props) {
           <BarChart3 className="h-6 w-6 text-muted-foreground" />
           <h1 className="text-xl font-bold sm:text-2xl">{t('title')}</h1>
         </div>
-        <Link href={`/series/${id}`}>
+        <Link href={`/leagues/${id}`}>
           <button className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             {t('backToSeries')}

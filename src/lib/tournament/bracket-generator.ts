@@ -1,4 +1,4 @@
-import { ParticipantWithUser, MatchInsert } from '@/types/tournament'
+import { ParticipantWithUser, MatchInsert } from '@/types/round'
 
 /**
  * Generate single elimination tournament bracket
@@ -118,7 +118,7 @@ export function generateSingleEliminationBracket(
 
       const match: MatchInsert = {
         id: generatedMatchId,
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round,
         match_number: matchNumber,
         player1_id: matchData.player1 || null,
@@ -328,7 +328,7 @@ export function generateDoubleEliminationBracket(
 
       matches.push({
         id,
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round,
         match_number: matchNumber,
         bracket_side: 'winners',
@@ -380,7 +380,7 @@ export function generateDoubleEliminationBracket(
 
       matches.push({
         id,
-        tournament_id: tournamentId,
+        round_id: tournamentId,
         round: dbRound,
         match_number: matchNumber,
         bracket_side: 'losers',
@@ -399,7 +399,7 @@ export function generateDoubleEliminationBracket(
   // ---- Grand Finals ----
   matches.push({
     id: matchIdMap['gf1'],
-    tournament_id: tournamentId,
+    round_id: tournamentId,
     round: 201,
     match_number: 1,
     bracket_side: 'grand_final',
