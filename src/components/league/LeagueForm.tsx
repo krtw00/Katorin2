@@ -55,6 +55,18 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
     banPickEnabled: initialConfig?.banPickEnabled || false,
     duplicateThemeAllowed: initialConfig?.duplicateThemeAllowed ?? true,
     winPoints: initialConfig?.scoring?.winPoints || 3,
+    byeScore: {
+      roundWins: initialConfig?.scoring?.byeScore?.roundWins ?? 2,
+      roundLosses: initialConfig?.scoring?.byeScore?.roundLosses ?? 0,
+      matchWins: initialConfig?.scoring?.byeScore?.matchWins ?? 0,
+      matchLosses: initialConfig?.scoring?.byeScore?.matchLosses ?? 0,
+    },
+    forfeitScore: {
+      winnerRoundWins: initialConfig?.scoring?.forfeitScore?.winnerRoundWins ?? 2,
+      loserRoundWins: initialConfig?.scoring?.forfeitScore?.loserRoundWins ?? 0,
+      winnerMatchWins: initialConfig?.scoring?.forfeitScore?.winnerMatchWins ?? 0,
+      loserMatchWins: initialConfig?.scoring?.forfeitScore?.loserMatchWins ?? 0,
+    },
     tiebreakers: ((initialConfig?.scoring?.tiebreakers || []) as string[]).filter((value): value is (typeof TIEBREAKER_OPTIONS)[number] =>
       (TIEBREAKER_OPTIONS as readonly string[]).includes(value)
     ),
@@ -131,7 +143,13 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
         roundsToWin: customConfig.roundsToWin,
         banPickEnabled: customConfig.banPickEnabled,
         duplicateThemeAllowed: customConfig.duplicateThemeAllowed,
-        scoring: { winPoints: customConfig.winPoints, lossPoints: 0, tiebreakers: customConfig.tiebreakers },
+        scoring: {
+          winPoints: customConfig.winPoints,
+          lossPoints: 0,
+          tiebreakers: customConfig.tiebreakers,
+          byeScore: customConfig.byeScore,
+          forfeitScore: customConfig.forfeitScore,
+        },
       }
 
       // Webhook URL validation
@@ -434,13 +452,77 @@ export function LeagueForm({ mode, initialData, onSuccess }: Props) {
                 <CardHeader>
                   <CardTitle className="text-lg">{t('scoring')}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                   <div className="space-y-2">
                     <Label>{t('winPointsLabel')}</Label>
                     <p className="text-xs text-muted-foreground">{t('winPointsHint')}</p>
                     <Input type="number" min={1} max={10} value={customConfig.winPoints}
                       onChange={e => setCustomConfig(c => ({ ...c, winPoints: +e.target.value }))}
                       className="max-w-[120px]" />
+                  </div>
+
+                  {/* BYEスコア */}
+                  <div className="space-y-2">
+                    <Label>{t('byeScore')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('byeScoreHint')}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('roundWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.byeScore.roundWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, byeScore: { ...c.byeScore, roundWins: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('roundLosses')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.byeScore.roundLosses}
+                          onChange={e => setCustomConfig(c => ({ ...c, byeScore: { ...c.byeScore, roundLosses: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('matchWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.byeScore.matchWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, byeScore: { ...c.byeScore, matchWins: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('matchLosses')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.byeScore.matchLosses}
+                          onChange={e => setCustomConfig(c => ({ ...c, byeScore: { ...c.byeScore, matchLosses: +e.target.value } }))} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 没収スコア */}
+                  <div className="space-y-2">
+                    <Label>{t('forfeitScore')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('forfeitScoreHint')}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('winnerRoundWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.forfeitScore.winnerRoundWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, forfeitScore: { ...c.forfeitScore, winnerRoundWins: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('loserRoundWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.forfeitScore.loserRoundWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, forfeitScore: { ...c.forfeitScore, loserRoundWins: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('winnerMatchWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.forfeitScore.winnerMatchWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, forfeitScore: { ...c.forfeitScore, winnerMatchWins: +e.target.value } }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t('loserMatchWins')}</Label>
+                        <Input type="number" min={0} max={10}
+                          value={customConfig.forfeitScore.loserMatchWins}
+                          onChange={e => setCustomConfig(c => ({ ...c, forfeitScore: { ...c.forfeitScore, loserMatchWins: +e.target.value } }))} />
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -11,7 +11,6 @@ import { getLoserId } from '@/lib/tournament/bracket-generator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -342,7 +341,7 @@ function ScoreInputModal({
   const roundDisplay = match.bracket_side === 'losers' ? match.round - 100 : match.round
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('inputResult')}</DialogTitle>
@@ -370,7 +369,7 @@ function ScoreInputModal({
               min="0"
               max="99"
               value={player1Score}
-              onChange={(e) => setPlayer1Score(parseInt(e.target.value) || 0)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlayer1Score(parseInt(e.target.value) || 0)}
               className="w-20 text-center text-lg font-bold"
               disabled={submitting}
             />
@@ -390,7 +389,7 @@ function ScoreInputModal({
               min="0"
               max="99"
               value={player2Score}
-              onChange={(e) => setPlayer2Score(parseInt(e.target.value) || 0)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlayer2Score(parseInt(e.target.value) || 0)}
               className="w-20 text-center text-lg font-bold"
               disabled={submitting}
             />
@@ -679,7 +678,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
 
   // Determine if this is a double elimination bracket
   const isDoubleElim = useMemo(() => {
-    return matches.some((m) => m.bracket_side === 'losers' || m.bracket_side === 'grand_final')
+    return matches.some((m: MatchWithPlayers) => m.bracket_side === 'losers' || m.bracket_side === 'grand_final')
   }, [matches])
 
   // Split matches by bracket side
@@ -693,9 +692,9 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
       }
     }
     return {
-      winnersMatches: matches.filter((m) => m.bracket_side === 'winners'),
-      losersMatches: matches.filter((m) => m.bracket_side === 'losers'),
-      grandFinalMatches: matches.filter((m) => m.bracket_side === 'grand_final'),
+      winnersMatches: matches.filter((m: MatchWithPlayers) => m.bracket_side === 'winners'),
+      losersMatches: matches.filter((m: MatchWithPlayers) => m.bracket_side === 'losers'),
+      grandFinalMatches: matches.filter((m: MatchWithPlayers) => m.bracket_side === 'grand_final'),
       singleElimMatches: [],
     }
   }, [matches, isDoubleElim])
@@ -704,7 +703,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
   const matchesByRound = useMemo(() => {
     if (isDoubleElim) return new Map<number, MatchWithPlayers[]>()
     const map = new Map<number, MatchWithPlayers[]>()
-    matches.forEach((match) => {
+    matches.forEach((match: MatchWithPlayers) => {
       if (!map.has(match.round)) {
         map.set(match.round, [])
       }
@@ -730,7 +729,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
 
   const handlePositionChange = useCallback((id: string, rect: DOMRect) => {
     setPositions(prev => {
-      const match = matches.find(m => m.id === id)
+      const match = matches.find((m: MatchWithPlayers) => m.id === id)
       if (!match) return prev
 
       const newMap = new Map(prev)
@@ -768,7 +767,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
 
     if (updateError) throw handleError(updateError)
 
-    const currentMatch = matches.find(m => m.id === matchId)
+    const currentMatch = matches.find((m: MatchWithPlayers) => m.id === matchId)
     if (!currentMatch) return
 
     // Advance winner to next match if applicable
