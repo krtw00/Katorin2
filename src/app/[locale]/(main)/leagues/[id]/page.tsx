@@ -408,7 +408,7 @@ export default async function SeriesDetailPage({ params }: Props) {
                       <div key={tournament.id} className="flex items-center justify-between gap-3 px-2 py-3">
                         <div className="min-w-0 flex-1">
                           <div className="mb-1 flex items-center gap-2 flex-wrap">
-                            <Link href={`/tournaments/${tournament.id}`} className="truncate text-sm font-medium hover:underline">
+                            <Link href={`/leagues/${id}/rounds/${tournament.id}`} className="truncate text-sm font-medium hover:underline">
                               {tournament.title}
                             </Link>
                             <StatusIndicator status={tournament.status} showDot showIcon={false} />
