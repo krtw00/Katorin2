@@ -178,7 +178,7 @@ async function main() {
       if (t1RoundWins >= 2 || t2RoundWins >= 2) break
 
       const { data: warRound } = await supabase.from('war_rounds').insert({
-        match_id: match!.id, round_order: roundNum, status: 'in_progress',
+        match_id: match!.id, round_number: roundNum, status: 'in_progress',
         started_at: new Date().toISOString(),
       }).select().single()
 

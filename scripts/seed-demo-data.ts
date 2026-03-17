@@ -385,7 +385,7 @@ async function main() {
     for (let ri = 0; ri < r.rounds.length; ri++) {
       const rr = r.rounds[ri]
       const { data: wr } = await supabase.from('war_rounds').insert({
-        match_id: matchId, round_order: ri + 1, status: 'completed',
+        match_id: matchId, round_number: ri + 1, status: 'completed',
         team1_match_wins: rr.t1w, team2_match_wins: rr.t2w,
         winner_team_id: rr.t1w >= 2 ? t1.id : t2.id,
         completed_at: new Date().toISOString(),
