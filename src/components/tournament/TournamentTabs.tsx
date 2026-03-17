@@ -8,11 +8,11 @@ import {
   MatchWithPlayers,
   ParticipantWithUser,
   Profile,
-} from '@/types/tournament'
+} from '@/types/round'
 import { useTranslations } from 'next-intl'
 import { Database } from '@/types/database'
 
-type Tournament = Database['public']['Tables']['tournaments']['Row']
+type Tournament = Database['public']['Tables']['rounds']['Row']
 
 type Props = {
   tournament: Tournament & { organizer: Profile }
@@ -65,7 +65,7 @@ export function TournamentTabs({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b">
                 <span className="text-muted-foreground">{t('tournament.tabs.format')}</span>
-                <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
+                <span>{t('labels.tournamentFormat.' + tournament.format)}</span>
               </div>
               <div className="flex justify-between py-2 border-b">
                 <span className="text-muted-foreground">{t('tournament.tabs.matchFormat')}</span>

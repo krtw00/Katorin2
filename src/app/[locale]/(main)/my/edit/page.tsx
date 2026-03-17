@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { uploadUserAvatar, isUploadError } from '@/lib/supabase/storage'
-import { Profile } from '@/types/tournament'
+import { Profile } from '@/types/round'
 import { useTranslations } from 'next-intl'
 
 export default function ProfileEditPage() {

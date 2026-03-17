@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { MatchWithPlayers } from '@/types/tournament'
+import { MatchWithPlayers } from '@/types/round'
 import { parseMatchesWithPlayers } from '@/lib/types/guards'
 
 export function useRealtimeMatches(
@@ -26,7 +26,7 @@ export function useRealtimeMatches(
             event: '*',
             schema: 'public',
             table: 'matches',
-            filter: `tournament_id=eq.${tournamentId}`,
+            filter: `round_id=eq.${tournamentId}`,
           },
           async () => {
             // Refetch matches when there's a change
@@ -40,7 +40,7 @@ export function useRealtimeMatches(
                 winner:profiles!matches_winner_id_fkey(*)
               `
               )
-              .eq('tournament_id', tournamentId)
+              .eq('round_id', tournamentId)
               .order('round', { ascending: true })
               .order('match_number', { ascending: true })
 
@@ -88,14 +88,14 @@ export function useRealtimeParticipants(
             event: '*',
             schema: 'public',
             table: 'participants',
-            filter: `tournament_id=eq.${tournamentId}`,
+            filter: `round_id=eq.${tournamentId}`,
           },
           async () => {
             // Refetch participant count when there's a change
             const { count } = await supabase
               .from('participants')
               .select('*', { count: 'exact', head: true })
-              .eq('tournament_id', tournamentId)
+              .eq('round_id', tournamentId)
 
             if (count !== null) {
               setParticipantCount(count)

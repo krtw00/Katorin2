@@ -14,7 +14,7 @@ import {
   Match,
   ParticipantWithUser,
   MatchWithPlayers,
-} from '@/types/tournament'
+} from '@/types/round'
 
 /**
  * InputType の型ガード
@@ -94,7 +94,7 @@ export function isTournament(data: unknown): data is Tournament {
     typeof tournament.id === 'string' &&
     typeof tournament.title === 'string' &&
     isTournamentStatus(tournament.status) &&
-    isTournamentFormat(tournament.tournament_format)
+    isTournamentFormat(tournament.format)
   )
 }
 
@@ -116,7 +116,7 @@ export function isParticipant(data: unknown): data is Participant {
 
   return (
     typeof participant.id === 'string' &&
-    typeof participant.tournament_id === 'string' &&
+    typeof participant.round_id === 'string' &&
     typeof participant.user_id === 'string'
   )
 }
@@ -155,7 +155,7 @@ export function isMatch(data: unknown): data is Match {
 
   return (
     typeof match.id === 'string' &&
-    typeof match.tournament_id === 'string' &&
+    typeof match.round_id === 'string' &&
     typeof match.round === 'number' &&
     typeof match.match_number === 'number'
   )

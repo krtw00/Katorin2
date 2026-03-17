@@ -66,7 +66,7 @@ export default async function TeamDetailPage({ params }: Props) {
     .from('team_entries')
     .select(`
       *,
-      tournament:tournaments(id, title, status, start_at)
+      tournament:rounds(id, title, status, start_at)
     `)
     .eq('team_id', id)
     .order('created_at', { ascending: false })

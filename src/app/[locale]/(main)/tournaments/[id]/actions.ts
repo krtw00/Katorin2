@@ -31,7 +31,7 @@ export async function reportMatchResult(
   // 試合データ取得
   const { data: match, error: fetchError } = await supabase
     .from('matches')
-    .select('*, tournament:tournaments!matches_tournament_id_fkey(result_report_mode, organizer_id)')
+    .select('*, tournament:tournaments!matches_round_id_fkey(result_report_mode, organizer_id)')
     .eq('id', matchId)
     .single()
 
@@ -114,7 +114,7 @@ export async function reportMatchResult(
   }
 
   // revalidate
-  revalidatePath(`/tournaments/${match.tournament_id}/bracket`)
+  revalidatePath(`/tournaments/${match.round_id}/bracket`)
 
   return { success: true, status: reportStatus }
 }

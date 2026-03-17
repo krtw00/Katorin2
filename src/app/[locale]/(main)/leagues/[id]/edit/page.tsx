@@ -3,59 +3,56 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { SeriesForm } from '@/components/series/SeriesForm'
-import { Series } from '@/types/series'
+import { LeagueForm } from '@/components/league/LeagueForm'
+import { Series } from '@/types/league'
 import { useTranslations } from 'next-intl'
 
 type Props = {
   params: Promise<{ id: string }>
 }
 
-export default function EditSeriesPage({ params }: Props) {
-  const t = useTranslations('series')
+export default function EditLeaguePage({ params }: Props) {
+  const t = useTranslations('leagues')
   const tCommon = useTranslations('common')
   const router = useRouter()
   const supabase = createClient()
-  const [series, setSeries] = useState<Series | null>(null)
+  const [league, setLeague] = useState<Series | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const loadSeries = async () => {
+    const loadLeague = async () => {
       const { id } = await params
 
-      // Check authentication
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/login')
         return
       }
 
-      // Fetch series
-      const { data: seriesData, error: seriesError } = await supabase
-        .from('series')
+      const { data: leagueData, error: leagueError } = await supabase
+        .from('leagues')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (seriesError || !seriesData) {
+      if (leagueError || !leagueData) {
         setError(t('notFound'))
         setLoading(false)
         return
       }
 
-      // Check if user is organizer
-      if (user.id !== seriesData.organizer_id) {
+      if (user.id !== leagueData.organizer_id) {
         setError(t('noPermission'))
         setLoading(false)
         return
       }
 
-      setSeries(seriesData as Series)
+      setLeague(leagueData as Series)
       setLoading(false)
     }
 
-    loadSeries()
+    loadLeague()
   }, [params, router, supabase, t])
 
   if (loading) {
@@ -76,9 +73,9 @@ export default function EditSeriesPage({ params }: Props) {
     )
   }
 
-  if (!series) {
+  if (!league) {
     return null
   }
 
-  return <SeriesForm mode="edit" initialData={series} />
+  return <LeagueForm mode="edit" initialData={league} />
 }

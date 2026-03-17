@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Users, LayoutGrid, User, ChevronRight } from 'lucide-react'
 import {
   TournamentWithOrganizer,
-} from '@/types/tournament'
+} from '@/types/round'
 import { useTranslations } from 'next-intl'
 import { StatusIndicator } from '@/components/common/StatusIndicator'
 import { MetaItem } from '@/components/common/MetaItem'
@@ -56,7 +56,7 @@ export function TournamentListItem({
           <StatusIndicator status={tournament.status} showDot showIcon={false} />
         </div>
         <div className="flex items-center gap-3 mt-1">
-          <MetaItem icon={LayoutGrid}>{t('labels.tournamentFormat.' + tournament.tournament_format)}</MetaItem>
+          <MetaItem icon={LayoutGrid}>{t('labels.tournamentFormat.' + tournament.format)}</MetaItem>
           <MetaItem icon={Users}>
             {participantCount}/{tournament.max_participants}
           </MetaItem>

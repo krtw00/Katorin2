@@ -6,28 +6,29 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  TournamentFormat,
-  MatchFormat,
-  Visibility,
-  EntryMode,
+  Enums,
   Tables,
 } from '@/types/database'
-import { Tournament, CustomField, InputType, EditDeadline } from '@/types/tournament'
+import { Tournament, CustomField, InputType, EditDeadline } from '@/types/round'
 import { parseCustomFields } from '@/lib/types/guards'
 import { useTranslations } from 'next-intl'
 
-type Series = Tables<'series'>
+type League = Tables<'leagues'>
+type TournamentFormat = Enums<'tournament_format'>
+type MatchFormat = Enums<'match_format'>
+type Visibility = Enums<'visibility'>
+type EntryMode = Enums<'entry_mode'>
 
 type Section = 'overview' | 'participants' | 'tournament' | 'schedule'
 
 type TournamentFormProps = {
   mode: 'create' | 'edit'
   initialData?: Tournament
-  defaultSeriesId?: string
+  defaultLeagueId?: string
   onSuccess?: (tournament: Tournament) => void
 }
 
-export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }: TournamentFormProps) {
+export function TournamentForm({ mode, initialData, defaultLeagueId, onSuccess }: TournamentFormProps) {
   const t = useTranslations('tournament.form')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -51,7 +52,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
   const [coverPreview, setCoverPreview] = useState<string | null>(
     initialData?.cover_image_url || null
   )
-  const [series, setSeries] = useState<Series[]>([])
+  const [leagues, setLeagues] = useState<League[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -71,13 +72,13 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
         title: initialData.title,
         description: initialData.description || '',
         entry_type: initialData.entry_type || 'individual' as 'individual' | 'team',
-        tournament_format: initialData.tournament_format,
+        tournament_format: initialData.format,
         match_format: initialData.match_format,
         max_participants: initialData.max_participants,
         entry_limit_behavior: initialData.entry_limit_behavior,
         entry_mode: initialData.entry_mode || 'open' as EntryMode,
         visibility: initialData.visibility,
-        series_id: initialData.series_id || '',
+        league_id: initialData.league_id || '',
         entry_start_at: formatDateTimeLocal(initialData.entry_start_at),
         entry_deadline: formatDateTimeLocal(initialData.entry_deadline),
         start_at: formatDateTimeLocal(initialData.start_at),
@@ -99,7 +100,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
       entry_limit_behavior: 'first_come' as 'first_come' | 'waitlist',
       entry_mode: 'open' as EntryMode,
       visibility: 'public' as Visibility,
-      series_id: defaultSeriesId || '',
+      league_id: defaultLeagueId || '',
       entry_start_at: formatDateTimeLocal(now),
       entry_deadline: '',
       start_at: formatDateTimeLocal(now),
@@ -115,21 +116,21 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Fetch user's series
+  // Fetch user's leagues
   useEffect(() => {
     const fetchSeries = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
       const { data } = await supabase
-        .from('series')
+        .from('leagues')
         .select('*')
         .eq('organizer_id', user.id)
         .in('status', ['draft', 'in_progress'])
         .order('created_at', { ascending: false })
 
       if (data) {
-        setSeries(data)
+        setLeagues(data)
       }
     }
 
@@ -217,13 +218,13 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
       const tournamentData = {
         title: formData.title,
         description: formData.description,
-        tournament_format: formData.tournament_format,
+        format: formData.tournament_format,
         match_format: formData.match_format,
         max_participants: formData.max_participants,
         entry_limit_behavior: formData.entry_limit_behavior,
         entry_mode: formData.entry_mode,
-        visibility: defaultSeriesId ? 'public' as Visibility : formData.visibility,
-        series_id: formData.series_id || null,
+        visibility: defaultLeagueId ? 'public' as Visibility : formData.visibility,
+        league_id: formData.league_id || null,
         entry_start_at: formData.entry_start_at
           ? new Date(formData.entry_start_at).toISOString()
           : null,
@@ -247,7 +248,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
 
       if (mode === 'create') {
         const { data, error: insertError } = await supabase
-          .from('tournaments')
+          .from('rounds')
           .insert({
             ...tournamentData,
             organizer_id: user.id,
@@ -262,19 +263,19 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
         }
 
         // シリーズ紐付き時: 既存チームのエントリーを自動作成
-        if (defaultSeriesId && data.id) {
+        if (defaultLeagueId && data.id) {
           const { data: seriesTeams } = await supabase
             .from('teams')
             .select('id')
-            .eq('series_id', defaultSeriesId)
+            .eq('league_id', defaultLeagueId)
           if (seriesTeams?.length) {
             const entries = seriesTeams.map(t => ({
-              tournament_id: data.id,
+              round_id: data.id,
               team_id: t.id,
             }))
             await supabase
               .from('team_entries')
-              .upsert(entries, { onConflict: 'tournament_id,team_id' })
+              .upsert(entries, { onConflict: 'round_id,team_id' })
           }
         }
 
@@ -286,7 +287,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
       } else {
         // Edit mode
         const { data, error: updateError } = await supabase
-          .from('tournaments')
+          .from('rounds')
           .update(tournamentData)
           .eq('id', initialData!.id)
           .select()
@@ -468,17 +469,17 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                 </div>
 
                 {/* Series info (シリーズからの追加時は固定表示、単発大会では非表示) */}
-                {defaultSeriesId && (
+                {defaultLeagueId && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('series.label')}</label>
+                    <label className="text-sm font-medium">{t('leagues.label')}</label>
                     <div className="px-3 py-2 border rounded-md bg-muted text-sm">
-                      {series.find(s => s.id === defaultSeriesId)?.title || 'シリーズに紐づけ済み'}
+                      {leagues.find(s => s.id === defaultLeagueId)?.title || 'シリーズに紐づけ済み'}
                     </div>
                   </div>
                 )}
 
                 {/* Visibility（シリーズ紐付き時は非表示、シリーズの設定に従う） */}
-                {!defaultSeriesId && (
+                {!defaultLeagueId && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">{t('visibility.label')}</label>
                     <div className="space-y-2">
@@ -878,7 +879,7 @@ export function TournamentForm({ mode, initialData, defaultSeriesId, onSuccess }
                 </div>
 
                 {/* チーム戦: チーム人数上限のみ（詳細ルールはシリーズ側で管理） */}
-                {formData.entry_type === 'team' && !defaultSeriesId && (
+                {formData.entry_type === 'team' && !defaultLeagueId && (
                   <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
                     <label className="text-sm font-medium">チーム人数上限</label>
                     <p className="text-xs text-muted-foreground">1チームあたりの最大メンバー数</p>

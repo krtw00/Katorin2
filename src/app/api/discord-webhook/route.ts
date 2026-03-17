@@ -13,10 +13,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { event, tournamentId, seriesId } = body as {
+    const { event, tournamentId, leagueId } = body as {
       event: WebhookEvent
       tournamentId?: string
-      seriesId?: string
+      leagueId?: string
     }
 
     if (!event) {
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
 
     if (tournamentId) {
       const { data: tournament } = await supabase
-        .from('tournaments')
-        .select('*, series:series_id(discord_webhook_url, title)')
+        .from('rounds')
+        .select('*, series:league_id(discord_webhook_url, title)')
         .eq('id', tournamentId)
         .single()
 
@@ -66,24 +66,24 @@ export async function POST(request: Request) {
           description = `ラウンド ${tournament.current_round ?? ''} が開始されました`
           break
       }
-    } else if (seriesId) {
-      const { data: series } = await supabase
-        .from('series')
+    } else if (leagueId) {
+      const { data: league } = await supabase
+        .from('leagues')
         .select('*')
-        .eq('id', seriesId)
+        .eq('id', leagueId)
         .single()
 
-      if (!series) {
+      if (!league) {
         return NextResponse.json({ error: 'Series not found' }, { status: 404 })
       }
 
-      if (series.organizer_id !== user.id) {
+      if (league.organizer_id !== user.id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
 
-      webhookUrl = series.discord_webhook_url
-      title = series.title
-      pageUrl = `${origin}/series/${series.id}`
+      webhookUrl = league.discord_webhook_url
+      title = league.title
+      pageUrl = `${origin}/leagues/${league.id}`
     }
 
     if (!webhookUrl) {

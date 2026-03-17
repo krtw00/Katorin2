@@ -14,17 +14,17 @@ type Team = { id: string; name: string; avatar_url: string | null }
 type Block = { id: string; block_name: string; block_order: number }
 
 type Props = {
-  seriesId: string
+  leagueId: string
   teams: Team[]
   blocks: Block[]
   /** team_id -> block_id の初期マッピング */
   teamBlockMap: Record<string, string | null>
-  /** 最初のtournament_id（team_entriesのblock_id更新用） */
+  /** 最初のround_id（team_entriesのblock_id更新用） */
   tournamentIds: string[]
 }
 
-export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBlockMap: initialMap, tournamentIds }: Props) {
-  const t = useTranslations('series.blocks')
+export function BlockAssignment({ leagueId, teams, blocks: initialBlocks, teamBlockMap: initialMap, tournamentIds }: Props) {
+  const t = useTranslations('leagues.blocks')
   const supabase = createClient()
   const [blocks, setBlocks] = useState(initialBlocks)
   const [assignments, setAssignments] = useState<Record<string, string | null>>(initialMap)
@@ -37,13 +37,13 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
     if (!name) return
 
     const nextOrder = blocks.length + 1
-    // tournament_blocksはtournament_idが必要なので最初の大会に紐づける
+    // tournament_blocksはround_idが必要なので最初の大会に紐づける
     const tid = tournamentIds[0]
     if (!tid) return
 
     const { data, error } = await supabase
-      .from('tournament_blocks')
-      .insert({ tournament_id: tid, series_id: seriesId, block_name: name, block_order: nextOrder })
+      .from('round_blocks')
+      .insert({ round_id: tid, league_id: leagueId, block_name: name, block_order: nextOrder })
       .select()
       .single()
 
@@ -62,7 +62,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
     }
 
     const { error } = await supabase
-      .from('tournament_blocks')
+      .from('round_blocks')
       .delete()
       .eq('id', blockId)
 
@@ -81,7 +81,7 @@ export function BlockAssignment({ seriesId, teams, blocks: initialBlocks, teamBl
         await supabase
           .from('team_entries')
           .update({ block_id: blockId })
-          .eq('tournament_id', tid)
+          .eq('round_id', tid)
           .eq('team_id', teamId)
       }
     }

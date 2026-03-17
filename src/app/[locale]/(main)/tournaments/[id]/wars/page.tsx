@@ -24,8 +24,8 @@ export default async function WarsPage({ params }: Props) {
   // tournament, matches, user を並列取得
   const [{ data: tournament }, { data: matches }, { data: { user } }] = await Promise.all([
     supabase
-      .from('tournaments')
-      .select('*, organizer:profiles!tournaments_organizer_id_fkey(*)')
+      .from('rounds')
+      .select('*, organizer:profiles!rounds_organizer_id_fkey(*)')
       .eq('id', id)
       .single(),
     supabase
@@ -35,7 +35,7 @@ export default async function WarsPage({ params }: Props) {
         team1:teams!matches_team1_id_fkey(id, name, avatar_url),
         team2:teams!matches_team2_id_fkey(id, name, avatar_url)
       `)
-      .eq('tournament_id', id)
+      .eq('round_id', id)
       .order('round', { ascending: true })
       .order('match_number', { ascending: true }),
     supabase.auth.getUser(),
@@ -45,20 +45,20 @@ export default async function WarsPage({ params }: Props) {
 
   const isOrganizer = user?.id === tournament.organizer_id
 
-  // ブロック取得（tournament_id or series_id経由）
+  // ブロック取得（round_id or league_id経由）
   let blocks = (await supabase
-    .from('tournament_blocks')
+    .from('round_blocks')
     .select('*')
-    .eq('tournament_id', id)
+    .eq('round_id', id)
     .order('block_order', { ascending: true })
   ).data
 
-  // シリーズ配下ならseries_idでも検索
-  if ((!blocks || blocks.length === 0) && tournament.series_id) {
+  // シリーズ配下ならleague_idでも検索
+  if ((!blocks || blocks.length === 0) && tournament.league_id) {
     blocks = (await supabase
-      .from('tournament_blocks')
+      .from('round_blocks')
       .select('*')
-      .eq('series_id', tournament.series_id)
+      .eq('league_id', tournament.league_id)
       .order('block_order', { ascending: true })
     ).data
   }

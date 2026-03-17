@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { ParticipantWithUser } from '@/types/tournament'
+import { ParticipantWithUser } from '@/types/round'
 import { ChevronLeft } from 'lucide-react'
 
 type Props = {
@@ -31,7 +31,7 @@ export default async function ParticipantsPage({ params }: Props) {
 
   // Fetch tournament details
   const { data: tournament, error: tournamentError } = await supabase
-    .from('tournaments')
+    .from('rounds')
     .select('id, title')
     .eq('id', id)
     .single()
@@ -47,7 +47,7 @@ export default async function ParticipantsPage({ params }: Props) {
       *,
       user:profiles(*)
     `)
-    .eq('tournament_id', id)
+    .eq('round_id', id)
     .order('entry_number', { ascending: true })
 
   if (participantsError) {

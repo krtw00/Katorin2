@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { Layers } from 'lucide-react'
-import { SeriesWithOrganizer } from '@/types/series'
+import { LeagueWithOrganizer } from '@/types/league'
 import type { PostgrestError } from '@supabase/supabase-js'
-import { SeriesListItem, SeriesListSection } from '@/components/series/SeriesListItem'
-import { SeriesFilterForm } from '@/components/series/SeriesFilterForm'
+import { LeagueListItem, SeriesListSection } from '@/components/league/LeagueListItem'
+import { LeagueFilterForm } from '@/components/league/LeagueFilterForm'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import { getTranslations } from 'next-intl/server'
@@ -18,7 +18,7 @@ export default async function SeriesPage({
 }: {
   searchParams: Promise<{ q?: string; status?: FilterStatus }>
 }) {
-  const t = await getTranslations('series')
+  const t = await getTranslations('leagues')
   const params = await searchParams
   const query = params.q || ''
   const statusFilter = params.status || 'all'
@@ -27,11 +27,11 @@ export default async function SeriesPage({
 
   // Fetch series with organizer profile
   let seriesQuery = supabase
-    .from('series')
+    .from('leagues')
     .select(
       `
       *,
-      organizer:profiles!series_organizer_id_fkey(*)
+      organizer:profiles!leagues_organizer_id_fkey(*)
     `
     )
     .order('created_at', { ascending: false })
@@ -49,25 +49,25 @@ export default async function SeriesPage({
     seriesQuery = seriesQuery.in('status', ['in_progress', 'completed'])
   }
 
-  const { data: seriesList, error: seriesError } =
-    (await seriesQuery) as { data: SeriesWithOrganizer[] | null; error: PostgrestError | null }
+  const { data: seriesList, error: leagueError } =
+    (await seriesQuery) as { data: LeagueWithOrganizer[] | null; error: PostgrestError | null }
 
-  if (seriesError) {
-    console.error('Error fetching series:', seriesError)
+  if (leagueError) {
+    console.error('Error fetching series:', leagueError)
   }
 
   // Fetch tournament counts for each series
-  const seriesIds = seriesList?.map((s) => s.id) || []
+  const leagueIds = seriesList?.map((s) => s.id) || []
   const { data: tournamentCounts } = (await supabase
-    .from('tournaments')
-    .select('series_id')
-    .in('series_id', seriesIds)) as { data: { series_id: string }[] | null }
+    .from('rounds')
+    .select('league_id')
+    .in('league_id', leagueIds)) as { data: { league_id: string }[] | null }
 
   // Count tournaments per series
   const countMap = new Map<string, number>()
   tournamentCounts?.forEach((t) => {
-    if (t.series_id) {
-      countMap.set(t.series_id, (countMap.get(t.series_id) || 0) + 1)
+    if (t.league_id) {
+      countMap.set(t.league_id, (countMap.get(t.league_id) || 0) + 1)
     }
   })
 
@@ -77,8 +77,8 @@ export default async function SeriesPage({
   } = await supabase.auth.getUser()
 
   // Group series by status when showing all
-  const groupByStatus = (list: SeriesWithOrganizer[]) => {
-    const groups: Record<string, SeriesWithOrganizer[]> = {
+  const groupByStatus = (list: LeagueWithOrganizer[]) => {
+    const groups: Record<string, LeagueWithOrganizer[]> = {
       in_progress: [],
       completed: [],
     }
@@ -96,7 +96,7 @@ export default async function SeriesPage({
       <PageHeader
         title={t('title')}
         action={user ? (
-          <Link href="/series/new">
+          <Link href="/leagues/new">
             <Button size="sm">{t('create')}</Button>
           </Link>
         ) : undefined}
@@ -104,7 +104,7 @@ export default async function SeriesPage({
 
       {/* Search & Filters */}
       <div className="mb-6">
-        <SeriesFilterForm />
+        <LeagueFilterForm />
       </div>
 
       {/* Series List */}
@@ -120,9 +120,9 @@ export default async function SeriesPage({
                     count={grouped.in_progress.length}
                   >
                     {grouped.in_progress.map((series) => (
-                      <SeriesListItem
+                      <LeagueListItem
                         key={series.id}
-                        series={series}
+                        league={series}
                         tournamentCount={countMap.get(series.id) || 0}
                         showOrganizer
                       />
@@ -136,9 +136,9 @@ export default async function SeriesPage({
                     count={grouped.completed.length}
                   >
                     {grouped.completed.map((series) => (
-                      <SeriesListItem
+                      <LeagueListItem
                         key={series.id}
-                        series={series}
+                        league={series}
                         tournamentCount={countMap.get(series.id) || 0}
                         showOrganizer
                       />
@@ -150,9 +150,9 @@ export default async function SeriesPage({
               // Flat list when filtered
               <div className="divide-y">
                 {seriesList.map((series) => (
-                  <SeriesListItem
+                  <LeagueListItem
                     key={series.id}
-                    series={series}
+                    league={series}
                     tournamentCount={countMap.get(series.id) || 0}
                     showOrganizer
                   />

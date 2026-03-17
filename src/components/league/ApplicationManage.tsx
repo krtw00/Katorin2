@@ -23,12 +23,12 @@ type Application = {
 }
 
 type Props = {
-  seriesId: string
+  leagueId: string
   applications: Application[]
 }
 
-export function ApplicationManage({ seriesId, applications: initialApps }: Props) {
-  const t = useTranslations('series.application')
+export function ApplicationManage({ leagueId, applications: initialApps }: Props) {
+  const t = useTranslations('leagues.application')
   const [apps, setApps] = useState(initialApps)
   const [processing, setProcessing] = useState<string | null>(null)
   const router = useRouter()
@@ -60,21 +60,21 @@ export function ApplicationManage({ seriesId, applications: initialApps }: Props
     if (action === 'approved') {
       await supabase
         .from('teams')
-        .update({ series_id: seriesId })
+        .update({ league_id: leagueId })
         .eq('id', teamId)
 
       // シリーズ配下の大会を取得してエントリー作成
       const { data: tournaments } = await supabase
-        .from('tournaments')
+        .from('rounds')
         .select('id')
-        .eq('series_id', seriesId)
+        .eq('league_id', leagueId)
 
       if (tournaments?.length) {
         const entries = tournaments.map(t => ({
-          tournament_id: t.id,
+          round_id: t.id,
           team_id: teamId,
         }))
-        await supabase.from('team_entries').upsert(entries, { onConflict: 'tournament_id,team_id' })
+        await supabase.from('team_entries').upsert(entries, { onConflict: 'round_id,team_id' })
       }
     }
 

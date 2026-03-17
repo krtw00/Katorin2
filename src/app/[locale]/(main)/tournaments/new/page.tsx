@@ -5,7 +5,7 @@ import { TournamentForm } from '@/components/tournament/TournamentForm'
 
 export default function NewTournamentPage() {
   const searchParams = useSearchParams()
-  const seriesId = searchParams.get('series_id') || undefined
+  const leagueId = searchParams.get('league_id') || undefined
 
-  return <TournamentForm mode="create" defaultSeriesId={seriesId} />
+  return <TournamentForm mode="create" defaultLeagueId={leagueId} />
 }

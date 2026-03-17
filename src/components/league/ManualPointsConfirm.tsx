@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useTranslations } from 'next-intl'
-import { TournamentWithOrganizer } from '@/types/tournament'
+import { TournamentWithOrganizer } from '@/types/round'
 
 type Props = {
-  seriesId: string
+  leagueId: string
   tournaments: TournamentWithOrganizer[]
   calculatedTournamentIds: string[]
 }
 
 export function ManualPointsConfirm({ tournaments, calculatedTournamentIds }: Props) {
-  const t = useTranslations('series.manualPoints')
+  const t = useTranslations('leagues.manualPoints')
   const [calculating, setCalculating] = useState<Record<string, boolean>>({})
   const [calculated, setCalculated] = useState<Set<string>>(new Set(calculatedTournamentIds))
   const [error, setError] = useState('')
@@ -30,8 +30,8 @@ export function ManualPointsConfirm({ tournaments, calculatedTournamentIds }: Pr
     setError('')
 
     try {
-      const result = await supabase.rpc('calculate_series_points', {
-        p_tournament_id: tournamentId,
+      const result = await supabase.rpc('calculate_league_points', {
+        p_round_id: tournamentId,
       })
 
       if (result.error) {

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card'
 import {
   TournamentWithOrganizer,
-} from '@/types/tournament'
+} from '@/types/round'
 import { useTranslations } from 'next-intl'
 
 type Props = {
@@ -43,13 +43,13 @@ export function TournamentCard({ tournament, participantCount = 0 }: Props) {
           </Badge>
         </div>
         <CardDescription className="line-clamp-2">
-          {tournament.description || t('series.detail.noDescription')}
+          {tournament.description || t('leagues.detail.noDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('tournament.detail.format')}</span>
-          <span>{t('labels.tournamentFormat.' + tournament.tournament_format)}</span>
+          <span>{t('labels.tournamentFormat.' + tournament.format)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('tournament.detail.matchFormat')}</span>

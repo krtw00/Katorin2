@@ -23,8 +23,8 @@ export default async function WarDetailPage({ params }: Props) {
   // tournament と match を並列取得（第1段）
   const [{ data: tournament }, { data: match }] = await Promise.all([
     supabase
-      .from('tournaments')
-      .select('*, series:series(id, title)')
+      .from('rounds')
+      .select('*, league:leagues(id, title)')
       .eq('id', id)
       .single(),
     supabase
@@ -41,7 +41,7 @@ export default async function WarDetailPage({ params }: Props) {
   if (!tournament) notFound()
   if (!match) notFound()
 
-  const seriesInfo = tournament.series as { id: string; title: string } | null
+  const leagueInfo = tournament.league as { id: string; title: string } | null
 
   // 第2段: config, orders, warRounds, individualMatches, user を並列取得
   const [config, { data: orders }, { data: warRounds }, { data: individualMatches }, { data: { user } }] = await Promise.all([
@@ -79,9 +79,9 @@ export default async function WarDetailPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
       {/* パンくず */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        {seriesInfo && (
+        {leagueInfo && (
           <>
-            <Link href={`/series/${seriesInfo.id}`} className="hover:text-foreground transition-colors">{seriesInfo.title}</Link>
+            <Link href={`/leagues/${leagueInfo.id}`} className="hover:text-foreground transition-colors">{leagueInfo.title}</Link>
             <span>/</span>
           </>
         )}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { SeriesWithOrganizer } from '@/types/series'
+import { LeagueWithOrganizer } from '@/types/league'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -12,24 +12,24 @@ type Props = {
 }
 
 export default async function SeriesRankingPage({ params }: Props) {
-  const t = await getTranslations('series')
+  const t = await getTranslations('leagues')
   const tLabels = await getTranslations('labels')
   const { id } = await params
   const supabase = await createClient()
 
   // Fetch series
-  const { data: series, error } = await supabase
-    .from('series')
+  const { data: league, error } = await supabase
+    .from('leagues')
     .select(
       `
       *,
-      organizer:profiles!series_organizer_id_fkey(*)
+      organizer:profiles!leagues_organizer_id_fkey(*)
     `
     )
     .eq('id', id)
-    .single() as { data: SeriesWithOrganizer | null; error: unknown }
+    .single() as { data: LeagueWithOrganizer | null; error: unknown }
 
-  if (error || !series) {
+  if (error || !league) {
     notFound()
   }
 
@@ -37,15 +37,15 @@ export default async function SeriesRankingPage({ params }: Props) {
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
-        <Link href={`/series/${id}`}>
+        <Link href={`/leagues/${id}`}>
           <Button variant="ghost" className="mb-4">
             {t('detail.backToDetail')}
           </Button>
         </Link>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{series.title}</h1>
+          <h1 className="text-2xl font-bold">{league.title}</h1>
           <Badge variant="outline">
-            {tLabels('seriesStatus.' + series.status)}
+            {tLabels('seriesStatus.' + league.status)}
           </Badge>
         </div>
         <p className="text-muted-foreground mt-1">{t('detail.ranking')}</p>

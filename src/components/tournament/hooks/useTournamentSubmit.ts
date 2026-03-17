@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Tournament, CustomField } from '@/types/tournament'
+import { Tournament, CustomField } from '@/types/round'
 import { TournamentFormData } from './useTournamentFormState'
 import { handleError } from '@/lib/errors/handleError'
 import { createUnauthorizedError } from '@/lib/errors/handleError'
@@ -26,7 +26,7 @@ function convertFormDataToDBFormat(
   return {
     title: formData.title,
     description: formData.description,
-    tournament_format: formData.tournament_format,
+    format: formData.tournament_format,
     match_format: formData.match_format,
     max_participants: formData.max_participants,
     entry_limit_behavior: formData.entry_limit_behavior,
@@ -76,7 +76,7 @@ export function useTournamentSubmit() {
       // トーナメントを作成
       const tournament = await safeSupabaseMutation<Tournament>(
         supabase
-          .from('tournaments')
+          .from('rounds')
           .insert({
             ...tournamentData,
             organizer_id: user.id,
@@ -105,7 +105,7 @@ export function useTournamentSubmit() {
       // トーナメントを更新
       const tournament = await safeSupabaseMutation<Tournament>(
         supabase
-          .from('tournaments')
+          .from('rounds')
           .update(tournamentData)
           .eq('id', tournamentId)
           .select()

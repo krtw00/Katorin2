@@ -44,7 +44,7 @@ export default async function OrderPage({ params }: Props) {
   const [{ data: { user } }, { data: tournament }, { data: match }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
-      .from('tournaments')
+      .from('rounds')
       .select('*')
       .eq('id', id)
       .single(),

@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { MatchWithPlayers } from '@/types/tournament'
+import { MatchWithPlayers } from '@/types/round'
 import { reportMatchResult, type MatchReport } from '@/app/[locale]/(main)/tournaments/[id]/actions'
 
 type Props = {
