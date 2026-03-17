@@ -825,7 +825,8 @@
     "inProgress": "対戦中",
     "completed": "終了",
     "organizerHint": "※ 試合カードをクリックして結果入力",
-    "participantHint": "※ 自分の試合をクリックして結果報告"
+    "participantHint": "※ 自分の試合をクリックして結果報告",
+    "viewDetail": "詳細を見る"
   },
   "errors": {
     "unauthorized": "ログインが必要です",

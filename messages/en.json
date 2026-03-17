@@ -546,7 +546,8 @@
     "inProgress": "In Progress",
     "completed": "Completed",
     "organizerHint": "* Click a match card to enter results",
-    "participantHint": "* Click your match to report results"
+    "participantHint": "* Click your match to report results",
+    "viewDetail": "View detail"
   },
   "auth": {
     "login": {

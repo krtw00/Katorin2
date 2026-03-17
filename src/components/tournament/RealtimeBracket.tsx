@@ -218,21 +218,52 @@ function MatchCard({
         ${isDisputed ? 'ring-2 ring-yellow-500' : ''}
         ${(showClickIndicator || showReportIndicator) ? 'cursor-pointer hover:border-primary hover:shadow-md transition-all' : ''}
       `}
-      style={{ width: '160px' }}
+      style={{ width: isTeamBattle ? '200px' : '160px' }}
     >
-      <PlayerRow
-        player={match.player1}
-        playerId={match.player1_id}
-        score={match.player1_score ?? 0}
-        isWinner={match.winner_id === match.player1_id && !!match.winner_id}
-      />
-      <div className="border-t" />
-      <PlayerRow
-        player={match.player2}
-        playerId={match.player2_id}
-        score={match.player2_score ?? 0}
-        isWinner={match.winner_id === match.player2_id && !!match.winner_id}
-      />
+      {href && isCompleted && (
+        <Link
+          href={href}
+          className="block text-center text-xs py-0.5 bg-muted/30 text-primary hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {t('viewDetail')}
+        </Link>
+      )}
+      {isTeamBattle ? (
+        <>
+          <TeamRow
+            team={normalizeTeam(match.team1)}
+            teamId={match.team1_id}
+            wins={match.team1_wins ?? 0}
+            opponentWins={match.team2_wins ?? 0}
+            isWinner={match.winner_team_id === match.team1_id && !!match.winner_team_id}
+          />
+          <div className="border-t" />
+          <TeamRow
+            team={normalizeTeam(match.team2)}
+            teamId={match.team2_id}
+            wins={match.team2_wins ?? 0}
+            opponentWins={match.team1_wins ?? 0}
+            isWinner={match.winner_team_id === match.team2_id && !!match.winner_team_id}
+          />
+        </>
+      ) : (
+        <>
+          <PlayerRow
+            player={match.player1}
+            playerId={match.player1_id}
+            score={match.player1_score ?? 0}
+            isWinner={match.winner_id === match.player1_id && !!match.winner_id}
+          />
+          <div className="border-t" />
+          <PlayerRow
+            player={match.player2}
+            playerId={match.player2_id}
+            score={match.player2_score ?? 0}
+            isWinner={match.winner_id === match.player2_id && !!match.winner_id}
+          />
+        </>
+      )}
       <div
         className={`
           text-center text-xs py-0.5
@@ -440,6 +471,8 @@ function BracketSection({
   onPositionChange,
   positions,
   containerSize,
+  isTeamBattle = false,
+  tournamentId,
 }: {
   title: string
   titleColor: string
@@ -449,6 +482,8 @@ function BracketSection({
   onPositionChange: (id: string, rect: DOMRect) => void
   positions: Map<string, MatchPosition>
   containerSize: { width: number; height: number }
+  isTeamBattle?: boolean
+  tournamentId?: string
 }) {
   const matchesByRound = useMemo(() => {
     const map = new Map<number, MatchWithPlayers[]>()
@@ -483,7 +518,7 @@ function BracketSection({
 
   if (matches.length === 0) return null
 
-  const CARD_WIDTH = 160
+  const CARD_WIDTH = isTeamBattle ? 200 : 160
   const CARD_HEIGHT = 76
   const ROUND_GAP = 80
 
@@ -513,6 +548,8 @@ function BracketSection({
                       onPositionChange={onPositionChange}
                       onClick={() => onMatchClick(match)}
                       isClickable={isOrganizer}
+                      isTeamBattle={isTeamBattle}
+                      href={isTeamBattle && tournamentId ? `/tournaments/${tournamentId}/wars/${match.id}` : undefined}
                     />
                   ))}
                 </div>
@@ -529,24 +566,24 @@ function BracketSection({
             </div>
             <div>
               {(() => {
-                const finalMatch = matches[0]
-                const winner = finalMatch?.winner
+                const finalMatch = matches[0] as BracketMatch
+                const winnerName = getWinnerDisplayName(finalMatch, isTeamBattle)
                 return (
                   <div
                     className={`
                       rounded-md border-2 px-3 py-4 text-center
-                      ${winner
+                      ${winnerName
                         ? 'border-yellow-400 bg-gradient-to-b from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30'
                         : 'border-dashed border-muted-foreground/30 bg-muted/20'
                       }
                     `}
                     style={{ width: CARD_WIDTH }}
                   >
-                    {winner ? (
+                    {winnerName ? (
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-2xl">🏆</span>
                         <span className="font-bold text-base">
-                          {winner.display_name}
+                          {winnerName}
                         </span>
                       </div>
                     ) : (
@@ -615,6 +652,8 @@ function BracketSection({
                         onPositionChange={onPositionChange}
                         onClick={() => onMatchClick(match)}
                         isClickable={isOrganizer}
+                        isTeamBattle={isTeamBattle}
+                        href={isTeamBattle && tournamentId ? `/tournaments/${tournamentId}/wars/${match.id}` : undefined}
                       />
                     ))}
                   </div>
@@ -628,9 +667,9 @@ function BracketSection({
   )
 }
 
-export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = false, currentUserId = null }: Props) {
+export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = false, currentUserId = null, isTeamBattle = false }: Props) {
   const t = useTranslations('bracket')
-  const matches = useRealtimeMatches(tournamentId, initialMatches)
+  const matches = useRealtimeMatches(tournamentId, initialMatches, { isTeamBattle })
   const containerRef = useRef<HTMLDivElement>(null)
   const [positions, setPositions] = useState<Map<string, MatchPosition>>(new Map())
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
@@ -789,7 +828,7 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
     )
   }
 
-  const CARD_WIDTH = 160
+  const CARD_WIDTH = isTeamBattle ? 200 : 160
   const CARD_HEIGHT = 76
   const ROUND_GAP = 80
   const HEADER_HEIGHT = 32
@@ -807,6 +846,8 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
           onPositionChange={handlePositionChange}
           positions={positions}
           containerSize={containerSize}
+          isTeamBattle={isTeamBattle}
+          tournamentId={tournamentId}
         />
 
         <BracketSection
@@ -818,6 +859,8 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
           onPositionChange={handlePositionChange}
           positions={positions}
           containerSize={containerSize}
+          isTeamBattle={isTeamBattle}
+          tournamentId={tournamentId}
         />
 
         <BracketSection
@@ -829,6 +872,8 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
           onPositionChange={handlePositionChange}
           positions={positions}
           containerSize={containerSize}
+          isTeamBattle={isTeamBattle}
+          tournamentId={tournamentId}
         />
 
         {/* Legend */}
@@ -936,6 +981,8 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
                         isClickable={isOrganizer}
                         isParticipant={isParticipantInMatch && !isOrganizer}
                         onReport={() => setReportMatch(match)}
+                        isTeamBattle={isTeamBattle}
+                        href={isTeamBattle ? `/tournaments/${tournamentId}/wars/${match.id}` : undefined}
                       />
                     )
                   })}
@@ -960,24 +1007,24 @@ export function RealtimeBracket({ tournamentId, initialMatches, isOrganizer = fa
                 }}
               >
                 {(() => {
-                  const finalMatch = matchesByRound.get(maxRound)?.[0]
-                  const winner = finalMatch?.winner
+                  const finalMatch = matchesByRound.get(maxRound)?.[0] as BracketMatch | undefined
+                  const winnerName = finalMatch ? getWinnerDisplayName(finalMatch, isTeamBattle) : null
                   return (
                     <div
                       className={`
                         rounded-md border-2 px-3 py-4 text-center
-                        ${winner
+                        ${winnerName
                           ? 'border-yellow-400 bg-gradient-to-b from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30'
                           : 'border-dashed border-muted-foreground/30 bg-muted/20'
                         }
                       `}
                       style={{ width: CARD_WIDTH }}
                     >
-                      {winner ? (
+                      {winnerName ? (
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-2xl">🏆</span>
                           <span className="font-bold text-base">
-                            {winner.display_name}
+                            {winnerName}
                           </span>
                         </div>
                       ) : (

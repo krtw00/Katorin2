@@ -416,6 +416,176 @@ async function main() {
     console.log(`  ✅ ${t1.name} ${t1rw}-${t2rw} ${t2.name}`)
   }
 
+  // === BYE試合サンプル（予選 Week 2, Group B）===
+  console.log('\n📝 BYE試合サンプル追加')
+  {
+    const byeTeam = teams[12] // Cat Paradise (Group B)
+    const { data: byeMatch } = await supabase.from('matches').insert({
+      round_id: tournamentIds[1], round: 1, match_number: 99,
+      team1_id: byeTeam.id, team2_id: null, block_id: gB!.id,
+      status: 'completed', is_bye: true,
+      winner_team_id: byeTeam.id,
+      team1_round_wins: 0, team2_round_wins: 0,
+      team1_wins: 0, team2_wins: 0,
+      completed_at: new Date().toISOString(),
+    }).select().single()
+    console.log(`  ✅ BYE: ${byeTeam.name} (match ${byeMatch!.id})`)
+  }
+
+  // === 没収試合サンプル（予選 Week 2, Group A）===
+  console.log('\n📝 没収試合サンプル追加')
+  {
+    const forfeitLoser = teams[4]  // Not Equal (Group A)
+    const forfeitWinner = teams[7] // exclusion (Group A)
+    const { data: forfeitMatch } = await supabase.from('matches').insert({
+      round_id: tournamentIds[1], round: 1, match_number: 98,
+      team1_id: forfeitLoser.id, team2_id: forfeitWinner.id, block_id: gA!.id,
+      status: 'completed', is_forfeit: true,
+      winner_team_id: forfeitWinner.id,
+      team1_round_wins: 1, team2_round_wins: 2,
+      team1_wins: 0, team2_wins: 0,
+      completed_at: new Date().toISOString(),
+    }).select().single()
+    console.log(`  ✅ 没収: ${forfeitLoser.name} 1-2 ${forfeitWinner.name} (match ${forfeitMatch!.id})`)
+  }
+
+  // === 決勝ラウンド ===
+  console.log('\n📝 決勝ラウンド作成')
+
+  // 予選ブロック上位2チーム（MATCH_RESULTSから勝敗集計）
+  // Group A: teams 0-7, Group B: teams 8-15
+  const winCounts = new Map<number, number>()
+  for (let i = 0; i < 16; i++) winCounts.set(i, 0)
+  for (const r of MATCH_RESULTS) {
+    winCounts.set(r.winner, (winCounts.get(r.winner) || 0) + 1)
+  }
+  // Group A 上位2
+  const groupATeamIdxs = [0, 1, 2, 3, 4, 5, 6, 7]
+  groupATeamIdxs.sort((a, b) => (winCounts.get(b) || 0) - (winCounts.get(a) || 0))
+  const [a1Idx, a2Idx] = groupATeamIdxs.slice(0, 2)
+  // Group B 上位2
+  const groupBTeamIdxs = [8, 9, 10, 11, 12, 13, 14, 15]
+  groupBTeamIdxs.sort((a, b) => (winCounts.get(b) || 0) - (winCounts.get(a) || 0))
+  const [b1Idx, b2Idx] = groupBTeamIdxs.slice(0, 2)
+
+  console.log(`  Group A 上位: ${teams[a1Idx].name}, ${teams[a2Idx].name}`)
+  console.log(`  Group B 上位: ${teams[b1Idx].name}, ${teams[b2Idx].name}`)
+
+  const { data: finalsRound } = await supabase.from('rounds').insert({
+    title: 'WMGP S8 - Finals',
+    description: '決勝トーナメント（各ブロック上位2チーム）',
+    organizer_id: organizerId,
+    format: 'single_elimination',
+    match_format: 'bo3',
+    entry_type: 'team',
+    max_participants: 4,
+    visibility: 'public',
+    status: 'completed',
+    entry_mode: 'open',
+    league_id: seriesId,
+    round_order: 3,
+    order_size: 3,
+    sub_count: 1,
+    players_per_round: 3,
+    win_point_value: 3,
+    is_demo: true,
+    is_finals: true,
+    source_round_id: tournamentIds[0],
+    qualified_per_block: 2,
+  }).select().single()
+  const finalsRoundId = finalsRound!.id
+  console.log(`  ✅ 決勝ラウンド: ${finalsRoundId}`)
+
+  // 決勝ラウンドにチームエントリー
+  const finalsTeamIdxs = [a1Idx, a2Idx, b1Idx, b2Idx]
+  for (const idx of finalsTeamIdxs) {
+    await supabase.from('team_entries').insert({
+      round_id: finalsRoundId, team_id: teams[idx].id,
+    })
+  }
+
+  // 準決勝: A1 vs B2, B1 vs A2
+  const FINALS_MATCHES: { t1: number; t2: number; rounds: { t1w: number; t2w: number }[]; winner: number; matchNumber: number; round: number; nextMatchNumber: number }[] = [
+    // SF1: A1 vs B2
+    { t1: a1Idx, t2: b2Idx, rounds: [{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: a1Idx, matchNumber: 1, round: 1, nextMatchNumber: 3 },
+    // SF2: B1 vs A2
+    { t1: b1Idx, t2: a2Idx, rounds: [{t1w:1,t2w:2},{t1w:2,t2w:1},{t1w:2,t2w:1}], winner: b1Idx, matchNumber: 2, round: 1, nextMatchNumber: 3 },
+    // Final: SF1勝者 vs SF2勝者
+    { t1: a1Idx, t2: b1Idx, rounds: [{t1w:2,t2w:1},{t1w:1,t2w:2},{t1w:2,t2w:1}], winner: a1Idx, matchNumber: 3, round: 2, nextMatchNumber: 0 },
+  ]
+
+  // まず全matchを作成（next_match_id参照のため）
+  const finalsMatchIds: string[] = []
+  for (const fm of FINALS_MATCHES) {
+    const { data: m } = await supabase.from('matches').insert({
+      round_id: finalsRoundId, round: fm.round, match_number: fm.matchNumber,
+      team1_id: teams[fm.t1].id, team2_id: teams[fm.t2].id,
+      status: 'pending',
+    }).select().single()
+    finalsMatchIds.push(m!.id)
+  }
+
+  // next_match_id を設定（準決勝→決勝）
+  await supabase.from('matches').update({ next_match_id: finalsMatchIds[2], next_match_slot: 1 }).eq('id', finalsMatchIds[0])
+  await supabase.from('matches').update({ next_match_id: finalsMatchIds[2], next_match_slot: 2 }).eq('id', finalsMatchIds[1])
+
+  // 試合結果入力
+  console.log('\n📝 決勝ラウンド試合結果入力')
+  for (let fi = 0; fi < FINALS_MATCHES.length; fi++) {
+    const fm = FINALS_MATCHES[fi]
+    const matchId = finalsMatchIds[fi]
+    const t1 = teams[fm.t1], t2 = teams[fm.t2]
+
+    // オーダー
+    for (const team of [t1, t2]) {
+      const tIdx = teams.indexOf(team)
+      const off = tIdx * 2
+      await supabase.from('war_orders').insert(
+        team.memberIds.slice(0, 4).map((uid, i) => ({
+          match_id: matchId, team_id: team.id, slot: i + 1, user_id: uid,
+          deck_name: DECKS[(off + i) % DECKS.length],
+          deck_theme: DECKS[(off + i) % DECKS.length],
+          is_sub: i === 3, is_picked: i < 3,
+        }))
+      )
+    }
+
+    let totalT1 = 0, totalT2 = 0
+    for (let ri = 0; ri < fm.rounds.length; ri++) {
+      const rr = fm.rounds[ri]
+      const { data: wr } = await supabase.from('war_rounds').insert({
+        match_id: matchId, round_number: ri + 1, status: 'completed',
+        team1_match_wins: rr.t1w, team2_match_wins: rr.t2w,
+        winner_team_id: rr.t1w >= 2 ? t1.id : t2.id,
+        completed_at: new Date().toISOString(),
+      }).select().single()
+
+      for (let s = 0; s < 3; s++) {
+        const p1Win = s < rr.t1w
+        if (p1Win) totalT1++; else totalT2++
+        await supabase.from('individual_matches').insert({
+          match_id: matchId, war_round_id: wr!.id, play_order: ri * 3 + s + 1,
+          player1_id: t1.memberIds[s], player2_id: t2.memberIds[s],
+          player1_score: p1Win ? 2 : 1, player2_score: p1Win ? 1 : 2,
+          player1_duel_wins: p1Win ? 2 : 1, player2_duel_wins: p1Win ? 1 : 2,
+          winner_id: p1Win ? t1.memberIds[s] : t2.memberIds[s], status: 'completed',
+        })
+      }
+    }
+
+    const t1rw = fm.rounds.filter(x => x.t1w >= 2).length
+    const t2rw = fm.rounds.filter(x => x.t2w >= 2).length
+    await supabase.from('matches').update({
+      team1_round_wins: t1rw, team2_round_wins: t2rw,
+      team1_wins: totalT1, team2_wins: totalT2,
+      winner_team_id: teams[fm.winner].id, status: 'completed',
+      completed_at: new Date().toISOString(),
+    }).eq('id', matchId)
+
+    const label = fi < 2 ? `準決勝${fi + 1}` : '決勝'
+    console.log(`  ✅ ${label}: ${t1.name} ${t1rw}-${t2rw} ${t2.name}`)
+  }
+
   // === 順位確認 ===
   // block_standings は round_id 単位なので、各Weekの結果を表示
   for (const [wi, tid] of tournamentIds.entries()) {
@@ -431,10 +601,12 @@ async function main() {
   }
 
   console.log(`\n✅ デモデータ投入完了`)
-  console.log(`  シリーズ: /leagues/${seriesId}`)
+  console.log(`  リーグ: /leagues/${seriesId}`)
   for (const [wi, tid] of tournamentIds.entries()) {
-    console.log(`  Week ${wi + 1}: /tournaments/${tid}`)
+    console.log(`  Week ${wi + 1}: /rounds/${tid}`)
   }
+  console.log(`  決勝: /rounds/${finalsRoundId}`)
+  console.log(`  優勝: ${teams[a1Idx].name}`)
 }
 
 main().catch(err => { console.error('💥', err); process.exit(1) })
