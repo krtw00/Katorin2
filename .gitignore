@@ -36,6 +36,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+deploy/google/*.env
+!deploy/google/*.env.example
+
+# firebase generated
+.firebase/
 
 # vercel
 .vercel

@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "deploy:cloudrun": "bash scripts/deploy-cloudrun-katorin2.sh",
+    "deploy:firebase": "bash scripts/deploy-firebase-katorin2.sh",
     "db:types": "supabase gen types typescript --linked 2>/dev/null | grep -v '^Initialising' > src/types/database.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
