@@ -9,6 +9,24 @@ Rails 8 ベースの WMGP 運営台帳アプリ。
 - Cloud Run
 - Firebase Hosting rewrite
 
+## Local Development
+
+PostgreSQL は開発用に Docker で起動できる。
+
+```bash
+cd apps/ledger
+docker compose -f compose.dev.yml up -d
+eval "$(rbenv init - zsh)"
+bundle install
+bundle exec rails db:prepare
+bin/dev
+```
+
+`LEDGER_DATABASE_URL` を未指定のままでも、development と test は次のローカル DB を使う。
+
+- `postgresql://postgres:postgres@127.0.0.1:5433/ledger_development`
+- `postgresql://postgres:postgres@127.0.0.1:5433/ledger_test`
+
 ## Environment Split
 
 - `production`
