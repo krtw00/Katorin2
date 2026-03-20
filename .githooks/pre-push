@@ -5,7 +5,7 @@ remote_name="${1:-}"
 
 while read -r local_ref _remote_sha remote_ref _local_sha; do
   case "$remote_ref" in
-    refs/heads/main|refs/heads/release/*)
+    refs/heads/main)
       cat >&2 <<EOF
 Direct pushes to protected branches (${remote_ref#refs/heads/}) are blocked.
 Push a feature branch and merge by PR instead.
