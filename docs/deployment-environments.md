@@ -37,6 +37,20 @@ APP_ENV=staging \
 bash scripts/deploy-cloudrun-ledger.sh
 ```
 
+branch 方針:
+
+- `production`
+  - `main` からだけ deploy する
+- `staging`
+  - `main` または `release/*` から deploy する
+  - `develop` は staging の正本にしない
+
+理由:
+
+- staging は `開発の最新` ではなく `本番候補の特定 SHA` を確認する場所として使う
+- `develop = staging` にすると未完成機能が混ざりやすく、staging で見た内容と本番反映 SHA がずれやすい
+- まず `main` を常に deploy 可能に保ち、必要な時だけ `release/*` を切る方が追跡しやすい
+
 runtime env は `Secret Manager` を正本にする。既定 secret 名:
 
 - `katorin2-ledger-runtime-production`
