@@ -1,0 +1,72 @@
+<% page_title "ホーム" %>
+
+<section class="page-header dashboard-hero">
+  <div class="dashboard-hero__copy">
+    <p class="eyebrow">Dashboard</p>
+    <h1>ホーム</h1>
+    <p class="muted">いま処理すべき対戦を優先表示します。</p>
+    <div class="hero-metrics">
+      <span class="metric-chip"><strong><%= @today_matches.count %></strong><span>今日の対戦</span></span>
+      <span class="metric-chip"><strong><%= @result_pending_matches.count %></strong><span>結果未確定</span></span>
+      <span class="metric-chip"><strong><%= @stale_exports.count %></strong><span>再出力待ち</span></span>
+    </div>
+  </div>
+  <div class="page-actions">
+    <%= link_to "リーグ一覧", leagues_path, class: "button" %>
+    <%= link_to "リーグ作成", new_league_path, class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <h2>今日の対戦</h2>
+    <% if @today_matches.any? %>
+      <ul class="record-list">
+        <% @today_matches.each do |match| %>
+          <li><%= render "matches/row", match: match %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy">本日の対戦はありません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <h2>結果未確定</h2>
+    <% if @result_pending_matches.any? %>
+      <ul class="record-list">
+        <% @result_pending_matches.each do |match| %>
+          <li><%= render "matches/row", match: match %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy">未確定の対戦はありません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <h2>画像再出力待ち</h2>
+    <% if @stale_exports.any? %>
+      <ul class="record-list">
+        <% @stale_exports.each do |match| %>
+          <li><%= render "matches/row", match: match %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy">再出力待ちはありません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <h2>リーグ</h2>
+    <% if @leagues.any? %>
+      <ul class="compact-list">
+        <% @leagues.each do |league| %>
+          <li><%= link_to league.name, league_path(league) %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy">リーグがまだありません。</p>
+    <% end %>
+  </article>
+</section>

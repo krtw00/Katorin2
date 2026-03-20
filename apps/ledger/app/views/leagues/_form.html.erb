@@ -1,0 +1,44 @@
+<%= render "shared/errors", record: league %>
+
+<%= form_with model: league, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :name, "リーグ名" %>
+      <%= form.text_field :name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :slug, "slug" %>
+      <%= form.text_field :slug, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :rule_module_key, "ルールモジュール" %>
+      <%= form.text_field :rule_module_key, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :status, "状態" %>
+      <%= form.select :status, [["draft", "draft"], ["active", "active"], ["completed", "completed"]] %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :started_at, "開始日" %>
+      <%= form.date_field :started_at %>
+    </div>
+
+    <div class="field">
+      <%= form.label :ended_at, "終了日" %>
+      <%= form.date_field :ended_at %>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to "戻る", league.persisted? ? league_path(league) : leagues_path, class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

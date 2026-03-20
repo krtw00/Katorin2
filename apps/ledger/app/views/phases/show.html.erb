@@ -1,0 +1,37 @@
+<% page_title @phase.name %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Phase</p>
+    <h1><%= @phase.name %></h1>
+    <p class="muted"><%= @phase.kind %> / bracket: <%= @phase.bracket_enabled? ? "on" : "off" %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to "リーグへ戻る", league_path(@league), class: "button" %>
+    <%= link_to "編集", edit_league_phase_path(@league, @phase), class: "button" %>
+    <%= link_to "Week作成", new_phase_week_path(@phase), class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <h2>Weeks</h2>
+    <ul class="compact-list">
+      <% @weeks.each do |week| %>
+        <li>
+          <%= link_to week.name, phase_week_path(@phase, week) %>
+          <span class="muted">/ match <%= week.matches.size %></span>
+        </li>
+      <% end %>
+    </ul>
+  </article>
+
+  <article class="panel">
+    <h2>Blocks</h2>
+    <ul class="compact-list">
+      <% @blocks.each do |block| %>
+        <li><%= block.name %></li>
+      <% end %>
+    </ul>
+  </article>
+</section>

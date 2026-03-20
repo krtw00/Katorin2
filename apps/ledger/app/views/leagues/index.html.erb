@@ -1,0 +1,25 @@
+<% page_title "リーグ一覧" %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">League Ledger</p>
+    <h1>リーグ一覧</h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to "リーグ作成", new_league_path, class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="stack">
+  <% @leagues.each do |league| %>
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2><%= link_to league.name, league_path(league) %></h2>
+          <p class="muted"><%= league.slug %></p>
+        </div>
+        <%= status_badge league.status, "neutral" %>
+      </div>
+    </article>
+  <% end %>
+</section>

@@ -1,0 +1,27 @@
+<% page_title @week.name %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Week</p>
+    <h1><%= @week.name %></h1>
+    <p class="muted">番号: <%= @week.number %> / 種別: <%= @week.kind %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to "フェーズへ戻る", league_phase_path(@phase.league, @phase), class: "button" %>
+    <%= link_to "編集", edit_phase_week_path(@phase, @week), class: "button" %>
+    <%= link_to "対戦作成", new_week_match_path(@week), class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Matches</h2>
+  <% if @matches.any? %>
+    <ul class="record-list">
+      <% @matches.each do |match| %>
+        <li><%= render "matches/row", match: match %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="empty-copy">対戦カードがまだありません。</p>
+  <% end %>
+</section>

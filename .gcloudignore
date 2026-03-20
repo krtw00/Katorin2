@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+coverage
+tmp
+apps/ledger/vendor/bundle
+apps/ledger/tmp
+apps/ledger/log/*
+apps/ledger/storage/*

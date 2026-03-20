@@ -1,0 +1,37 @@
+<%= render "shared/errors", record: week %>
+
+<%= form_with model: [phase, week], class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :number, "Week番号" %>
+      <%= form.number_field :number, min: 1, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :name, "表示名" %>
+      <%= form.text_field :name, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :kind, "種別" %>
+      <%= form.select :kind, Week::KINDS.values.map { |value| [value, value] } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :position, "並び順" %>
+      <%= form.number_field :position, min: 1, required: true %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :locked_at, "ロック日時" %>
+    <%= form.datetime_local_field :locked_at %>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to "戻る", week.persisted? ? phase_week_path(phase, week) : league_phase_path(phase.league, phase), class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

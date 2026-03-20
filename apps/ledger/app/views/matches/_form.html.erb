@@ -1,0 +1,88 @@
+<%= render "shared/errors", record: match %>
+
+<% form_url = match.persisted? ? match_path(match) : week_matches_path(week) %>
+<% form_method = match.persisted? ? :patch : :post %>
+
+<%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :home_team_id, "ホームチーム" %>
+      <%= form.collection_select :home_team_id, @team_options, :id, :display_name, prompt: "選択してください" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :away_team_id, "アウェイチーム" %>
+      <%= form.collection_select :away_team_id, @team_options, :id, :display_name, prompt: "選択してください" %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :block_id, "ブロック" %>
+      <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :stage_key, "ステージキー" %>
+      <%= form.text_field :stage_key %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :scheduled_on, "対戦日" %>
+      <%= form.date_field :scheduled_on %>
+    </div>
+
+    <div class="field">
+      <%= form.label :scheduled_time, "開始時刻" %>
+      <%= form.time_field :scheduled_time %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :status, "進行状態" %>
+      <%= form.select :status, Match::STATUSES.values.map { |value| [value, value] } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :export_status, "画像状態" %>
+      <%= form.select :export_status, Match::EXPORT_STATUSES.values.map { |value| [value, value] } %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :judge_name, "Judge名" %>
+      <%= form.text_field :judge_name %>
+    </div>
+
+    <div class="field">
+      <%= form.label :bracket_slot, "ブラケット位置" %>
+      <%= form.text_field :bracket_slot %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :room_id, "ルームID" %>
+      <%= form.text_field :room_id %>
+    </div>
+
+    <div class="field">
+      <%= form.label :spectator_room_id, "観戦ID" %>
+      <%= form.text_field :spectator_room_id %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :notes, "メモ" %>
+    <%= form.text_area :notes, rows: 4 %>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to "戻る", match.persisted? ? match_path(match) : phase_week_path(week.phase, week), class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>
