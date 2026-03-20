@@ -1,0 +1,29 @@
+<% page_title "ログイン" %>
+
+<section class="auth-shell">
+  <div class="panel panel--brand auth-intro">
+    <p class="eyebrow">Katorin2</p>
+    <h1>サインイン</h1>
+    <p class="muted">共通アカウントでログインします。</p>
+  </div>
+
+  <div class="panel auth-panel">
+    <p class="eyebrow">Login</p>
+    <h2>ID / パスワード</h2>
+    <p class="muted">共通アカウントでサインインします。</p>
+
+    <%= form_with url: session_path, class: "stack" do |form| %>
+      <div class="field">
+        <%= form.label :login_id, "ID" %>
+        <%= form.text_field :login_id, required: true, autofocus: true, autocomplete: "username" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password, "パスワード" %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password" %>
+      </div>
+
+      <%= form.submit "ログイン", class: "button button--primary button--block" %>
+    <% end %>
+  </div>
+</section>

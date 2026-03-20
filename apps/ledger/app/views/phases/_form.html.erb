@@ -1,0 +1,46 @@
+<%= render "shared/errors", record: phase %>
+
+<%= form_with model: [league, phase], class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :name, "フェーズ名" %>
+      <%= form.text_field :name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :kind, "種別" %>
+      <%= form.select :kind, Phase::KINDS.values.map { |value| [value, value] } %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :position, "並び順" %>
+      <%= form.number_field :position, min: 1, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :rule_module_key, "ルールモジュール" %>
+      <%= form.text_field :rule_module_key, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :ranking_rule_key, "順位ルール" %>
+      <%= form.text_field :ranking_rule_key %>
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <%= form.check_box :bracket_enabled %>
+        ブラケットを有効化
+      </label>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to "戻る", phase.persisted? ? league_phase_path(league, phase) : league_path(league), class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

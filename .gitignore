@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# local dependencies and caches
 /node_modules
 /.pnp
 .pnp.*
@@ -9,57 +7,35 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+/.next/
+/.vercel
+/supabase/
 
-# testing
+# test and build artifacts
 /coverage
 /test-results/
 /playwright-report/
 /blob-report/
-
-# next.js
-/.next/
-/out/
-
-# production
 /build
+/out
+*.tsbuildinfo
 
-# misc
+# local env files
+.env*
+!.env.example
+
+# misc local files
 .DS_Store
 *.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+docker-compose.override.yml
 
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
-deploy/google/*.env
-!deploy/google/*.env.example
-
-# firebase generated
-.firebase/
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# devhive (deprecated)
+# local tooling
 .devhive/
 .devhive.yaml
-
-# serena
 .serena/
-
-# supabase temp files
-supabase/.temp/
-
-# AI
 CLAUDE.md
 .claude/
-docker-compose.override.yml

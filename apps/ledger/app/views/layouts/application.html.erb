@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Katorin2" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Ledger">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <%= link_to organizer_signed_in? ? dashboard_path : root_path, class: "brand-link" do %>
+            <span class="brand-mark-wrap">
+              <%= image_tag "/icon.png", alt: "Katorin2", class: "brand-mark" %>
+            </span>
+            <span class="brand-name">Katorin2</span>
+          <% end %>
+        </div>
+
+        <% if organizer_signed_in? %>
+          <nav class="topnav">
+            <%= nav_link_to "Home", dashboard_path %>
+            <%= nav_link_to "Leagues", leagues_path, active_paths: ["/leagues"] %>
+          </nav>
+
+          <div class="account-box">
+            <span><%= current_organizer_account.display_name %></span>
+            <%= button_to "ログアウト", session_path, method: :delete, class: "button button--ghost" %>
+          </div>
+        <% end %>
+      </header>
+
+      <main class="content">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

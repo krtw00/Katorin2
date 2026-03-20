@@ -1,0 +1,22 @@
+<div class="record-row">
+  <div>
+    <strong><%= link_to "#{match.home_team.display_name} vs #{match.away_team.display_name}", match_path(match) %></strong>
+    <div class="muted">
+      <%= match.phase.name %> / <%= match.week.name %>
+      <% if match.scheduled_on %>
+        / <%= match.scheduled_on %>
+      <% end %>
+      <% if match.scheduled_time %>
+        <%= match.scheduled_time.strftime("%H:%M") %>
+      <% end %>
+    </div>
+  </div>
+  <div class="record-row__meta">
+    <%= status_badge match.status, "neutral" %>
+    <% if match.export_status == "stale" %>
+      <%= status_badge "export stale", "danger" %>
+    <% elsif match.export_status == "pending" %>
+      <%= status_badge "export pending", "warning" %>
+    <% end %>
+  </div>
+</div>
