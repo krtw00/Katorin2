@@ -23,32 +23,36 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <div class="shell">
-      <header class="topbar">
-        <div class="brand">
-          <%= link_to organizer_signed_in? ? dashboard_path : root_path, class: "brand-link" do %>
-            <span class="brand-mark-wrap">
-              <%= image_tag "/icon.png", alt: "Katorin2", class: "brand-mark" %>
-            </span>
-            <span class="brand-name">Katorin2</span>
-          <% end %>
-        </div>
+  <% auth_screen = controller_name == "sessions" && %w[new create].include?(action_name) %>
 
-        <% if organizer_signed_in? %>
-          <nav class="topnav">
-            <%= nav_link_to "Home", dashboard_path %>
-            <%= nav_link_to "Leagues", leagues_path, active_paths: ["/leagues"] %>
-          </nav>
-
-          <div class="account-box">
-            <span><%= current_organizer_account.display_name %></span>
-            <%= button_to "ログアウト", session_path, method: :delete, class: "button button--ghost" %>
+  <body class="<%= "body--auth" if auth_screen %>">
+    <div class="shell <%= "shell--auth" if auth_screen %>">
+      <% unless auth_screen %>
+        <header class="topbar">
+          <div class="brand">
+            <%= link_to organizer_signed_in? ? dashboard_path : root_path, class: "brand-link" do %>
+              <span class="brand-mark-wrap">
+                <%= image_tag "/icon.png", alt: "Katorin2", class: "brand-mark" %>
+              </span>
+              <span class="brand-name">Katorin2</span>
+            <% end %>
           </div>
-        <% end %>
-      </header>
 
-      <main class="content">
+          <% if organizer_signed_in? %>
+            <nav class="topnav">
+              <%= nav_link_to "Home", dashboard_path %>
+              <%= nav_link_to "Leagues", leagues_path, active_paths: ["/leagues"] %>
+            </nav>
+
+            <div class="account-box">
+              <span><%= current_organizer_account.display_name %></span>
+              <%= button_to "ログアウト", session_path, method: :delete, class: "button button--ghost" %>
+            </div>
+          <% end %>
+        </header>
+      <% end %>
+
+      <main class="content <%= "content--auth" if auth_screen %>">
         <%= render "shared/flash" %>
         <%= yield %>
       </main>

@@ -1,29 +1,29 @@
 <% page_title "ログイン" %>
 
-<section class="auth-shell">
-  <div class="panel panel--brand auth-intro">
-    <p class="eyebrow">Katorin2</p>
-    <h1>サインイン</h1>
-    <p class="muted">共通アカウントでログインします。</p>
-  </div>
+<section class="login-screen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <div>
+        <p class="login-brand__name">Katorin2</p>
+        <p class="login-brand__sub">WMGP Ledger</p>
+      </div>
+    </div>
 
-  <div class="panel auth-panel">
-    <p class="eyebrow">Login</p>
-    <h2>ID / パスワード</h2>
-    <p class="muted">共通アカウントでサインインします。</p>
-
-    <%= form_with url: session_path, class: "stack" do |form| %>
-      <div class="field">
-        <%= form.label :login_id, "ID" %>
-        <%= form.text_field :login_id, required: true, autofocus: true, autocomplete: "username" %>
+    <%= form_with url: session_path, class: "login-form" do |form| %>
+      <div class="login-form__row">
+        <%= form.label :login_id, "アカウント", class: "login-form__label" %>
+        <%= form.text_field :login_id, required: true, autofocus: true, autocomplete: "username", class: "login-form__input" %>
       </div>
 
-      <div class="field">
-        <%= form.label :password, "パスワード" %>
-        <%= form.password_field :password, required: true, autocomplete: "current-password" %>
+      <div class="login-form__row">
+        <%= form.label :password, "パスワード", class: "login-form__label" %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", class: "login-form__input" %>
       </div>
 
-      <%= form.submit "ログイン", class: "button button--primary button--block" %>
+      <div class="login-form__actions">
+        <%= form.submit "ログイン", class: "button button--auth" %>
+      </div>
     <% end %>
   </div>
 </section>
