@@ -10,6 +10,10 @@ APP_ENV="${APP_ENV:-production}"
 APP_NAME="${APP_NAME:-katorin2}"
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
 
+is_release_branch() {
+  [[ "${1:-}" == release/* ]]
+}
+
 if [[ "${ALLOW_BRANCH_MISMATCH:-0}" != "1" ]]; then
   case "$APP_ENV" in
     production)
@@ -19,10 +23,10 @@ if [[ "${ALLOW_BRANCH_MISMATCH:-0}" != "1" ]]; then
       }
       ;;
     staging)
-      [[ "$CURRENT_BRANCH" == "develop" ]] || {
-        echo "staging deploys must run from develop (current: ${CURRENT_BRANCH:-unknown})" >&2
+      if [[ "$CURRENT_BRANCH" != "main" ]] && ! is_release_branch "$CURRENT_BRANCH"; then
+        echo "staging deploys must run from main or release/* (current: ${CURRENT_BRANCH:-unknown})" >&2
         exit 1
-      }
+      fi
       ;;
   esac
 fi

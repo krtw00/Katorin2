@@ -4,9 +4,9 @@ set -euo pipefail
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 case "$branch" in
-  main|develop)
+  main|release/*)
     cat >&2 <<'EOF'
-Direct commits to main/develop are blocked.
+Direct commits to main/release branches are blocked.
 Create a feature branch and open a PR instead.
 EOF
     exit 1
