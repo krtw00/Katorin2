@@ -41,16 +41,15 @@ branch 方針:
 - `production`
   - `main` からだけ deploy する
 - `staging`
-  - `main` または `release/*` から deploy する
-- `develop`
-  - shared integration branch としては使ってよい
-  - staging の正本にはしない
+  - `beta` から deploy する
+- `beta`
+  - staging 用の統合作業場として使う
 
 理由:
 
-- staging は `開発の最新` ではなく `本番候補の特定 SHA` を確認する場所として使う
-- `develop = staging` にすると未完成機能が混ざりやすく、staging で見た内容と本番反映 SHA がずれやすい
-- まず `main` を常に deploy 可能に保ち、必要な時だけ `release/*` を切る方が追跡しやすい
+- staging は `beta` の確認環境として使う
+- 個人開発では `develop` と `release/*` を分けるより、`beta` を 1 本にした方が追いやすい
+- `main` は production 専用にして、beta 確認後に `beta -> main` を反映する方がシンプルに回る
 
 runtime env は `Secret Manager` を正本にする。既定 secret 名:
 
