@@ -42,7 +42,9 @@ branch 方針:
   - `main` からだけ deploy する
 - `staging`
   - `main` または `release/*` から deploy する
-  - `develop` は staging の正本にしない
+- `develop`
+  - shared integration branch としては使ってよい
+  - staging の正本にはしない
 
 理由:
 
