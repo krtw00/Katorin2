@@ -7,18 +7,17 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
 - `production`
   - 実運用
   - Cloud Run service: `katorin2`
-  - Firebase Hosting site: `katorin2-site`
   - DB: 本番用 Supabase project
 - `staging`
   - demo / 検証
   - Cloud Run service: `katorin2-staging`
-  - Firebase Hosting site: `katorin2-staging`
   - DB: staging 用 Supabase project
 
 設計原則:
 
 - 1つのランタイムが本番DBとdemo DBを動的に切り替えない
 - `同じアプリを2環境へデプロイ` し、DB も完全に分離する
+- Cloud Run service と runtime secret も環境ごとに分ける
 - demo データ判定はテーブルフラグではなく `環境` で分ける
 - staging だけ `LEDGER_SEED_PROFILE=demo` を流す
 - production は `LEDGER_SEED_PROFILE=blank` か `bootstrap` を使う
@@ -65,20 +64,6 @@ RUNTIME_ENV_FILE=/path/to/ledger.runtime.staging.yaml \
 bash scripts/push-ledger-runtime-secret.sh
 ```
 
-Firebase Hosting deploy:
-
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=production \
-bash scripts/deploy-firebase-katorin2.sh
-```
-
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=staging \
-bash scripts/deploy-firebase-katorin2.sh
-```
-
 seed profile:
 
 - `blank`
@@ -107,20 +92,8 @@ JOB_COMMAND="./bin/rails db:seed" \
 bash scripts/run-ledger-job.sh
 ```
 
-Custom domain:
+staging / production の切り分け:
 
-- `codenica.dev` の権威 DNS は現在 Cloudflare
-- `staging.katorin2.codenica.dev` は Firebase Hosting 側で予約済み
-- Cloudflare 側に次を追加すると有効化が進む
-
-```txt
-CNAME
-staging.katorin2.codenica.dev -> katorin2-staging.web.app
-```
-
-```txt
-TXT
-_acme-challenge.staging.katorin2.codenica.dev -> sV2SPVFr06mhd6IIJL4NFshKid4CSPpQkcOCUTP26sc
-```
-
-Cloud DNS `codenica-dev` に同内容を入れても、現行の権威 DNS は Cloudflare なので外部公開には使われない。
+- `production` は `katorin2` service と `katorin2-ledger-runtime-production` secret を使う
+- `staging` は `katorin2-staging` service と `katorin2-ledger-runtime-staging` secret を使う
+- custom domain や edge proxy は repo 外のインフラ設定として扱い、この repo では Cloud Run deploy だけを管理する

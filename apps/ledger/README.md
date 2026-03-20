@@ -7,7 +7,6 @@ Rails 8 ベースの WMGP 運営台帳アプリ。
 - Ruby 3.4
 - PostgreSQL
 - Cloud Run
-- Firebase Hosting rewrite
 
 ## Local Development
 
@@ -31,14 +30,12 @@ bin/dev
 
 - `production`
   - Cloud Run: `katorin2`
-  - Hosting: `katorin2-site`
   - 本番 Supabase project
 - `staging`
   - Cloud Run: `katorin2-staging`
-  - Hosting: `katorin2-staging`
   - staging Supabase project
 
-アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。
+アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。Cloud Run service と Secret Manager secret も環境ごとに分離する。
 
 ## Required Env
 
@@ -88,10 +85,4 @@ GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
 APP_ENV=staging \
 RUNTIME_ENV_FILE=/path/to/ledger.runtime.staging.yaml \
 bash scripts/deploy-cloudrun-ledger.sh
-```
-
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=staging \
-bash scripts/deploy-firebase-katorin2.sh
 ```
