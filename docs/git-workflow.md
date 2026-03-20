@@ -4,6 +4,9 @@ Katorin2 は次のブランチ運用に固定する。
 
 - `main`
   - 常に deploy 可能な正本
+- `develop`
+  - 共有の統合作業場
+  - deploy の基準にはしない
 - `release/*`
   - staging で確認する本番候補
 - `feature/*`
@@ -11,9 +14,9 @@ Katorin2 は次のブランチ運用に固定する。
 
 基本フロー:
 
-1. `main` から `feature/*` を切る
-2. 作業は `feature/*` にだけ commit する
-3. 通常は `feature/* -> main` を PR で反映する
+1. 通常作業は `main` から `feature/*` を切る
+2. 個別作業は `feature/* -> main` を PR で反映する
+3. 共有検証や一時退避が必要なら `develop` へ直 push してよい
 4. staging でまとめて確認したい期間だけ `release/*` を切る
 5. staging 確認後、必要な修正は `release/*` に積み、最終的に `main` へ戻す
 
@@ -32,6 +35,9 @@ bash scripts/setup-git-hooks.sh
 
 GitHub 側:
 
+- `develop`
+  - direct push 可
+  - PR 任意
 - `main`
   - direct push 禁止
   - PR 経由のみ
@@ -48,5 +54,5 @@ deploy 対応:
 
 補足:
 
+- `develop` は共有実験用か一時統合用に限定する
 - `develop` を staging の正本ブランチとしては使わない
-- `develop` を残す場合も、共有実験用に限定し deploy の基準にはしない
