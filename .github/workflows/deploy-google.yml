@@ -2,7 +2,7 @@ name: Deploy to Google
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
 
 concurrency:
@@ -17,25 +17,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
+      APP_ENV: ${{ github.ref == 'refs/heads/staging' && 'staging' || 'production' }}
       GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT || 'oauthsetting-484201' }}
       GOOGLE_CLOUD_REGION: ${{ vars.GOOGLE_CLOUD_REGION || 'asia-northeast1' }}
       ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}
-      CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'katorin2' }}
-      RUNTIME_ENV_FILE: deploy/google/katorin2.runtime.env
 
     steps:
       - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Write runtime env
-        run: |
-          cat <<'EOF' > "$RUNTIME_ENV_FILE"
-          ${{ secrets.KATORIN2_RUNTIME_ENV }}
-          EOF
 
       - id: auth
         uses: google-github-actions/auth@v2
@@ -49,7 +37,13 @@ jobs:
           project_id: ${{ env.GOOGLE_CLOUD_PROJECT }}
 
       - name: Deploy Cloud Run service
-        run: npm run deploy:cloudrun
+        run: bash scripts/deploy-cloudrun-ledger.sh
+        env:
+          APP_ENV: ${{ env.APP_ENV }}
 
-      - name: Deploy Firebase Hosting proxy
-        run: npm run deploy:firebase
+      - name: Run database migrations
+        run: bash scripts/run-ledger-job.sh
+        env:
+          APP_ENV: ${{ env.APP_ENV }}
+          TASK_NAME: migrate
+          JOB_COMMAND: ./bin/rails db:migrate

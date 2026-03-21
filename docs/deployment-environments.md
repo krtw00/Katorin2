@@ -42,7 +42,7 @@ branch 方針:
   - `main` からだけ deploy する
 - `staging`
   - `staging` から deploy する
-- `staging`
+- `staging` branch
   - staging 用の統合作業場として使う
 
 理由:
