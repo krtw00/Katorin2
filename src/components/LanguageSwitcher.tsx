@@ -1,33 +1,47 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter, usePathname } from '@/i18n/routing'
-import type { Locale } from '@/i18n/routing'
-import { Button } from '@/components/ui/button'
+import { Link, usePathname } from '@/i18n/routing'
 import { Globe } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export function LanguageSwitcher() {
   const t = useTranslations('language')
   const locale = useLocale()
-  const router = useRouter()
   const pathname = usePathname()
 
-  const handleLocaleChange = () => {
-    // 現在のロケールと異なるロケールに切り替え
-    const newLocale = locale === 'ja' ? 'en' : 'ja'
-    router.replace(pathname, { locale: newLocale })
-  }
-
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleLocaleChange}
+    <div
+      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-sm"
+      aria-label={t('select')}
       title={t('select')}
-      className="gap-2"
     >
       <Globe className="h-4 w-4" />
-      <span>{t(locale as Locale)}</span>
-    </Button>
+      <Link
+        href={pathname}
+        locale="ja"
+        className={cn(
+          'rounded px-1.5 py-0.5 transition-colors',
+          locale === 'ja'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        {t('ja')}
+      </Link>
+      <span className="text-muted-foreground">/</span>
+      <Link
+        href={pathname}
+        locale="en"
+        className={cn(
+          'rounded px-1.5 py-0.5 transition-colors',
+          locale === 'en'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        {t('en')}
+      </Link>
+    </div>
   )
 }
