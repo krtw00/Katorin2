@@ -21,6 +21,11 @@ import { ManualPointsConfirm } from '@/components/league/ManualPointsConfirm'
 import { BlockAssignment } from '@/components/league/BlockAssignment'
 import { AddRoundDialog } from '@/components/league/AddRoundDialog'
 import { FinalsPromotionButton } from '@/components/league/FinalsPromotionButton'
+import {
+  canManageLeague,
+  canOperateLeague,
+  getLeagueOrganizerRole,
+} from '@/lib/league-organizer-permissions'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -71,7 +76,10 @@ export default async function SeriesDetailPage({ params }: Props) {
     notFound()
   }
 
-  const isOrganizer = user?.id === league.organizer_id
+  const organizerRole = user ? await getLeagueOrganizerRole(supabase, id, user.id) : null
+  const canEditLeague = canManageLeague(organizerRole)
+  const canViewOperators = canOperateLeague(organizerRole)
+  const canOperateAsStaff = canOperateLeague(organizerRole)
   const sourceRoundStatusMap = new Map(
     (tournaments || []).map((round) => [round.id, round.status])
   )
@@ -200,14 +208,20 @@ export default async function SeriesDetailPage({ params }: Props) {
           </Badge>
         </div>
         <MetaItem icon={User} className="text-sm">{league.organizer.display_name}</MetaItem>
-        {isOrganizer && (
+        {canOperateAsStaff && (
           <div className="flex gap-2 mt-3">
-            <Link href={`/leagues/${id}/edit`}>
-              <Button variant="outline" size="sm">{t('detail.edit')}</Button>
-            </Link>
+            {canEditLeague && (
+              <Link href={`/leagues/${id}/edit`}>
+                <Button variant="outline" size="sm">{t('detail.edit')}</Button>
+              </Link>
+            )}
+            {canViewOperators && (
+              <Link href={`/leagues/${id}/operators`}>
+                <Button variant="outline" size="sm">{t('detail.organizerMembers')}</Button>
+              </Link>
+            )}
             <AddRoundDialog
               leagueId={id}
-              organizerId={league.organizer_id}
               rounds={(tournaments || []).map((round) => ({
                 id: round.id,
                 title: round.title,
@@ -255,7 +269,7 @@ export default async function SeriesDetailPage({ params }: Props) {
           <TabsTrigger value="standings">{t('detail.standings')}</TabsTrigger>
           <TabsTrigger value="teams">{t('detail.teams')} ({seriesTeams?.length || 0})</TabsTrigger>
           <TabsTrigger value="tournaments">{t('detail.tournaments')}</TabsTrigger>
-          {isOrganizer && (
+          {canOperateAsStaff && (
             <TabsTrigger value="applications">
               {t('detail.applicationManage')} {applications.filter(a => a.status === 'pending').length > 0 && `(${applications.filter(a => a.status === 'pending').length})`}
             </TabsTrigger>
@@ -266,7 +280,7 @@ export default async function SeriesDetailPage({ params }: Props) {
 
         <TabsContent value="standings">
           {/* 主催者向け: 手動ポイント再計算 */}
-          {isOrganizer && tournaments && tournaments.length > 0 && (
+          {canOperateAsStaff && tournaments && tournaments.length > 0 && (
             <div className="mb-6">
               <ManualPointsConfirm
                 leagueId={id}
@@ -340,12 +354,12 @@ export default async function SeriesDetailPage({ params }: Props) {
         <TabsContent value="teams">
           <div className="space-y-4">
             {/* エントリー申請フォーム（ログインユーザー向け） */}
-            {user && !isOrganizer && (
+            {user && !canOperateAsStaff && (
               <TeamApplicationForm leagueId={id} />
             )}
 
             {/* ブロック振り分け（主催者向け） */}
-            {isOrganizer && seriesTeams && seriesTeams.length > 0 && blocks && blocks.length > 0 && (
+            {canOperateAsStaff && seriesTeams && seriesTeams.length > 0 && blocks && blocks.length > 0 && (
               <BlockAssignment
                 leagueId={id}
                 teams={seriesTeams}
@@ -388,7 +402,7 @@ export default async function SeriesDetailPage({ params }: Props) {
         </TabsContent>
 
         {/* 申請管理（主催者のみ） */}
-        {isOrganizer && (
+        {canOperateAsStaff && (
           <TabsContent value="applications">
             <ApplicationManage leagueId={id} applications={applications} />
           </TabsContent>
@@ -426,7 +440,7 @@ export default async function SeriesDetailPage({ params }: Props) {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {isOrganizer && tournament.is_finals && tournament.source_round_id && (
+                          {canOperateAsStaff && tournament.is_finals && tournament.source_round_id && (
                             <FinalsPromotionButton
                               finalsRound={{
                                 id: tournament.id,

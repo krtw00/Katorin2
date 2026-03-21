@@ -878,6 +878,7 @@
     },
     "detail": {
       "organizer": "Organizer",
+      "organizerMembers": "Operators",
       "edit": "Edit",
       "addTournament": "Add Tournament",
       "manage": "Manage",
@@ -917,6 +918,67 @@
         "winPoints": "Pts",
         "roundDiff": "RD",
         "matchDiff": "MD"
+      }
+    },
+    "operators": {
+      "title": "League Operators",
+      "notFound": "League not found",
+      "noPermission": "You do not have permission to manage league operators",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "staff": "Staff"
+      },
+      "members": {
+        "title": "Operators",
+        "ownerHint": "League creator",
+        "name": "Member",
+        "role": "Role",
+        "status": "Status",
+        "joined": "Added",
+        "actions": "Actions",
+        "active": "Active",
+        "inactive": "Inactive",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "viewOnly": "View only",
+        "unknownUser": "Unknown user"
+      },
+      "search": {
+        "title": "Add operator",
+        "placeholder": "Search by display name or Discord ID",
+        "submit": "Search",
+        "searching": "Searching...",
+        "add": "Add",
+        "adding": "Adding...",
+        "empty": "No candidates yet"
+      },
+      "audit": {
+        "title": "Audit Log",
+        "empty": "No audit logs yet",
+        "when": "When",
+        "who": "Actor",
+        "action": "Action",
+        "target": "Target",
+        "fields": "Changed fields",
+        "system": "System",
+        "actions": {
+          "INSERT": "Created",
+          "UPDATE": "Updated",
+          "DELETE": "Deleted"
+        },
+        "tableNames": {
+          "league_organizer_members": "League operators",
+          "leagues": "League",
+          "rounds": "Round",
+          "round_blocks": "Block",
+          "matches": "Match",
+          "team_entries": "Entry",
+          "team_applications": "Application",
+          "war_orders": "Orders",
+          "war_rounds": "War rounds",
+          "individual_matches": "Individual matches"
+        }
       }
     },
     "addRound": {

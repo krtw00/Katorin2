@@ -185,6 +185,108 @@ export type Database = {
           },
         ]
       }
+      league_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          changed_fields: string[] | null
+          created_at: string
+          id: string
+          league_id: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          league_id: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          league_id?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_audit_logs_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_organizer_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          league_id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          league_id: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          league_id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_organizer_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_organizer_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_organizer_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leagues: {
         Row: {
           cover_image_url: string | null
@@ -1354,8 +1456,32 @@ export type Database = {
         Args: { p_match_id: string }
         Returns: string
       }
+      get_league_organizer_role: {
+        Args: { p_league_id: string; p_user_id: string }
+        Returns: string
+      }
+      get_match_league_id: {
+        Args: { p_match_id: string }
+        Returns: string
+      }
+      get_round_league_id: {
+        Args: { p_round_id: string }
+        Returns: string
+      }
+      get_team_league_id: {
+        Args: { p_team_id: string }
+        Returns: string
+      }
+      is_league_admin: {
+        Args: { p_league_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_demo_user: { Args: { p_user_id: string }; Returns: boolean }
       is_league_demo_member: {
+        Args: { p_league_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_league_staff: {
         Args: { p_league_id: string; p_user_id: string }
         Returns: boolean
       }
@@ -1565,4 +1691,3 @@ export const Constants = {
     },
   },
 } as const
-

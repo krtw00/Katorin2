@@ -21,6 +21,7 @@ import {
 import { Tables, Enums } from '@/types/database'
 import { generateSingleEliminationBracket, generateDoubleEliminationBracket } from '@/lib/tournament/bracket-generator'
 import { TeamTournamentManage } from '@/components/tournament/TeamTournamentManage'
+import { canOperateLeague, getRoundOrganizerRole } from '@/lib/league-organizer-permissions'
 
 type Profile = Tables<'profiles'>
 type TournamentInvite = Tables<'tournament_invites'> & {
@@ -90,7 +91,8 @@ export default function TournamentManagePage({ params }: Props) {
 
       // Check if user is organizer
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user || user.id !== tournamentData.organizer_id) {
+      const role = user ? await getRoundOrganizerRole(supabase, id, user.id) : null
+      if (!user || !canOperateLeague(role)) {
         setError(t('noManagePermission'))
         setLoading(false)
         return
