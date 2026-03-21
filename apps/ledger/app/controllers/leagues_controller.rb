@@ -13,7 +13,7 @@ class LeaguesController < ApplicationController
   end
 
   def new
-    @league = current_organizer_account.leagues.new(rule_module_key: "wmgp", status: "draft")
+    @league = current_organizer_account.leagues.new(rule_module_key: RuleSets::Registry.default_key, status: "draft")
   end
 
   def create

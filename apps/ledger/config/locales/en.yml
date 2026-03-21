@@ -99,10 +99,18 @@ en:
     participants: Participants
     recent_matches: Recent matches
     empty_matches: No matches yet.
+    ruleset:
+      title: Ruleset
+      template: Template
+      key: Key
+      roster: Roster
+      roster_summary: "%{min}-%{max} members / lineup %{lineup} / sub %{sub}"
+      default_match_rule_key: Default match rule
+      stages: Stages
     form:
       name: League name
       slug: Slug
-      rule_module_key: Rule module
+      rule_module_key: Ruleset
       status: Status
       started_at: Start date
       ended_at: End date
@@ -211,7 +219,7 @@ en:
       league:
         name: League name
         slug: Slug
-        rule_module_key: Rule module
+        rule_module_key: Ruleset
         status: Status
         started_at: Start date
         ended_at: End date
@@ -246,3 +254,21 @@ en:
     submit:
       create: "Create %{model}"
       update: "Update %{model}"
+  rulesets:
+    formats:
+      round_robin: Round robin
+      swiss: Swiss
+      single_elimination: Single elimination
+    participant_scopes:
+      all_teams: All teams
+      qualified_teams: Qualified teams
+      manual_selection: Manual selection
+    advancement_rules:
+      none: None
+      top_n_per_group: Top per group
+      top_n_overall: Top overall
+      manual: Manual
+    summary:
+      group_count: "%{count} groups"
+      round_count: "%{count} rounds"
+      bracket_size: "%{count} teams"

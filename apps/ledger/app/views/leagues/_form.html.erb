@@ -16,7 +16,7 @@
   <div class="field-grid">
     <div class="field">
       <%= form.label :rule_module_key, t("leagues.form.rule_module_key") %>
-      <%= form.text_field :rule_module_key, required: true %>
+      <%= form.select :rule_module_key, ruleset_options, {}, required: true %>
     </div>
 
     <div class="field">

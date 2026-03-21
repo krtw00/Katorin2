@@ -99,10 +99,18 @@ ja:
     participants: 参加者
     recent_matches: 最近の対戦
     empty_matches: 対戦はまだありません。
+    ruleset:
+      title: ルールセット
+      template: テンプレート
+      key: キー
+      roster: チーム編成
+      roster_summary: "%{min}〜%{max}名 / 出場 %{lineup}名 / サブ %{sub}名"
+      default_match_rule_key: 既定の対戦ルール
+      stages: ステージ構成
     form:
       name: リーグ名
       slug: slug
-      rule_module_key: ルールモジュール
+      rule_module_key: ルールセット
       status: 状態
       started_at: 開始日
       ended_at: 終了日
@@ -211,7 +219,7 @@ ja:
       league:
         name: リーグ名
         slug: slug
-        rule_module_key: ルールモジュール
+        rule_module_key: ルールセット
         status: 状態
         started_at: 開始日
         ended_at: 終了日
@@ -246,3 +254,21 @@ ja:
     submit:
       create: "%{model}を作成"
       update: "%{model}を更新"
+  rulesets:
+    formats:
+      round_robin: 総当たり
+      swiss: スイス
+      single_elimination: シングルエリミネーション
+    participant_scopes:
+      all_teams: 全チーム
+      qualified_teams: 通過チーム
+      manual_selection: 手動選出
+    advancement_rules:
+      none: なし
+      top_n_per_group: 各組上位
+      top_n_overall: 総合上位
+      manual: 手動
+    summary:
+      group_count: "%{count}ブロック"
+      round_count: "%{count}回戦"
+      bracket_size: "%{count}チーム"
