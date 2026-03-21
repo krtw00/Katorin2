@@ -7,6 +7,8 @@
       <p class="login-brand__name">Katorin2</p>
     </div>
 
+    <p class="login-copy"><%= t("sessions.lede") %></p>
+
     <%= form_with url: session_path, class: "login-form" do |form| %>
       <div class="login-form__row">
         <%= form.label :login_id, t("sessions.login_id"), class: "login-form__label" %>
@@ -22,5 +24,10 @@
         <%= form.submit t("sessions.submit"), class: "button button--auth" %>
       </div>
     <% end %>
+
+    <div class="login-links">
+      <span><%= t("sessions.no_account") %></span>
+      <%= link_to t("sessions.register"), new_registration_path, class: "login-links__link" %>
+    </div>
   </div>
 </section>

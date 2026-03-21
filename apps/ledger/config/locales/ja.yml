@@ -44,6 +44,9 @@ ja:
       created: ログインしました。
       destroyed: ログアウトしました。
       invalid: ログインIDまたはパスワードが違います。
+    registrations:
+      created: アカウントを作成しました。
+      invalid: 入力内容を確認してください。
     leagues:
       created: リーグを作成しました。
       updated: リーグを更新しました。
@@ -172,9 +175,23 @@ ja:
       notes: メモ
   sessions:
     title: ログイン
+    lede: 運営アカウントでログインします。
     login_id: アカウントID
     password: パスワード
     submit: ログイン
+    no_account: アカウントをお持ちでない場合
+    register: 新規登録
+  registrations:
+    title: 新規登録
+    lede: 運営アカウントを新しく作成します。
+    display_name: 団体名
+    login_id: アカウントID
+    email: メール
+    password: パスワード
+    password_confirmation: パスワード確認
+    submit: 登録する
+    have_account: すでにアカウントをお持ちの場合
+    back_to_login: ログインへ戻る
   enums:
     league:
       status:

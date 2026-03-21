@@ -26,9 +26,9 @@ Rails.application.routes.draw do
     get "my", to: localized_root_redirect
     get "my/*path", to: localized_root_redirect
 
-    root "home#index"
-
     resource :session, only: %i[new create destroy]
+    resource :registration, only: %i[new create], controller: "registrations"
+    root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
 
     resources :leagues, only: %i[index show new create edit update] do

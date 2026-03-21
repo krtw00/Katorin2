@@ -2,6 +2,7 @@ class SessionsController < ApplicationController
   allow_unauthenticated_access only: %i[new create]
 
   def new
+    return redirect_to dashboard_path if organizer_signed_in?
   end
 
   def create
