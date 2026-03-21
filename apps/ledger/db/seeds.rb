@@ -8,22 +8,27 @@ DEMO_ROSTER_PATH = Rails.root.join("db/demo/wmgp_playoff_team_rosters.json")
 DEMO_LEAGUE_SLUGS = %w[
   demo-wmgp-season-5
   demo-wmgp-season-7
+  demo-wmgp-season-7-5
   demo-wmgp-season-8
 ].freeze
 DEMO_LEAGUE_SPECS = [
   {
-    season: 7,
+    season_label: "7",
+    seed_key: 7,
+    slug: "demo-wmgp-season-7",
     team_count: 32,
     block_count: 4,
     started_at: Date.new(2025, 1, 13),
     ended_at: Date.new(2025, 3, 30),
   },
   {
-    season: 5,
-    team_count: 16,
+    season_label: "7.5",
+    seed_key: 75,
+    slug: "demo-wmgp-season-7-5",
+    team_count: 32,
     block_count: 4,
-    started_at: Date.new(2023, 1, 9),
-    ended_at: Date.new(2023, 2, 26),
+    started_at: Date.new(2025, 4, 7),
+    ended_at: Date.new(2025, 6, 22),
   }
 ].freeze
 JUDGE_NAMES = %w[root alpha beta gamma].freeze
@@ -88,7 +93,7 @@ end
 def selected_rosters_for(spec, rosters)
   return rosters if spec[:team_count] >= rosters.size
 
-  rosters.rotate(spec[:season]).first(spec[:team_count])
+  rosters.rotate(spec[:seed_key]).first(spec[:team_count])
 end
 
 def round_robin_schedule(teams)
@@ -248,12 +253,12 @@ def sort_block_standings(stats_hash)
 end
 
 def build_demo_league!(organizer:, spec:, rosters:)
-  existing_league = League.find_by(slug: "demo-wmgp-season-#{spec[:season]}")
+  existing_league = League.find_by(slug: spec[:slug])
   destroy_demo_league!(existing_league) if existing_league
 
   league = organizer.leagues.create!(
-    name: "DEMO WMGP Season #{spec[:season]}",
-    slug: "demo-wmgp-season-#{spec[:season]}",
+    name: "DEMO WMGP Season #{spec[:season_label]}",
+    slug: spec[:slug],
     rule_module_key: "wmgp",
     status: "completed",
     started_at: spec[:started_at],
@@ -292,7 +297,7 @@ def build_demo_league!(organizer:, spec:, rosters:)
       block:,
       name: team_spec.fetch("team_name"),
       display_name: team_spec.fetch("team_name"),
-      short_name: format("S%02dT%02d", spec[:season], index + 1),
+      short_name: format("S%02dT%02d", spec[:seed_key], index + 1),
       status: "active",
       notes: "Seeded from WMGP playoff roster"
     )
@@ -354,7 +359,7 @@ def build_demo_league!(organizer:, spec:, rosters:)
           week:,
           home_team:,
           away_team:,
-          random: Random.new(spec[:season] * 10_000 + round_index * 100 + match_index + block.position),
+          random: Random.new(spec[:seed_key] * 10_000 + round_index * 100 + match_index + block.position),
           block:,
           scheduled_on:,
           scheduled_time: Time.zone.parse(format("%02d:00", 20 + (match_index % 3))),
@@ -430,7 +435,7 @@ def build_demo_league!(organizer:, spec:, rosters:)
       week: qf_week,
       home_team:,
       away_team:,
-      random: Random.new(spec[:season] * 20_000 + index + 1),
+      random: Random.new(spec[:seed_key] * 20_000 + index + 1),
       stage_key: "quarterfinal",
       bracket_slot: "QF-#{index + 1}",
       scheduled_on: qf_week.locked_at.to_date,
@@ -449,7 +454,7 @@ def build_demo_league!(organizer:, spec:, rosters:)
       week: sf_week,
       home_team:,
       away_team:,
-      random: Random.new(spec[:season] * 30_000 + index + 1),
+      random: Random.new(spec[:seed_key] * 30_000 + index + 1),
       stage_key: "semifinal",
       bracket_slot: "SF-#{index + 1}",
       scheduled_on: sf_week.locked_at.to_date,
@@ -462,7 +467,7 @@ def build_demo_league!(organizer:, spec:, rosters:)
     week: final_week,
     home_team: semifinal_winners[0],
     away_team: semifinal_winners[1],
-    random: Random.new(spec[:season] * 40_000 + 1),
+    random: Random.new(spec[:seed_key] * 40_000 + 1),
     stage_key: "final",
     bracket_slot: "F-1",
     scheduled_on: final_week.locked_at.to_date,
