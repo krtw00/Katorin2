@@ -23,7 +23,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <% auth_screen = controller_name == "sessions" && %w[new create].include?(action_name) %>
+  <% auth_screen = %w[sessions registrations].include?(controller_name) && %w[new create].include?(action_name) %>
 
   <body class="<%= "body--auth" if auth_screen %>">
     <div class="shell <%= "shell--auth" if auth_screen %>">
