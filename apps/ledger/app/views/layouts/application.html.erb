@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || t("app.name") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="<%= t("app.application_name") %>">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <% auth_screen = controller_name == "sessions" && %w[new create].include?(action_name) %>
+
+  <body class="<%= "body--auth" if auth_screen %>">
+    <div class="shell <%= "shell--auth" if auth_screen %>">
+      <% if auth_screen %>
+        <div class="shell-locale shell-locale--floating">
+          <span class="shell-locale__label"><%= t("labels.locale") %></span>
+          <% available_locales.each do |locale| %>
+            <% active = I18n.locale == locale %>
+            <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% unless auth_screen %>
+        <header class="topbar">
+          <div class="brand">
+            <%= link_to organizer_signed_in? ? dashboard_path : root_path, class: "brand-link" do %>
+              <span class="brand-mark-wrap">
+                <%= image_tag "/icon.png", alt: "Katorin2", class: "brand-mark" %>
+              </span>
+              <span class="brand-name">Katorin2</span>
+            <% end %>
+          </div>
+
+          <% if organizer_signed_in? %>
+            <nav class="topnav">
+              <%= nav_link_to t("nav.home"), dashboard_path %>
+              <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
+            </nav>
+
+            <div class="topbar__actions">
+              <div class="shell-locale">
+                <span class="shell-locale__label"><%= t("labels.locale") %></span>
+                <% available_locales.each do |locale| %>
+                  <% active = I18n.locale == locale %>
+                  <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
+                <% end %>
+              </div>
+
+              <div class="account-box">
+                <span><%= current_organizer_account.display_name %></span>
+                <%= button_to t("nav.logout"), session_path, method: :delete, class: "button button--ghost" %>
+              </div>
+            </div>
+          <% end %>
+        </header>
+      <% end %>
+
+      <main class="content <%= "content--auth" if auth_screen %>">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+case "$branch" in
+  main)
+    cat >&2 <<'EOF'
+Direct commits to main are blocked.
+Create a feature branch and open a PR instead.
+EOF
+    exit 1
+    ;;
+esac

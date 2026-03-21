@@ -1,0 +1,37 @@
+<%= render "shared/errors", record: week %>
+
+<%= form_with model: [phase, week], class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :number, t("weeks.form.number") %>
+      <%= form.number_field :number, min: 1, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :name, t("weeks.form.name") %>
+      <%= form.text_field :name, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :kind, t("weeks.form.kind") %>
+      <%= form.select :kind, enum_options("enums.week.kind", Week::KINDS.values) %>
+    </div>
+
+    <div class="field">
+      <%= form.label :position, t("weeks.form.position") %>
+      <%= form.number_field :position, min: 1, required: true %>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :locked_at, t("weeks.form.locked_at") %>
+    <%= form.datetime_local_field :locked_at %>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), week.persisted? ? phase_week_path(phase_id: phase, id: week) : league_phase_path(league_id: phase.league, id: phase), class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

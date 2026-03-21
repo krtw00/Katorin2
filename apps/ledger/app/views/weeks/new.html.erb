@@ -1,0 +1,12 @@
+<% page_title t("weeks.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("weeks.eyebrow") %></p>
+    <h1><%= t("weeks.title_new") %></h1>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "form", phase: @phase, week: @week %>
+</section>

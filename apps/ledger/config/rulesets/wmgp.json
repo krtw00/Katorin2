@@ -1,0 +1,48 @@
+{
+  "key": "wmgp",
+  "name": {
+    "ja": "WMGP デモ",
+    "en": "WMGP Demo"
+  },
+  "description": {
+    "ja": "Master Duel の Discord リーグ運営を想定したサンプル ruleset です。予選総当たりから決勝トーナメントへ進みます。",
+    "en": "A sample ruleset for Master Duel leagues operated through Discord. It moves from a round-robin regular stage into a playoff bracket."
+  },
+  "roster_rules": {
+    "min_members": 6,
+    "max_members": 15,
+    "lineup_size": 3,
+    "substitute_size": 1,
+    "roster_updates": "weekly"
+  },
+  "default_match_rule_key": "md_team_3v3_best_of_rounds",
+  "stages": [
+    {
+      "key": "regular_stage",
+      "name": {
+        "ja": "予選ステージ",
+        "en": "Regular Stage"
+      },
+      "format": "round_robin",
+      "participant_scope": "all_teams",
+      "group_count": 4,
+      "advancement_rule": "top_n_per_group",
+      "advancement_value": 2,
+      "ranking_rule_key": "wmgp_regular",
+      "match_rule_key": "md_team_3v3_best_of_rounds"
+    },
+    {
+      "key": "final_stage",
+      "name": {
+        "ja": "決勝ステージ",
+        "en": "Final Stage"
+      },
+      "format": "single_elimination",
+      "participant_scope": "qualified_teams",
+      "bracket_size": 8,
+      "advancement_rule": "none",
+      "ranking_rule_key": "wmgp_playoff",
+      "match_rule_key": "md_team_3v3_best_of_rounds"
+    }
+  ]
+}
