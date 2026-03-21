@@ -1,0 +1,4 @@
+<% flash.each do |type, message| %>
+  <% tone = type.to_s == "alert" ? "danger" : "success" %>
+  <div class="flash flash--<%= tone %>"><%= message %></div>
+<% end %>

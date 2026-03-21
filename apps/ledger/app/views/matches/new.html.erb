@@ -1,0 +1,12 @@
+<% page_title t("matches.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("matches.eyebrow") %></p>
+    <h1><%= t("matches.title_new") %></h1>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "form", week: @week, match: @match %>
+</section>

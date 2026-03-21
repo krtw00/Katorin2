@@ -1,0 +1,12 @@
+<% page_title t("phases.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("phases.eyebrow") %></p>
+    <h1><%= t("phases.title_new") %></h1>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "form", league: @league, phase: @phase %>
+</section>

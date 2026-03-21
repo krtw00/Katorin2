@@ -1,0 +1,64 @@
+<% page_title "#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}" %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("matches.eyebrow") %></p>
+    <h1><%= @match.home_team.display_name %> <%= t("labels.vs") %> <%= @match.away_team.display_name %></h1>
+    <p class="muted">
+      <%= @match.phase.name %> / <%= @match.week.name %>
+      <% if @match.scheduled_on %>
+        / <%= @match.scheduled_on %>
+      <% end %>
+      <% if @match.scheduled_time %>
+        <%= @match.scheduled_time.strftime("%H:%M") %>
+      <% end %>
+    </p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), phase_week_path(phase_id: @match.phase, id: @match.week), class: "button" %>
+    <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <h2><%= t("matches.progress") %></h2>
+    <div class="kv-list">
+      <div><span><%= t("labels.status") %></span><strong><%= translated_enum("enums.match.status", @match.status) %></strong></div>
+      <div><span><%= t("labels.export") %></span><strong><%= translated_enum("enums.match.export_status", @match.export_status) %></strong></div>
+      <div><span><%= t("labels.judge") %></span><strong><%= @match.judge_name.presence || t("labels.none") %></strong></div>
+      <div><span><%= t("labels.room") %></span><strong><%= @match.room_id.presence || t("labels.none") %></strong></div>
+      <div><span><%= t("labels.spectator") %></span><strong><%= @match.spectator_room_id.presence || t("labels.none") %></strong></div>
+      <div><span><%= t("labels.block") %></span><strong><%= @match.block&.name || t("labels.none") %></strong></div>
+    </div>
+  </article>
+
+  <article class="panel">
+    <h2><%= t("matches.official_result") %></h2>
+    <% if @match_result %>
+      <div class="kv-list">
+        <div><span><%= t("matches.round_wins") %></span><strong><%= @match_result.home_round_wins %> - <%= @match_result.away_round_wins %></strong></div>
+        <div><span><%= t("labels.winner") %></span><strong><%= @match_result.winner_team&.display_name || t("labels.none") %></strong></div>
+        <div><span><%= t("labels.status") %></span><strong><%= translated_enum("enums.match_result.result_status", @match_result.result_status) %></strong></div>
+        <div><span><%= t("labels.decision") %></span><strong><%= translated_enum("enums.match_result.decision_type", @match_result.decision_type) %></strong></div>
+      </div>
+    <% else %>
+      <p class="empty-copy"><%= t("matches.empty_result") %></p>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <h2><%= t("matches.rounds") %></h2>
+    <% if @rounds.any? %>
+      <ul class="compact-list">
+        <% @rounds.each do |round| %>
+          <li>
+            <%= t("matches.rounds_count", number: round.number, status: translated_enum("enums.match_result.result_status", round.result_status), count: round.board_results.size) %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy"><%= t("matches.empty_rounds") %></p>
+    <% end %>
+  </article>
+</section>

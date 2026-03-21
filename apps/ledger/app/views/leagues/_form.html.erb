@@ -1,0 +1,44 @@
+<%= render "shared/errors", record: league %>
+
+<%= form_with model: league, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :name, t("leagues.form.name") %>
+      <%= form.text_field :name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :slug, t("leagues.form.slug") %>
+      <%= form.text_field :slug, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :rule_module_key, t("leagues.form.rule_module_key") %>
+      <%= form.select :rule_module_key, ruleset_options, {}, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :status, t("leagues.form.status") %>
+      <%= form.select :status, enum_options("enums.league.status", ["draft", "active", "completed"]) %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :started_at, t("leagues.form.started_at") %>
+      <%= form.date_field :started_at %>
+    </div>
+
+    <div class="field">
+      <%= form.label :ended_at, t("leagues.form.ended_at") %>
+      <%= form.date_field :ended_at %>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league.persisted? ? league_path(id: league) : leagues_path, class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>
