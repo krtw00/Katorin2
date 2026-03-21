@@ -1,0 +1,10 @@
+<% page_title t("rule_templates.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("rule_templates.eyebrow") %></p>
+    <h1><%= t("rule_templates.title_new") %></h1>
+  </div>
+</section>
+
+<%= render "form", rule_template: @rule_template, template_form: @template_form %>

@@ -1,0 +1,32 @@
+<%= render "shared/errors", record: organizer_member %>
+
+<%= form_with model: organizer_member, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :display_name, t("organizer_members.form.display_name") %>
+      <%= form.text_field :display_name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :role, t("organizer_members.form.role") %>
+      <%= form.select :role, enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values), {}, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :active, t("organizer_members.form.active") %>
+      <%= form.select :active, [[t("labels.on"), true], [t("labels.off"), false]], {}, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :notes, t("organizer_members.form.notes") %>
+      <%= form.text_field :notes %>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), organizer_members_path, class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

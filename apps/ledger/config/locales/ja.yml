@@ -9,12 +9,16 @@ ja:
   nav:
     home: ホーム
     leagues: リーグ
+    organizer_members: 運営メンバー
+    rule_templates: ルールセット
     login: ログイン
     logout: ログアウト
   actions:
     back: 戻る
     edit: 編集
     create_league: リーグ作成
+    create_organizer_member: メンバー追加
+    create_rule_template: ルールセット作成
     create_phase: フェーズ作成
     create_week: 週作成
     create_match: 対戦作成
@@ -47,6 +51,12 @@ ja:
     registrations:
       created: アカウントを作成しました。
       invalid: 入力内容を確認してください。
+    organizer_members:
+      created: 運営メンバーを登録しました。
+      updated: 運営メンバーを更新しました。
+    rule_templates:
+      created: ルールセットを作成しました。
+      updated: ルールセットを更新しました。
     leagues:
       created: リーグを作成しました。
       updated: リーグを更新しました。
@@ -117,6 +127,53 @@ ja:
       status: 状態
       started_at: 開始日
       ended_at: 終了日
+  organizer_members:
+    eyebrow: 運営メンバー
+    lede: 運営チームの担当者一覧を管理します。
+    title_index: 運営メンバー
+    title_new: メンバー追加
+    title_edit: メンバー編集
+    form:
+      display_name: 表示名
+      role: 権限
+      active: 有効化
+      notes: メモ
+  rule_templates:
+    eyebrow: ルールセット
+    lede: 大会形式のテンプレートを作成し、リーグ作成時に再利用します。
+    title_index: ルールセット
+    title_new: ルールセット作成
+    title_edit: ルールセット編集
+    sections:
+      basic: 基本情報
+      roster: チーム編成
+      stage: "ステージ %{number}"
+    form:
+      key: キー
+      name_ja: 名前（日本語）
+      name_en: 名前（英語）
+      description_ja: 説明（日本語）
+      description_en: 説明（英語）
+      active: 有効化
+      roster_min_members: 最小人数
+      roster_max_members: 最大人数
+      roster_lineup_size: 出場人数
+      roster_substitute_size: サブ人数
+      roster_updates: ロスター更新ルール
+      default_match_rule_key: 既定の対戦ルール
+      stage2_enabled: 第2ステージを使う
+      stage_key: ステージキー
+      stage_name_ja: ステージ名（日本語）
+      stage_name_en: ステージ名（英語）
+      stage_format: 形式
+      stage_participant_scope: 参加対象
+      stage_group_count: ブロック数
+      stage_round_count: 回戦数
+      stage_bracket_size: ブラケット人数
+      stage_advancement_rule: 勝ち上がり
+      stage_advancement_value: 勝ち上がり人数
+      stage_ranking_rule_key: 順位ルールキー
+      stage_match_rule_key: 対戦ルールキー
   phases:
     eyebrow: フェーズ
     title_new: フェーズ作成
@@ -198,6 +255,11 @@ ja:
         draft: 下書き
         active: 公開中
         completed: 完了
+    organizer_member:
+      role:
+        owner: オーナー
+        admin: 管理者
+        staff: スタッフ
     phase:
       kind:
         regular_season: 予選
@@ -229,7 +291,9 @@ ja:
   activerecord:
     models:
       league: リーグ
+      organizer_member: 運営メンバー
       phase: フェーズ
+      rule_template: ルールセット
       week: 週
       match: 対戦カード
     attributes:
@@ -240,6 +304,11 @@ ja:
         status: 状態
         started_at: 開始日
         ended_at: 終了日
+      organizer_member:
+        display_name: 表示名
+        role: 権限
+        active: 有効化
+        notes: メモ
       phase:
         name: フェーズ名
         kind: 種別
@@ -247,6 +316,13 @@ ja:
         rule_module_key: ルールモジュール
         ranking_rule_key: 順位ルール
         bracket_enabled: ブラケット有効化
+      rule_template:
+        key: キー
+        name_ja: 名前（日本語）
+        name_en: 名前（英語）
+        description_ja: 説明（日本語）
+        description_en: 説明（英語）
+        active: 有効化
       week:
         number: 週番号
         name: 表示名

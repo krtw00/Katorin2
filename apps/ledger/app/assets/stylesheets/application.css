@@ -510,6 +510,10 @@ h2 {
   gap: 1rem;
 }
 
+.field-grid--quad {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .field {
   display: grid;
   gap: 0.45rem;

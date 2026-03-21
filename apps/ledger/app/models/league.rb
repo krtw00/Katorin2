@@ -16,7 +16,7 @@ class League < ApplicationRecord
   validate :rule_module_key_must_exist
 
   def effective_ruleset_snapshot
-    ruleset_snapshot.presence || RuleSets::Registry.fetch(rule_module_key)
+    ruleset_snapshot.presence || RuleSets::Registry.fetch(rule_module_key, organizer_account:)
   rescue KeyError
     {}
   end
@@ -27,13 +27,13 @@ class League < ApplicationRecord
     return if rule_module_key.blank?
     return unless ruleset_snapshot.blank? || will_save_change_to_rule_module_key?
 
-    self.ruleset_snapshot = RuleSets::Registry.fetch(rule_module_key)
+    self.ruleset_snapshot = RuleSets::Registry.fetch(rule_module_key, organizer_account:)
   rescue KeyError
     self.ruleset_snapshot = nil
   end
 
   def rule_module_key_must_exist
-    RuleSets::Registry.fetch(rule_module_key)
+    RuleSets::Registry.fetch(rule_module_key, organizer_account:)
   rescue KeyError
     errors.add(:rule_module_key, :inclusion)
   end

@@ -9,12 +9,16 @@ en:
   nav:
     home: Home
     leagues: Leagues
+    organizer_members: Members
+    rule_templates: Rulesets
     login: Log in
     logout: Log out
   actions:
     back: Back
     edit: Edit
     create_league: Create league
+    create_organizer_member: Add member
+    create_rule_template: Create ruleset
     create_phase: Create phase
     create_week: Create week
     create_match: Create match
@@ -47,6 +51,12 @@ en:
     registrations:
       created: Account created.
       invalid: Please review the registration details.
+    organizer_members:
+      created: Organizer member created.
+      updated: Organizer member updated.
+    rule_templates:
+      created: Ruleset created.
+      updated: Ruleset updated.
     leagues:
       created: League created.
       updated: League updated.
@@ -117,6 +127,53 @@ en:
       status: Status
       started_at: Start date
       ended_at: End date
+  organizer_members:
+    eyebrow: Organizer members
+    lede: Manage the operators who run this organizer account.
+    title_index: Organizer members
+    title_new: Add member
+    title_edit: Edit member
+    form:
+      display_name: Display name
+      role: Role
+      active: Active
+      notes: Notes
+  rule_templates:
+    eyebrow: Rulesets
+    lede: Create reusable competition rulesets for league setup.
+    title_index: Rulesets
+    title_new: Create ruleset
+    title_edit: Edit ruleset
+    sections:
+      basic: Basics
+      roster: Roster rules
+      stage: "Stage %{number}"
+    form:
+      key: Key
+      name_ja: Name (Japanese)
+      name_en: Name (English)
+      description_ja: Description (Japanese)
+      description_en: Description (English)
+      active: Active
+      roster_min_members: Minimum members
+      roster_max_members: Maximum members
+      roster_lineup_size: Lineup size
+      roster_substitute_size: Substitute size
+      roster_updates: Roster update rule
+      default_match_rule_key: Default match rule
+      stage2_enabled: Enable stage 2
+      stage_key: Stage key
+      stage_name_ja: Stage name (Japanese)
+      stage_name_en: Stage name (English)
+      stage_format: Format
+      stage_participant_scope: Participant scope
+      stage_group_count: Group count
+      stage_round_count: Round count
+      stage_bracket_size: Bracket size
+      stage_advancement_rule: Advancement rule
+      stage_advancement_value: Advancement value
+      stage_ranking_rule_key: Ranking rule key
+      stage_match_rule_key: Match rule key
   phases:
     eyebrow: Phase
     title_new: Create phase
@@ -198,6 +255,11 @@ en:
         draft: Draft
         active: Active
         completed: Completed
+    organizer_member:
+      role:
+        owner: Owner
+        admin: Admin
+        staff: Staff
     phase:
       kind:
         regular_season: Regular season
@@ -229,7 +291,9 @@ en:
   activerecord:
     models:
       league: League
+      organizer_member: Organizer member
       phase: Phase
+      rule_template: Ruleset
       week: Week
       match: Match
     attributes:
@@ -240,6 +304,11 @@ en:
         status: Status
         started_at: Start date
         ended_at: End date
+      organizer_member:
+        display_name: Display name
+        role: Role
+        active: Active
+        notes: Notes
       phase:
         name: Phase name
         kind: Kind
@@ -247,6 +316,13 @@ en:
         rule_module_key: Rule module
         ranking_rule_key: Ranking rule
         bracket_enabled: Bracket enabled
+      rule_template:
+        key: Key
+        name_ja: Name (Japanese)
+        name_en: Name (English)
+        description_ja: Description (Japanese)
+        description_en: Description (English)
+        active: Active
       week:
         number: Week number
         name: Name

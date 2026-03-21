@@ -30,6 +30,8 @@ Rails.application.routes.draw do
     resource :registration, only: %i[new create], controller: "registrations"
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
+    resources :organizer_members, only: %i[index new create edit update]
+    resources :rule_templates, only: %i[index new create edit update]
 
     resources :leagues, only: %i[index show new create edit update] do
       resources :phases, only: %i[show new create edit update]
