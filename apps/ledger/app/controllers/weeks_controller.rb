@@ -14,7 +14,7 @@ class WeeksController < ApplicationController
     @week = @phase.weeks.new(week_params.merge(league: @phase.league))
 
     if @week.save
-      redirect_to phase_week_path(@phase, @week), notice: t("flash.weeks.created")
+      redirect_to phase_week_path(phase_id: @phase, id: @week), notice: t("flash.weeks.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -25,7 +25,7 @@ class WeeksController < ApplicationController
 
   def update
     if @week.update(week_params)
-      redirect_to phase_week_path(@phase, @week), notice: t("flash.weeks.updated")
+      redirect_to phase_week_path(phase_id: @phase, id: @week), notice: t("flash.weeks.updated")
     else
       render :edit, status: :unprocessable_entity
     end

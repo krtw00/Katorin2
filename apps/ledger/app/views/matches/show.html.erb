@@ -15,8 +15,8 @@
     </p>
   </div>
   <div class="page-actions">
-    <%= link_to t("actions.back"), phase_week_path(@match.phase, @match.week), class: "button" %>
-    <%= link_to t("actions.edit"), edit_match_path(@match), class: "button button--primary" %>
+    <%= link_to t("actions.back"), phase_week_path(phase_id: @match.phase, id: @match.week), class: "button" %>
+    <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
   </div>
 </section>
 

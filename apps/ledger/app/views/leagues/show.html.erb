@@ -7,8 +7,8 @@
     <p class="muted"><%= t("leagues.meta", rule_module_key: @league.rule_module_key, slug: @league.slug) %></p>
   </div>
   <div class="page-actions">
-    <%= link_to t("actions.edit"), edit_league_path(@league), class: "button" %>
-    <%= link_to t("actions.create_phase"), new_league_phase_path(@league), class: "button button--primary" %>
+    <%= link_to t("actions.edit"), edit_league_path(id: @league), class: "button" %>
+    <%= link_to t("actions.create_phase"), new_league_phase_path(league_id: @league), class: "button button--primary" %>
   </div>
 </section>
 
@@ -18,7 +18,7 @@
     <ul class="compact-list">
       <% @phases.each do |phase| %>
         <li>
-          <%= link_to phase.name, league_phase_path(@league, phase) %>
+          <%= link_to phase.name, league_phase_path(league_id: @league, id: phase) %>
           <span class="muted">(<%= translated_enum("enums.phase.kind", phase.kind) %>)</span>
         </li>
       <% end %>

@@ -21,7 +21,7 @@ class MatchesController < ApplicationController
     @match = @week.matches.new(match_params.merge(league: @week.league, phase: @week.phase))
 
     if @match.save
-      redirect_to match_path(@match), notice: t("flash.matches.created")
+      redirect_to match_path(id: @match), notice: t("flash.matches.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -32,7 +32,7 @@ class MatchesController < ApplicationController
 
   def update
     if @match.update(match_params)
-      redirect_to match_path(@match), notice: t("flash.matches.updated")
+      redirect_to match_path(id: @match), notice: t("flash.matches.updated")
     else
       render :edit, status: :unprocessable_entity
     end

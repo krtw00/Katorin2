@@ -62,7 +62,7 @@
     <% if @leagues.any? %>
       <ul class="compact-list">
         <% @leagues.each do |league| %>
-          <li><%= link_to league.name, league_path(league) %></li>
+          <li><%= link_to league.name, league_path(id: league) %></li>
         <% end %>
       </ul>
     <% else %>
