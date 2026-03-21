@@ -58,7 +58,8 @@ bin/dev
 - `bootstrap`
   - 共通運営アカウントだけ作る
 - `demo`
-  - `demo / password` と demo WMGP データを作る
+  - 既定では `admin / demo` の demo 運営アカウントと demo WMGP データを作る
+  - `DEMO_ORGANIZER_LOGIN_ID`, `DEMO_ORGANIZER_PASSWORD`, `DEMO_ORGANIZER_EMAIL` で上書きできる
 
 ## Current Status
 

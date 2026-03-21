@@ -2,6 +2,8 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 #
+DEMO_LEAGUE_SLUG = "demo-wmgp-season-8"
+
 def seed_bootstrap_organizer!
   login_id = ENV.fetch("ORGANIZER_LOGIN_ID", "admin")
   password = ENV.fetch("ORGANIZER_PASSWORD", "password")
@@ -18,15 +20,35 @@ def seed_bootstrap_organizer!
   organizer
 end
 
-def seed_demo_ledger!
-  organizer = OrganizerAccount.find_or_initialize_by(login_id: "demo")
-  organizer.email = "demo@katorin.local"
-  organizer.display_name = "DEMO WMGP運営"
-  organizer.password = "password"
-  organizer.password_confirmation = "password"
+def seed_demo_organizer!
+  login_id = ENV.fetch("DEMO_ORGANIZER_LOGIN_ID", "admin")
+  password = ENV.fetch("DEMO_ORGANIZER_PASSWORD", "demo")
+  email = ENV.fetch("DEMO_ORGANIZER_EMAIL", "#{login_id}@katorin.local")
+  display_name = ENV.fetch("DEMO_ORGANIZER_DISPLAY_NAME", "DEMO WMGP運営")
+
+  existing_demo_league = League.find_by(slug: DEMO_LEAGUE_SLUG)
+  organizer =
+    OrganizerAccount.find_by(login_id:) ||
+    existing_demo_league&.organizer_account ||
+    OrganizerAccount.find_by(login_id: "demo") ||
+    OrganizerAccount.find_by(email:) ||
+    OrganizerAccount.new
+
+  organizer.login_id = login_id
+  organizer.email = email
+  organizer.display_name = display_name
+  organizer.password = password
+  organizer.password_confirmation = password
   organizer.save!
 
-  league = organizer.leagues.find_or_initialize_by(slug: "demo-wmgp-season-8")
+  organizer
+end
+
+def seed_demo_ledger!
+  organizer = seed_demo_organizer!
+
+  league = League.find_or_initialize_by(slug: DEMO_LEAGUE_SLUG)
+  league.organizer_account = organizer
   league.name = "DEMO WMGP Season 8"
   league.rule_module_key = "wmgp"
   league.status = "active"
@@ -169,7 +191,7 @@ def seed_demo_ledger!
     end
   end
 
-  puts "Seeded demo organizer: demo / password"
+  puts "Seeded demo organizer: #{organizer.login_id}"
 end
 
 seed_profile = ENV.fetch("LEDGER_SEED_PROFILE", "blank")
