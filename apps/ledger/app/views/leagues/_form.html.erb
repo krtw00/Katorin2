@@ -29,6 +29,19 @@
     </div>
   </div>
 
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :header_image, t("leagues.form.header_image") %>
+      <%= form.file_field :header_image, accept: "image/png,image/jpeg,image/webp" %>
+      <p class="ghost-note"><%= t("leagues.form.header_image_hint") %></p>
+      <% if league.header_image.attached? %>
+        <div class="image-preview-card">
+          <%= image_tag league.header_image, alt: t("leagues.form.header_image"), class: "image-preview-card__image" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <div class="page-actions">
     <%= link_to t("actions.back"), league.persisted? ? league_path(id: league) : leagues_path, class: "button" %>
     <%= form.submit class: "button button--primary" %>

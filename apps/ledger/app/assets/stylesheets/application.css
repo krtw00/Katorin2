@@ -710,6 +710,21 @@ h2 {
   display: none;
 }
 
+.image-preview-card {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.image-preview-card__image {
+  display: block;
+  width: 100%;
+  max-height: 12rem;
+  object-fit: cover;
+}
+
 .result-entry-table {
   display: grid;
   gap: 0.75rem;

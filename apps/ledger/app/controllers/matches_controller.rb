@@ -6,7 +6,6 @@ class MatchesController < ApplicationController
   def show
     @match_result = @match.match_result
     @rounds = @match.rounds.includes(:board_results).order(:number)
-    @result_card_export = @match.exports.find { |export| export.export_type == "match_result_card" }
   end
 
   def new

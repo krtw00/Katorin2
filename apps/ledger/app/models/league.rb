@@ -1,5 +1,6 @@
 class League < ApplicationRecord
   belongs_to :organizer_account
+  has_one_attached :header_image
 
   has_many :phases, -> { order(:position) }, dependent: :destroy
   has_many :blocks, dependent: :destroy
