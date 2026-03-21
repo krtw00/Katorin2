@@ -2,19 +2,19 @@
 
 <section class="page-header">
   <div>
-    <p class="eyebrow">Week</p>
+    <p class="eyebrow"><%= t("weeks.eyebrow") %></p>
     <h1><%= @week.name %></h1>
-    <p class="muted">番号: <%= @week.number %> / 種別: <%= @week.kind %></p>
+    <p class="muted"><%= t("weeks.meta", number: @week.number, kind: translated_enum("enums.week.kind", @week.kind)) %></p>
   </div>
   <div class="page-actions">
-    <%= link_to "フェーズへ戻る", league_phase_path(@phase.league, @phase), class: "button" %>
-    <%= link_to "編集", edit_phase_week_path(@phase, @week), class: "button" %>
-    <%= link_to "対戦作成", new_week_match_path(@week), class: "button button--primary" %>
+    <%= link_to t("actions.back"), league_phase_path(@phase.league, @phase), class: "button" %>
+    <%= link_to t("actions.edit"), edit_phase_week_path(@phase, @week), class: "button" %>
+    <%= link_to t("actions.create_match"), new_week_match_path(@week), class: "button button--primary" %>
   </div>
 </section>
 
 <section class="panel">
-  <h2>Matches</h2>
+  <h2><%= t("weeks.matches") %></h2>
   <% if @matches.any? %>
     <ul class="record-list">
       <% @matches.each do |match| %>
@@ -22,6 +22,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="empty-copy">対戦カードがまだありません。</p>
+    <p class="empty-copy"><%= t("weeks.empty_matches") %></p>
   <% end %>
 </section>

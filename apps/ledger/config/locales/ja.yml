@@ -1,0 +1,248 @@
+ja:
+  app:
+    name: Katorin2
+    application_name: 台帳
+    ledger_name: WMGP台帳
+  locales:
+    ja: 日本語
+    en: English
+  nav:
+    home: ホーム
+    leagues: リーグ
+    login: ログイン
+    logout: ログアウト
+  actions:
+    back: 戻る
+    edit: 編集
+    create_league: リーグ作成
+    create_phase: フェーズ作成
+    create_week: 週作成
+    create_match: 対戦作成
+  labels:
+    locale: 言語
+    vs: vs
+    none: "-"
+    on: 有効
+    off: 無効
+    status: 状態
+    export: 画像
+    judge: 審判
+    room: ルーム
+    spectator: 観戦
+    block: ブロック
+    winner: 勝者
+    decision: 判定
+    bracket: ブラケット
+    kind: 種別
+    number: 番号
+    participants_count: "参加者 %{count}"
+    scheduled_at: 対戦日時
+  flash:
+    auth:
+      required: ログインしてください。
+    sessions:
+      created: ログインしました。
+      destroyed: ログアウトしました。
+      invalid: ログインIDまたはパスワードが違います。
+    leagues:
+      created: リーグを作成しました。
+      updated: リーグを更新しました。
+    phases:
+      created: フェーズを作成しました。
+      updated: フェーズを更新しました。
+    weeks:
+      created: 週を作成しました。
+      updated: 週を更新しました。
+    matches:
+      created: 対戦カードを作成しました。
+      updated: 対戦カードを更新しました。
+  shared:
+    errors:
+      title: 入力内容を確認してください。
+  home:
+    eyebrow: WMGP台帳
+    title: Katorin2
+    lede: Discord の運用はそのままに、リーグ管理、結果整理、画像出力をまとめる運営台帳です。
+    features_title: 台帳
+    login: ログイン
+    features:
+      leagues: リーグ単位の台帳管理
+      results: 試合結果入力と確認導線
+      exports: 結果画像出力を最優先
+  dashboard:
+    eyebrow: ダッシュボード
+    title: ホーム
+    lede: いま処理すべき対戦を優先表示します。
+    metrics:
+      today_matches: 今日の対戦
+      result_pending: 結果未確定
+      stale_exports: 再出力待ち
+    sections:
+      today_matches: 今日の対戦
+      result_pending: 結果未確定
+      stale_exports: 画像再出力待ち
+      leagues: リーグ
+    empty:
+      today_matches: 本日の対戦はありません。
+      result_pending: 未確定の対戦はありません。
+      stale_exports: 再出力待ちはありません。
+      leagues: リーグがまだありません。
+  leagues:
+    eyebrow: リーグ
+    eyebrow_index: リーグ台帳
+    title_index: リーグ一覧
+    title_new: リーグ作成
+    title_edit: リーグ編集
+    meta: "ルール: %{rule_module_key} / slug: %{slug}"
+    phases: フェーズ
+    teams: チーム
+    participants: 参加者
+    recent_matches: 最近の対戦
+    empty_matches: 対戦はまだありません。
+    form:
+      name: リーグ名
+      slug: slug
+      rule_module_key: ルールモジュール
+      status: 状態
+      started_at: 開始日
+      ended_at: 終了日
+  phases:
+    eyebrow: フェーズ
+    title_new: フェーズ作成
+    title_edit: フェーズ編集
+    meta: "%{kind} / ブラケット: %{bracket}"
+    weeks: 週一覧
+    blocks: ブロック
+    weeks_count: "対戦数 %{count}"
+    form:
+      name: フェーズ名
+      kind: 種別
+      position: 並び順
+      rule_module_key: ルールモジュール
+      ranking_rule_key: 順位ルール
+      bracket_enabled: ブラケットを有効化
+  weeks:
+    eyebrow: 週
+    title_new: 週作成
+    title_edit: 週編集
+    meta: "番号: %{number} / 種別: %{kind}"
+    matches: 対戦カード
+    empty_matches: 対戦カードがまだありません。
+    form:
+      number: 週番号
+      name: 表示名
+      kind: 種別
+      position: 並び順
+      locked_at: ロック日時
+  matches:
+    eyebrow: 対戦
+    title_new: 対戦カード作成
+    title_edit: 対戦カード編集
+    progress: 進行状況
+    official_result: 公式結果
+    rounds: ラウンド
+    empty_result: 公式結果はまだありません。
+    empty_rounds: ラウンドはまだありません。
+    round_wins: ラウンド勝数
+    rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
+    export_stale: 再出力が必要
+    export_pending: 出力待ち
+    form:
+      home_team: ホームチーム
+      away_team: アウェイチーム
+      select_prompt: 選択してください
+      block: ブロック
+      stage_key: ステージキー
+      scheduled_on: 対戦日
+      scheduled_time: 開始時刻
+      status: 進行状態
+      export_status: 画像状態
+      judge_name: 審判名
+      bracket_slot: ブラケット位置
+      room_id: ルームID
+      spectator_room_id: 観戦ID
+      notes: メモ
+  sessions:
+    title: ログイン
+    login_id: アカウントID
+    password: パスワード
+    submit: ログイン
+  enums:
+    league:
+      status:
+        draft: 下書き
+        active: 公開中
+        completed: 完了
+    phase:
+      kind:
+        regular_season: 予選
+        playoff: 決勝トーナメント
+    week:
+      kind:
+        regular: 通常週
+        playoff: プレーオフ
+    match:
+      status:
+        draft: 下書き
+        scheduled: 日程確定
+        in_progress: 進行中
+        result_pending: 結果確認中
+        confirmed: 確定
+        cancelled: 中止
+      export_status:
+        not_required: 不要
+        pending: 未出力
+        generated: 出力済み
+        stale: 再出力待ち
+    match_result:
+      result_status:
+        partial: 入力中
+        confirmed: 確定
+        void: 無効
+      decision_type:
+        normal: 通常
+  activerecord:
+    models:
+      league: リーグ
+      phase: フェーズ
+      week: 週
+      match: 対戦カード
+    attributes:
+      league:
+        name: リーグ名
+        slug: slug
+        rule_module_key: ルールモジュール
+        status: 状態
+        started_at: 開始日
+        ended_at: 終了日
+      phase:
+        name: フェーズ名
+        kind: 種別
+        position: 並び順
+        rule_module_key: ルールモジュール
+        ranking_rule_key: 順位ルール
+        bracket_enabled: ブラケット有効化
+      week:
+        number: 週番号
+        name: 表示名
+        kind: 種別
+        position: 並び順
+        locked_at: ロック日時
+      match:
+        home_team_id: ホームチーム
+        away_team_id: アウェイチーム
+        block_id: ブロック
+        stage_key: ステージキー
+        scheduled_on: 対戦日
+        scheduled_time: 開始時刻
+        status: 進行状態
+        export_status: 画像状態
+        judge_name: 審判名
+        bracket_slot: ブラケット位置
+        room_id: ルームID
+        spectator_room_id: 観戦ID
+        notes: メモ
+  helpers:
+    submit:
+      create: "%{model}を作成"
+      update: "%{model}を更新"

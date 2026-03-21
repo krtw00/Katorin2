@@ -1,6 +1,6 @@
 <% if record.errors.any? %>
   <div class="panel panel--danger">
-    <strong>入力内容を確認してください。</strong>
+    <strong><%= t("shared.errors.title") %></strong>
     <ul class="compact-list">
       <% record.errors.full_messages.each do |message| %>
         <li><%= message %></li>

@@ -12,16 +12,16 @@ class SessionsController < ApplicationController
 
     if organizer_account&.authenticate(session_params[:password].to_s)
       start_session!(organizer_account)
-      redirect_to dashboard_path, notice: "ログインしました。"
+      redirect_to dashboard_path, notice: t("flash.sessions.created")
     else
-      flash.now[:alert] = "メールアドレスまたはパスワードが違います。"
+      flash.now[:alert] = t("flash.sessions.invalid")
       render :new, status: :unprocessable_entity
     end
   end
 
   def destroy
     terminate_session!
-    redirect_to root_path, notice: "ログアウトしました。"
+    redirect_to root_path, notice: t("flash.sessions.destroyed")
   end
 
   private

@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  localized_root_redirect = redirect do |_params, request|
+    locale = request.path_parameters[:locale].presence
+    locale.present? ? "/#{locale}" : "/"
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -10,31 +15,34 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   get "favicon.ico", to: redirect("/icon.png")
-  get "tournaments", to: redirect("/")
-  get "tournaments/*path", to: redirect("/")
-  get "series", to: redirect("/")
-  get "series/*path", to: redirect("/")
-  get "teams", to: redirect("/")
-  get "teams/*path", to: redirect("/")
-  get "my", to: redirect("/")
-  get "my/*path", to: redirect("/")
 
-  root "home#index"
+  scope "(:locale)", locale: /ja|en/ do
+    get "tournaments", to: localized_root_redirect
+    get "tournaments/*path", to: localized_root_redirect
+    get "series", to: localized_root_redirect
+    get "series/*path", to: localized_root_redirect
+    get "teams", to: localized_root_redirect
+    get "teams/*path", to: localized_root_redirect
+    get "my", to: localized_root_redirect
+    get "my/*path", to: localized_root_redirect
 
-  resource :session, only: %i[new create destroy]
-  resource :dashboard, only: :show, controller: "dashboard"
+    root "home#index"
 
-  resources :leagues, only: %i[index show new create edit update] do
-    resources :phases, only: %i[show new create edit update]
+    resource :session, only: %i[new create destroy]
+    resource :dashboard, only: :show, controller: "dashboard"
+
+    resources :leagues, only: %i[index show new create edit update] do
+      resources :phases, only: %i[show new create edit update]
+    end
+
+    resources :phases, only: [] do
+      resources :weeks, only: %i[show new create edit update]
+    end
+
+    resources :weeks, only: [] do
+      resources :matches, only: %i[new create]
+    end
+
+    resources :matches, only: %i[show edit update]
   end
-
-  resources :phases, only: [] do
-    resources :weeks, only: %i[show new create edit update]
-  end
-
-  resources :weeks, only: [] do
-    resources :matches, only: %i[new create]
-  end
-
-  resources :matches, only: %i[show edit update]
 end

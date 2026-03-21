@@ -61,6 +61,35 @@ ol {
   position: relative;
 }
 
+.shell-locale {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shell-locale__label {
+  font-size: 0.78rem;
+  color: rgba(231, 240, 242, 0.78);
+}
+
+.shell-locale__link {
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: inherit;
+}
+
+.shell-locale__link.is-active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .shell--auth {
   min-height: 100vh;
 }
@@ -593,6 +622,15 @@ h2 {
 
   .brand-name {
     font-size: 1rem;
+  }
+
+  .shell-locale {
+    top: 0.75rem;
+    right: 0.9rem;
+  }
+
+  .shell-locale__label {
+    display: none;
   }
 
   h1 {
