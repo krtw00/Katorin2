@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     get "my/*path", to: localized_root_redirect
 
     resource :session, only: %i[new create destroy]
+    resource :registration, only: %i[new create], controller: "registrations"
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
 

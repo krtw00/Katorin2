@@ -44,6 +44,9 @@ en:
       created: Logged in.
       destroyed: Logged out.
       invalid: The login ID or password is incorrect.
+    registrations:
+      created: Account created.
+      invalid: Please review the registration details.
     leagues:
       created: League created.
       updated: League updated.
@@ -172,9 +175,23 @@ en:
       notes: Notes
   sessions:
     title: Log in
+    lede: Sign in with your organizer account.
     login_id: Account ID
     password: Password
     submit: Log in
+    no_account: Don't have an account?
+    register: Sign up
+  registrations:
+    title: Sign up
+    lede: Create a new organizer account.
+    display_name: Organization name
+    login_id: Account ID
+    email: Email
+    password: Password
+    password_confirmation: Confirm password
+    submit: Create account
+    have_account: Already have an account?
+    back_to_login: Back to log in
   enums:
     league:
       status:

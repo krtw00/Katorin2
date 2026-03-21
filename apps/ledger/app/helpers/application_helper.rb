@@ -65,11 +65,10 @@ module ApplicationHelper
   end
 
   def locale_switcher_path(locale)
-    locale_param = locale.to_sym == I18n.default_locale ? nil : locale
     route_params = request.path_parameters.symbolize_keys.except(:format)
-    route_params = { controller: "home", action: "index" } if route_params[:controller].blank? || route_params[:action].blank?
+    route_params = { controller: "sessions", action: "new" } if route_params[:controller].blank? || route_params[:action].blank?
 
-    url_for(route_params.merge(request.query_parameters.symbolize_keys).merge(locale: locale_param))
+    url_for(route_params.merge(request.query_parameters.symbolize_keys).merge(locale: locale))
   end
 
   private

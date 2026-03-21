@@ -1,0 +1,50 @@
+<% page_title t("registrations.title") %>
+
+<section class="login-screen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <p class="login-brand__name">Katorin2</p>
+    </div>
+
+    <p class="login-copy"><%= t("registrations.lede") %></p>
+
+    <%= render "shared/errors", record: @organizer_account %>
+
+    <%= form_with model: @organizer_account, url: registration_path, class: "login-form" do |form| %>
+      <div class="login-form__row">
+        <%= form.label :display_name, t("registrations.display_name"), class: "login-form__label" %>
+        <%= form.text_field :display_name, required: true, autofocus: true, class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__row">
+        <%= form.label :login_id, t("registrations.login_id"), class: "login-form__label" %>
+        <%= form.text_field :login_id, required: true, autocomplete: "username", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__row">
+        <%= form.label :email, t("registrations.email"), class: "login-form__label" %>
+        <%= form.email_field :email, required: true, autocomplete: "email", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__row">
+        <%= form.label :password, t("registrations.password"), class: "login-form__label" %>
+        <%= form.password_field :password, required: true, autocomplete: "new-password", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__row">
+        <%= form.label :password_confirmation, t("registrations.password_confirmation"), class: "login-form__label" %>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__actions">
+        <%= form.submit t("registrations.submit"), class: "button button--auth" %>
+      </div>
+    <% end %>
+
+    <div class="login-links">
+      <span><%= t("registrations.have_account") %></span>
+      <%= link_to t("registrations.back_to_login"), new_session_path, class: "login-links__link" %>
+    </div>
+  </div>
+</section>
