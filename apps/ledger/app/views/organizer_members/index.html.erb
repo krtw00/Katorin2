@@ -21,7 +21,7 @@
         </div>
         <div class="page-actions">
           <%= status_badge organizer_member.active? ? t("labels.on") : t("labels.off"), organizer_member.active? ? "success" : "neutral" %>
-          <%= link_to t("actions.edit"), edit_organizer_member_path(organizer_member), class: "button" %>
+          <%= link_to t("actions.edit"), edit_organizer_member_path(id: organizer_member), class: "button" %>
         </div>
       </div>
       <% if organizer_member.notes.present? %>

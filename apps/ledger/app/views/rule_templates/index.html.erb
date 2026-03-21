@@ -22,7 +22,7 @@
         </div>
         <div class="page-actions">
           <%= status_badge rule_template.active? ? t("labels.on") : t("labels.off"), rule_template.active? ? "success" : "neutral" %>
-          <%= link_to t("actions.edit"), edit_rule_template_path(rule_template), class: "button" %>
+          <%= link_to t("actions.edit"), edit_rule_template_path(id: rule_template), class: "button" %>
         </div>
       </div>
 

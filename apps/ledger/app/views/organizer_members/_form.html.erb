@@ -1,6 +1,6 @@
 <%= render "shared/errors", record: organizer_member %>
 
-<%= form_with model: organizer_member, class: "stack" do |form| %>
+<%= form_with model: organizer_member, url: organizer_member.persisted? ? organizer_member_path(id: organizer_member) : organizer_members_path, class: "stack" do |form| %>
   <div class="field-grid">
     <div class="field">
       <%= form.label :display_name, t("organizer_members.form.display_name") %>
