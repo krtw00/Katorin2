@@ -2,7 +2,7 @@
 
 <% form_values = template_form.stringify_keys %>
 
-<%= form_with url: rule_template.persisted? ? rule_template_path(rule_template) : rule_templates_path, method: rule_template.persisted? ? :patch : :post, scope: :rule_template_form, class: "stack" do |form| %>
+<%= form_with url: rule_template.persisted? ? rule_template_path(id: rule_template) : rule_templates_path, method: rule_template.persisted? ? :patch : :post, scope: :rule_template_form, class: "stack" do |form| %>
   <div class="panel">
     <h2><%= t("rule_templates.sections.basic") %></h2>
     <div class="field-grid">
