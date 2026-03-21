@@ -19,8 +19,8 @@ if [[ "${ALLOW_BRANCH_MISMATCH:-0}" != "1" ]]; then
       }
       ;;
     staging)
-      [[ "$CURRENT_BRANCH" == "beta" ]] || {
-        echo "staging deploys must run from beta (current: ${CURRENT_BRANCH:-unknown})" >&2
+      [[ "$CURRENT_BRANCH" == "staging" ]] || {
+        echo "staging deploys must run from staging (current: ${CURRENT_BRANCH:-unknown})" >&2
         exit 1
       }
       ;;
