@@ -25,7 +25,7 @@ module ApplicationHelper
   end
 
   def ruleset_options
-    RuleSets::Registry.all.map do |definition|
+    RuleSets::Registry.all(organizer_account: current_organizer_account).map do |definition|
       [localized_ruleset_text(definition["name"]), definition.fetch("key")]
     end
   end

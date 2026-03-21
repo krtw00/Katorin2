@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_21_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -138,6 +138,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.index ["login_id"], name: "index_organizer_accounts_on_login_id", unique: true
   end
 
+  create_table "organizer_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.text "notes"
+    t.uuid "organizer_account_id", null: false
+    t.string "role", default: "staff", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "display_name"], name: "idx_on_organizer_account_id_display_name_ae93f913dc", unique: true
+    t.index ["organizer_account_id"], name: "index_organizer_members_on_organizer_account_id"
+    t.check_constraint "role::text = ANY (ARRAY['owner'::character varying, 'admin'::character varying, 'staff'::character varying]::text[])", name: "organizer_members_role_inclusion"
+  end
+
   create_table "participants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -188,6 +201,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.check_constraint "result_status::text = ANY (ARRAY['partial'::character varying::text, 'confirmed'::character varying::text, 'void'::character varying::text])", name: "rounds_result_status_inclusion"
   end
 
+  create_table "rule_templates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.json "definition", default: {}, null: false
+    t.text "description_en"
+    t.text "description_ja"
+    t.string "key", null: false
+    t.string "name_en", null: false
+    t.string "name_ja", null: false
+    t.uuid "organizer_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "key"], name: "index_rule_templates_on_organizer_account_id_and_key", unique: true
+    t.index ["organizer_account_id"], name: "index_rule_templates_on_organizer_account_id"
+  end
+
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "block_id"
     t.datetime "created_at", null: false
@@ -235,6 +263,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
   add_foreign_key "matches", "weeks"
+  add_foreign_key "organizer_members", "organizer_accounts"
   add_foreign_key "participants", "leagues"
   add_foreign_key "participants", "teams"
   add_foreign_key "phases", "leagues"
@@ -242,6 +271,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   add_foreign_key "rounds", "teams", column: "away_team_id"
   add_foreign_key "rounds", "teams", column: "home_team_id"
   add_foreign_key "rounds", "teams", column: "winner_team_id"
+  add_foreign_key "rule_templates", "organizer_accounts"
   add_foreign_key "teams", "blocks"
   add_foreign_key "teams", "leagues"
   add_foreign_key "weeks", "leagues"

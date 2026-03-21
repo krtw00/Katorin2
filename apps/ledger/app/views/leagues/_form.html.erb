@@ -17,6 +17,7 @@
     <div class="field">
       <%= form.label :rule_module_key, t("leagues.form.rule_module_key") %>
       <%= form.select :rule_module_key, ruleset_options, {}, required: true %>
+      <p class="ghost-note"><%= link_to t("rule_templates.title_index"), rule_templates_path %></p>
     </div>
 
     <div class="field">
