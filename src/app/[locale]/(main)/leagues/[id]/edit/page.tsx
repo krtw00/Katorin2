@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { LeagueForm } from '@/components/league/LeagueForm'
 import { Series } from '@/types/league'
 import { useTranslations } from 'next-intl'
+import { canManageLeague, getLeagueOrganizerRole } from '@/lib/league-organizer-permissions'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -42,7 +43,8 @@ export default function EditLeaguePage({ params }: Props) {
         return
       }
 
-      if (user.id !== leagueData.organizer_id) {
+      const role = await getLeagueOrganizerRole(supabase, id, user.id)
+      if (!canManageLeague(role)) {
         setError(t('noPermission'))
         setLoading(false)
         return

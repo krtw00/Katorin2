@@ -12,6 +12,7 @@ import {
 import Link from 'next/link'
 import { getTournamentConfig } from '@/lib/tournament-config'
 import { CheckInButton } from '@/components/tournament/CheckInButton'
+import { canOperateLeague, getRoundOrganizerRole } from '@/lib/league-organizer-permissions'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
@@ -39,7 +40,8 @@ export default async function TournamentDetailPage({ params }: Props) {
 
   if (error || !tournament) notFound()
 
-  const isOrganizer = user?.id === tournament.organizer_id
+  const organizerRole = user ? await getRoundOrganizerRole(supabase, id, user.id) : null
+  const canManageTournament = canOperateLeague(organizerRole)
   const isTeam = tournament.entry_type === 'team'
 
   // シリーズ情報
@@ -48,7 +50,7 @@ export default async function TournamentDetailPage({ params }: Props) {
   // チーム戦 / 個人戦のデータを並列取得
   let blocks: { id: string; block_name: string }[] = []
   let teamEntryCount = 0
-  let matchStats = { total: 0, completed: 0 }
+  const matchStats = { total: 0, completed: 0 }
   let participantCount = 0
   let config
   let myParticipant: { id: string; checked_in_at: string | null } | null = null
@@ -103,7 +105,7 @@ export default async function TournamentDetailPage({ params }: Props) {
       isParticipant = !!myParticipant
     }
 
-    if (isOrganizer) {
+    if (canManageTournament) {
       const { data: disputedMatches } = await supabase
         .from('matches')
         .select('id')
@@ -312,7 +314,7 @@ export default async function TournamentDetailPage({ params }: Props) {
               </Link>
             </>
           )}
-          {isOrganizer && (
+          {canManageTournament && (
             <Link href={`/tournaments/${id}/manage`}>
               <Button variant="secondary">{t('tournament.detail.manageButton')}</Button>
             </Link>

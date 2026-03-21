@@ -2,37 +2,46 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { OrderSubmitForm } from '@/components/tournament/OrderSubmitForm'
 import { AdminOrderForm } from '@/components/tournament/AdminOrderForm'
+import { canOperateLeague, getRoundOrganizerRole } from '@/lib/league-organizer-permissions'
+import type { Tables } from '@/types/database'
 
 type Props = {
   params: Promise<{ id: string; matchId: string }>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getTeamMembers(supabase: any, teamId: string) {
+type Profile = Tables<'profiles'>
+type TeamMemberRow = Tables<'team_members'> & {
+  user: Profile | Profile[] | null
+}
+type WarOrderRow = Tables<'war_orders'>
+
+async function getTeamMembers(supabase: Awaited<ReturnType<typeof createClient>>, teamId: string) {
   const { data: members } = await supabase
     .from('team_members')
     .select('*, user:profiles(*)')
     .eq('team_id', teamId)
-  return (members || []).map((m: any) => ({
-    userId: m.user_id,
-    displayName: m.user?.display_name || '',
-  }))
+  return ((members || []) as TeamMemberRow[]).map((member) => {
+    const user = Array.isArray(member.user) ? member.user[0] : member.user
+    return {
+      userId: member.user_id,
+      displayName: user?.display_name || '',
+    }
+  })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getExistingOrders(supabase: any, matchId: string, teamId: string) {
+async function getExistingOrders(supabase: Awaited<ReturnType<typeof createClient>>, matchId: string, teamId: string) {
   const { data: orders } = await supabase
     .from('war_orders')
     .select('*')
     .eq('match_id', matchId)
     .eq('team_id', teamId)
     .order('slot')
-  return (orders || []).map((o: any) => ({
-    slot: o.slot,
-    userId: o.user_id,
-    deckName: o.deck_name,
-    deckTheme: o.deck_theme,
-    isSub: o.is_sub,
+  return ((orders || []) as WarOrderRow[]).map((order) => ({
+    slot: order.slot,
+    userId: order.user_id,
+    deckName: order.deck_name,
+    deckTheme: order.deck_theme,
+    isSub: order.is_sub,
   }))
 }
 
@@ -58,7 +67,8 @@ export default async function OrderPage({ params }: Props) {
   if (!tournament) notFound()
   if (!match) notFound()
 
-  const isOrganizer = user.id === tournament.organizer_id
+  const organizerRole = await getRoundOrganizerRole(supabase, id, user.id)
+  const isOrganizer = canOperateLeague(organizerRole)
   const team1 = (Array.isArray(match.team1) ? match.team1[0] : match.team1) as { id: string; name: string } | null
   const team2 = (Array.isArray(match.team2) ? match.team2[0] : match.team2) as { id: string; name: string } | null
 

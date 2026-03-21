@@ -878,6 +878,7 @@
     },
     "detail": {
       "organizer": "主催",
+      "organizerMembers": "運営メンバー",
       "edit": "編集",
       "addTournament": "大会を追加",
       "manage": "管理",
@@ -917,6 +918,67 @@
         "winPoints": "勝点",
         "roundDiff": "R差",
         "matchDiff": "M差"
+      }
+    },
+    "operators": {
+      "title": "運営メンバー管理",
+      "notFound": "リーグが見つかりませんでした",
+      "noPermission": "運営メンバー管理の権限がありません",
+      "roles": {
+        "owner": "オーナー",
+        "admin": "管理者",
+        "staff": "スタッフ"
+      },
+      "members": {
+        "title": "運営メンバー",
+        "ownerHint": "リーグ作成者",
+        "name": "メンバー",
+        "role": "権限",
+        "status": "状態",
+        "joined": "追加日",
+        "actions": "操作",
+        "active": "有効",
+        "inactive": "無効",
+        "activate": "有効化",
+        "deactivate": "無効化",
+        "viewOnly": "閲覧のみ",
+        "unknownUser": "不明なユーザー"
+      },
+      "search": {
+        "title": "メンバーを追加",
+        "placeholder": "表示名またはDiscord IDで検索",
+        "submit": "検索",
+        "searching": "検索中...",
+        "add": "追加",
+        "adding": "追加中...",
+        "empty": "追加候補はまだありません"
+      },
+      "audit": {
+        "title": "監査ログ",
+        "empty": "監査ログはまだありません",
+        "when": "日時",
+        "who": "担当者",
+        "action": "操作",
+        "target": "対象",
+        "fields": "変更項目",
+        "system": "システム",
+        "actions": {
+          "INSERT": "作成",
+          "UPDATE": "更新",
+          "DELETE": "削除"
+        },
+        "tableNames": {
+          "league_organizer_members": "運営メンバー",
+          "leagues": "リーグ",
+          "rounds": "大会",
+          "round_blocks": "ブロック",
+          "matches": "対戦",
+          "team_entries": "エントリー",
+          "team_applications": "申請",
+          "war_orders": "オーダー",
+          "war_rounds": "Warラウンド",
+          "individual_matches": "個別対戦"
+        }
       }
     },
     "addRound": {

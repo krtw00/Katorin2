@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TournamentForm } from '@/components/tournament/TournamentForm'
 import { Tournament } from '@/types/round'
+import { canManageLeague, getRoundOrganizerRole } from '@/lib/league-organizer-permissions'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -45,7 +46,8 @@ export default function EditTournamentPage({ params }: Props) {
       }
 
       // Check if user is the organizer
-      if (user.id !== tournamentData.organizer_id) {
+      const role = await getRoundOrganizerRole(supabase, id, user.id)
+      if (!canManageLeague(role)) {
         setError('編集権限がありません')
         setLoading(false)
         return

@@ -26,11 +26,10 @@ type ExistingRound = {
 
 type Props = {
   leagueId: string
-  organizerId: string
   rounds: ExistingRound[]
 }
 
-export function AddRoundDialog({ leagueId, organizerId, rounds }: Props) {
+export function AddRoundDialog({ leagueId, rounds }: Props) {
   const t = useTranslations('leagues')
   const tc = useTranslations('common')
   const supabase = createClient()
@@ -87,11 +86,17 @@ export function AddRoundDialog({ leagueId, organizerId, rounds }: Props) {
 
     setSubmitting(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError(tc('loginRequired'))
+        return
+      }
+
       const { error: insertError } = await supabase
         .from('rounds')
         .insert({
           league_id: leagueId,
-          organizer_id: organizerId,
+          organizer_id: user.id,
           title: trimmedTitle,
           format,
           is_finals: isFinals,
