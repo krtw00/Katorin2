@@ -2,6 +2,7 @@ class RuleTemplatesController < ApplicationController
   before_action :set_rule_template, only: %i[edit update]
 
   def index
+    @builtin_rule_templates = RuleSets::Registry.builtin
     @rule_templates = current_organizer_account.rule_templates.order(:created_at)
   end
 

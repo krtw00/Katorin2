@@ -133,17 +133,28 @@ ja:
     title_index: 運営メンバー
     title_new: メンバー追加
     title_edit: メンバー編集
+    sections:
+      admin_password: 管理パス
     form:
       display_name: 表示名
       role: 権限
       active: 有効化
       notes: メモ
+      admin_password: 管理パス
+      admin_password_confirmation: 管理パス確認
+      admin_password_hint: owner と admin は管理操作用のパスが必要です。staff は未入力のままで構いません。
+    password_status:
+      configured: パス設定済み
+      not_configured: パス未設定
   rule_templates:
     eyebrow: ルールセット
     lede: 大会形式のテンプレートを作成し、リーグ作成時に再利用します。
     title_index: ルールセット
     title_new: ルールセット作成
     title_edit: ルールセット編集
+    source_labels:
+      builtin: 組み込み
+      custom: カスタム
     sections:
       basic: 基本情報
       roster: チーム編成
@@ -246,6 +257,8 @@ ja:
     email: メール
     password: パスワード
     password_confirmation: パスワード確認
+    initial_admin_password: 初期管理パス
+    initial_admin_password_confirmation: 初期管理パス確認
     submit: 登録する
     have_account: すでにアカウントをお持ちの場合
     back_to_login: ログインへ戻る
@@ -309,6 +322,8 @@ ja:
         role: 権限
         active: 有効化
         notes: メモ
+        admin_password: 管理パス
+        admin_password_confirmation: 管理パス確認
       phase:
         name: フェーズ名
         kind: 種別

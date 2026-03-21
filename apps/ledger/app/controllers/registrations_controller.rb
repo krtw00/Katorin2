@@ -27,7 +27,9 @@ class RegistrationsController < ApplicationController
       :login_id,
       :email,
       :password,
-      :password_confirmation
+      :password_confirmation,
+      :initial_admin_password,
+      :initial_admin_password_confirmation
     )
   end
 end

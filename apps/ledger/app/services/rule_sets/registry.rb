@@ -11,6 +11,10 @@ module RuleSets
         (builtin_definitions.values + custom_definitions(organizer_account).values).map { |definition| deep_dup(definition) }
       end
 
+      def builtin
+        builtin_definitions.values.map { |definition| deep_dup(definition) }
+      end
+
       def fetch(key, organizer_account: nil)
         definition = custom_definitions(organizer_account)[key.to_s] || builtin_definitions[key.to_s]
         raise KeyError, "Unknown ruleset: #{key}" unless definition

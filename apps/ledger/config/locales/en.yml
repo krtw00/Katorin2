@@ -133,17 +133,28 @@ en:
     title_index: Organizer members
     title_new: Add member
     title_edit: Edit member
+    sections:
+      admin_password: Admin password
     form:
       display_name: Display name
       role: Role
       active: Active
       notes: Notes
+      admin_password: Admin password
+      admin_password_confirmation: Confirm admin password
+      admin_password_hint: Owner and admin members need an admin password for privileged actions. Staff can leave this blank.
+    password_status:
+      configured: Password set
+      not_configured: Password missing
   rule_templates:
     eyebrow: Rulesets
     lede: Create reusable competition rulesets for league setup.
     title_index: Rulesets
     title_new: Create ruleset
     title_edit: Edit ruleset
+    source_labels:
+      builtin: Built-in
+      custom: Custom
     sections:
       basic: Basics
       roster: Roster rules
@@ -246,6 +257,8 @@ en:
     email: Email
     password: Password
     password_confirmation: Confirm password
+    initial_admin_password: Initial admin password
+    initial_admin_password_confirmation: Confirm initial admin password
     submit: Create account
     have_account: Already have an account?
     back_to_login: Back to log in
@@ -309,6 +322,8 @@ en:
         role: Role
         active: Active
         notes: Notes
+        admin_password: Admin password
+        admin_password_confirmation: Confirm admin password
       phase:
         name: Phase name
         kind: Kind

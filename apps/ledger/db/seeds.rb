@@ -35,6 +35,8 @@ def seed_bootstrap_organizer!
   organizer.display_name = display_name
   organizer.password = password
   organizer.password_confirmation = password
+  organizer.initial_admin_password = password
+  organizer.initial_admin_password_confirmation = password
   organizer.save!
 
   organizer
@@ -57,6 +59,8 @@ def seed_demo_organizer!
   organizer.display_name = display_name
   organizer.password = password
   organizer.password_confirmation = password
+  organizer.initial_admin_password = password if organizer.new_record?
+  organizer.initial_admin_password_confirmation = password if organizer.new_record?
   organizer.save!
 
   organizer

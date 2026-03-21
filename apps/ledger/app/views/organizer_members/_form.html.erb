@@ -25,6 +25,23 @@
     </div>
   </div>
 
+  <div class="panel">
+    <h2><%= t("organizer_members.sections.admin_password") %></h2>
+    <p class="muted"><%= t("organizer_members.form.admin_password_hint") %></p>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :admin_password, t("organizer_members.form.admin_password") %>
+        <%= form.password_field :admin_password, autocomplete: "new-password" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :admin_password_confirmation, t("organizer_members.form.admin_password_confirmation") %>
+        <%= form.password_field :admin_password_confirmation, autocomplete: "new-password" %>
+      </div>
+    </div>
+  </div>
+
   <div class="page-actions">
     <%= link_to t("actions.back"), organizer_members_path, class: "button" %>
     <%= form.submit class: "button button--primary" %>
