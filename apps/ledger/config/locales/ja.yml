@@ -20,6 +20,7 @@ ja:
     edit_result: 結果入力
     generate_export: 画像出力
     open_export: 画像を開く
+    download_export: 画像をダウンロード
     delete: 削除
     create_league: リーグ作成
     manage_teams: チーム管理
@@ -47,10 +48,12 @@ ja:
     spectator: 観戦
     block: ブロック
     winner: 勝者
+    score: スコア
     decision: 判定
     bracket: ブラケット
     kind: 種別
     number: 番号
+    board: 卓
     participants_count: "メンバー %{count}"
     scheduled_at: 対戦日時
   flash:
@@ -362,6 +365,8 @@ ja:
       empty: 結果はまだ入力されていません。
       round_title: "ラウンド %{number}"
       board_member: "卓 %{number} %{team}"
+      member_short: "%{team} メンバー"
+      deck_short: "%{team} デッキ"
       deck_name: "%{team} デッキ"
       deck_placeholder: デッキ名を入力
       game_wins: "%{team} ゲーム数"

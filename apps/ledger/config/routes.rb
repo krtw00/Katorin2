@@ -52,7 +52,9 @@ Rails.application.routes.draw do
 
     resources :matches, only: %i[show edit update] do
       resource :result_entry, only: %i[edit update], controller: "match_result_entries"
-      resource :result_card_export, only: :create, controller: "match_exports"
+      resource :result_card_export, only: %i[create show], controller: "match_exports" do
+        get :download, on: :member
+      end
     end
   end
 end
