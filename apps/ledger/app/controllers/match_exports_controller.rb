@@ -1,11 +1,20 @@
 class MatchExportsController < ApplicationController
   before_action :set_match
+  before_action :set_export, only: %i[show download]
 
   def create
     MatchExports::ResultCardRenderer.new(@match).render!
     redirect_to match_path(id: @match), notice: t("flash.matches.export_generated")
   rescue StandardError => error
     redirect_to match_path(id: @match), alert: t("flash.matches.export_failed", message: error.message)
+  end
+
+  def show
+    send_export_file(disposition: :inline)
+  end
+
+  def download
+    send_export_file(disposition: :attachment)
   end
 
   private
@@ -24,5 +33,27 @@ class MatchExportsController < ApplicationController
         rounds: [:winner_team, { board_results: %i[home_participant away_participant] }]
       )
       .first!
+  end
+
+  def set_export
+    @export = @match.exports.find_by!(export_type: MatchExports::ResultCardRenderer::EXPORT_TYPE)
+  end
+
+  def send_export_file(disposition:)
+    absolute_path = Rails.root.join("public", @export.file_path.delete_prefix("/"))
+    raise ActiveRecord::RecordNotFound unless absolute_path.exist?
+
+    send_file(
+      absolute_path,
+      type: "image/png",
+      disposition: disposition,
+      filename: safe_filename
+    )
+  end
+
+  def safe_filename
+    home = @match.home_team.display_name.to_s.parameterize.presence || "home"
+    away = @match.away_team.display_name.to_s.parameterize.presence || "away"
+    "#{home}-vs-#{away}.png"
   end
 end

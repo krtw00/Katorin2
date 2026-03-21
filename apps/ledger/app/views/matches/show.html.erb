@@ -55,7 +55,8 @@
       <div class="stack stack--compact">
         <p class="muted"><%= t("matches.result_card_ready") %></p>
         <div class="page-actions">
-          <%= link_to t("actions.open_export"), @result_card_export.file_path, class: "button", target: "_blank", rel: "noopener" %>
+          <%= link_to t("actions.open_export"), match_result_card_export_path(match_id: @match), class: "button", target: "_blank", rel: "noopener" %>
+          <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
           <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
         </div>
       </div>

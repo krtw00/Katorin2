@@ -20,6 +20,7 @@ en:
     edit_result: Enter result
     generate_export: Generate image
     open_export: Open image
+    download_export: Download image
     delete: Delete
     create_league: Create league
     manage_teams: Manage teams
@@ -47,10 +48,12 @@ en:
     spectator: Spectator
     block: Block
     winner: Winner
+    score: Score
     decision: Decision
     bracket: Bracket
     kind: Kind
     number: Number
+    board: Board
     participants_count: "Members: %{count}"
     scheduled_at: Scheduled at
   flash:
@@ -362,6 +365,8 @@ en:
       empty: No results entered yet.
       round_title: "Round %{number}"
       board_member: "Board %{number} %{team}"
+      member_short: "%{team} member"
+      deck_short: "%{team} deck"
       deck_name: "%{team} deck"
       deck_placeholder: Enter deck name
       game_wins: "%{team} game wins"
