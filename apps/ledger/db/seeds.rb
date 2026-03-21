@@ -246,30 +246,34 @@ end
 def build_demo_league!(organizer:, spec:, rosters:)
   existing_league = League.find_by(slug: spec[:slug])
   destroy_demo_league!(existing_league) if existing_league
+  ruleset = RuleSets::Registry.fetch("wmgp")
+  regular_stage = ruleset.fetch("stages").fetch(0)
+  final_stage = ruleset.fetch("stages").fetch(1)
 
   league = organizer.leagues.create!(
     name: "DEMO WMGP Season #{spec[:season_label]}",
     slug: spec[:slug],
     rule_module_key: "wmgp",
+    ruleset_snapshot: ruleset,
     status: "completed",
     started_at: spec[:started_at],
     ended_at: spec[:ended_at]
   )
 
   regular_phase = league.phases.create!(
-    name: "予選",
+    name: regular_stage.dig("name", "ja"),
     kind: "regular_season",
     position: 1,
     rule_module_key: "wmgp",
-    ranking_rule_key: "wmgp_regular",
+    ranking_rule_key: regular_stage["ranking_rule_key"],
     bracket_enabled: false
   )
   playoff_phase = league.phases.create!(
-    name: "決勝トーナメント",
+    name: final_stage.dig("name", "ja"),
     kind: "playoff",
     position: 2,
     rule_module_key: "wmgp",
-    ranking_rule_key: "wmgp_playoff",
+    ranking_rule_key: final_stage["ranking_rule_key"],
     bracket_enabled: true
   )
 

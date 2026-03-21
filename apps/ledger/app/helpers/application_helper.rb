@@ -24,6 +24,46 @@ module ApplicationHelper
     t("#{scope}.#{value}", default: value.to_s.humanize)
   end
 
+  def ruleset_options
+    RuleSets::Registry.all.map do |definition|
+      [localized_ruleset_text(definition["name"]), definition.fetch("key")]
+    end
+  end
+
+  def localized_ruleset_text(value)
+    return value.to_s unless value.is_a?(Hash)
+
+    value[I18n.locale.to_s].presence || value[I18n.default_locale.to_s].presence || value.values.compact.first.to_s
+  end
+
+  def ruleset_stage_summary(stage)
+    parts = [translated_enum("rulesets.formats", stage["format"])]
+
+    if stage["participant_scope"].present?
+      parts << translated_enum("rulesets.participant_scopes", stage["participant_scope"])
+    end
+
+    if stage["group_count"].present?
+      parts << t("rulesets.summary.group_count", count: stage["group_count"])
+    end
+
+    if stage["round_count"].present?
+      parts << t("rulesets.summary.round_count", count: stage["round_count"])
+    end
+
+    if stage["bracket_size"].present?
+      parts << t("rulesets.summary.bracket_size", count: stage["bracket_size"])
+    end
+
+    if stage["advancement_rule"].present? && stage["advancement_rule"] != "none"
+      advancement = translated_enum("rulesets.advancement_rules", stage["advancement_rule"])
+      value = stage["advancement_value"]
+      parts << [advancement, value].compact.join(": ")
+    end
+
+    parts.join(" / ")
+  end
+
   def locale_switcher_path(locale)
     locale_param = locale.to_sym == I18n.default_locale ? nil : locale
     route_params = request.path_parameters.symbolize_keys.except(:format)

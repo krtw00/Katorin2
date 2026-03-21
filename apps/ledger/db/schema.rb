@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_19_180500) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_19_180500) do
     t.string "name", null: false
     t.uuid "organizer_account_id", null: false
     t.string "rule_module_key", default: "wmgp", null: false
+    t.json "ruleset_snapshot"
     t.string "slug", null: false
     t.date "started_at"
     t.string "status", default: "draft", null: false
