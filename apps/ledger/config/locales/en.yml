@@ -18,8 +18,6 @@ en:
     back: Back
     edit: Edit
     edit_result: Enter result
-    generate_export: Generate image
-    open_export: Open image
     download_export: Download image
     delete: Delete
     create_league: Create league
@@ -106,7 +104,6 @@ en:
       created: Match created.
       updated: Match updated.
       results_updated: Match result updated.
-      export_generated: Match image generated.
       export_failed: "Failed to generate match image: %{message}"
   shared:
     errors:
@@ -169,8 +166,14 @@ en:
       status: Status
       started_at: Start date
       ended_at: End date
+      header_image: Background image
+      header_image_hint: Used as the background of match result images. If none is set, the default background is used.
       identifier_hint: The league number is assigned automatically on save.
       stage_asset_hint: Stage settings are added after league creation by choosing stage assets.
+    header_image:
+      title: Background image
+      ready: This image is used as the match export background.
+      empty: No background image has been configured yet. The default background will be used.
     delete_confirm: Delete this league?
   teams:
     eyebrow: Teams
@@ -349,8 +352,7 @@ en:
     progress: Progress
     official_result: Official result
     result_card: Result image
-    result_card_ready: The latest image is ready to review.
-    result_card_empty: No image has been generated yet.
+    result_card_download: The latest image is generated when you download it.
     rounds: Rounds
     empty_result: No official result yet.
     empty_rounds: No rounds yet.

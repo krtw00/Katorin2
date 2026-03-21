@@ -18,8 +18,6 @@ ja:
     back: 戻る
     edit: 編集
     edit_result: 結果入力
-    generate_export: 画像出力
-    open_export: 画像を開く
     download_export: 画像をダウンロード
     delete: 削除
     create_league: リーグ作成
@@ -106,7 +104,6 @@ ja:
       created: 対戦カードを作成しました。
       updated: 対戦カードを更新しました。
       results_updated: 対戦結果を更新しました。
-      export_generated: 対戦画像を出力しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
   shared:
     errors:
@@ -169,8 +166,14 @@ ja:
       status: 状態
       started_at: 開始日
       ended_at: 終了日
+      header_image: 背景画像
+      header_image_hint: 対戦画像の背景に使います。素材がなければ未設定のままでバニラ背景を使います。
       identifier_hint: 大会番号は保存時に自動で割り当てます。
       stage_asset_hint: ステージ設定は大会作成後に、ステージアセットを選んで追加します。
+    header_image:
+      title: 背景画像
+      ready: 現在の対戦画像背景です。
+      empty: まだ背景画像は設定されていません。未設定時はバニラ背景で出力します。
     delete_confirm: このリーグを削除します。よろしいですか？
   teams:
     eyebrow: チーム
@@ -349,8 +352,7 @@ ja:
     progress: 進行状況
     official_result: 公式結果
     result_card: 結果画像
-    result_card_ready: 最新画像を確認できます。
-    result_card_empty: まだ画像は出力されていません。
+    result_card_download: ダウンロード時に最新画像を生成します。
     rounds: ラウンド
     empty_result: 公式結果はまだありません。
     empty_rounds: ラウンドはまだありません。

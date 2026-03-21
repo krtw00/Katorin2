@@ -1,20 +1,12 @@
 class MatchExportsController < ApplicationController
   before_action :set_match
-  before_action :set_export, only: %i[show download]
-
-  def create
-    MatchExports::ResultCardRenderer.new(@match).render!
-    redirect_to match_path(id: @match), notice: t("flash.matches.export_generated")
-  rescue StandardError => error
-    redirect_to match_path(id: @match), alert: t("flash.matches.export_failed", message: error.message)
-  end
-
-  def show
-    send_export_file(disposition: :inline)
-  end
 
   def download
+    MatchExports::ResultCardRenderer.new(@match).render!
+    set_export
     send_export_file(disposition: :attachment)
+  rescue StandardError => error
+    redirect_to match_path(id: @match), alert: t("flash.matches.export_failed", message: error.message)
   end
 
   private

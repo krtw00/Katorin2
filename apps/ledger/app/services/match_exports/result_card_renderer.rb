@@ -1,6 +1,7 @@
 require "cgi"
 require "fileutils"
 require "tempfile"
+require "base64"
 
 module MatchExports
   class ResultCardRenderer
@@ -57,12 +58,13 @@ module MatchExports
       <<~SVG
         <svg xmlns="http://www.w3.org/2000/svg" width="#{WIDTH}" height="#{HEIGHT}" viewBox="0 0 #{WIDTH} #{HEIGHT}">
           <defs>
-            <linearGradient id="headerLeft" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#cf3215"/>
-              <stop offset="100%" stop-color="#111827"/>
+            <linearGradient id="canvasGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#d9e2f7"/>
+              <stop offset="100%" stop-color="#edf2ff"/>
             </linearGradient>
-            <linearGradient id="headerRight" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#111827"/>
+            <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#cf3215"/>
+              <stop offset="50%" stop-color="#111827"/>
               <stop offset="100%" stop-color="#22d3ee"/>
             </linearGradient>
             <style>
@@ -70,11 +72,12 @@ module MatchExports
               .meta { font-size: 26px; font-weight: 700; }
               .title { font-size: 58px; font-weight: 800; letter-spacing: 2px; }
               .header-label { font-size: 16px; font-weight: 700; fill: #dbeafe; }
-              .team-name { font-size: 36px; font-weight: 800; fill: #ffffff; }
+              .team-name { font-size: 30px; font-weight: 800; fill: #ffffff; }
               .team-player { font-size: 24px; font-weight: 700; fill: #111827; }
               .round-title { font-size: 28px; font-weight: 800; fill: #f8fafc; }
               .table-head { font-size: 19px; font-weight: 800; fill: #f8fafc; }
               .table-cell { font-size: 22px; font-weight: 700; fill: #111827; }
+              .table-cell-small { font-size: 18px; font-weight: 700; fill: #111827; }
               .score { font-size: 28px; font-weight: 800; fill: #111827; }
               .round-win { font-size: 28px; font-weight: 900; }
               .footer-team { font-size: 34px; font-weight: 800; fill: #ffffff; }
@@ -82,9 +85,9 @@ module MatchExports
               .muted { fill: #94a3b8; }
             </style>
           </defs>
-          <rect width="#{WIDTH}" height="#{HEIGHT}" fill="#eef2ff"/>
-          <rect x="0" y="0" width="#{WIDTH / 2}" height="170" fill="url(#headerLeft)"/>
-          <rect x="#{WIDTH / 2}" y="0" width="#{WIDTH / 2}" height="170" fill="url(#headerRight)"/>
+          #{canvas_background_svg}
+          <rect x="0" y="0" width="#{WIDTH}" height="170" fill="url(#heroGradient)"/>
+          <rect x="0" y="0" width="#{WIDTH}" height="170" fill="rgba(8, 15, 31, 0.32)"/>
           <text x="512" y="52" text-anchor="middle" class="base muted meta">MASTER DUEL</text>
           <text x="512" y="104" text-anchor="middle" class="base title">WMGP RESULT</text>
           <text x="512" y="146" text-anchor="middle" class="base muted meta">Katorin2 Match Ledger</text>
@@ -115,10 +118,10 @@ module MatchExports
         <rect x="632" y="246" width="372" height="160" fill="#0f172a"/>
         <rect x="392" y="246" width="240" height="160" fill="#18346a"/>
 
-        #{multiline_text_svg(42, 336, match.home_team.display_name, "team-name", 14, "start")}
-        #{multiline_text_svg(982, 336, match.away_team.display_name, "team-name", 14, "end")}
+        #{multiline_text_svg(42, 330, match.home_team.display_name, "team-name", 12, "start", max_lines: 3)}
+        #{multiline_text_svg(982, 330, match.away_team.display_name, "team-name", 12, "end", max_lines: 3)}
 
-        #{player_strip_svg(252, left_players)}
+        #{player_strip_svg(264, left_players)}
         #{player_strip_svg(632, right_players)}
 
         <text x="512" y="336" text-anchor="middle" class="base title">VS</text>
@@ -162,11 +165,11 @@ module MatchExports
       <<~SVG
         <rect x="20" y="#{row_top}" width="984" height="50" fill="#ffe082"/>
         #{grid_lines_svg(row_top, 50)}
-        <text x="100" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.home_participant&.display_name || "-", 16))}</text>
+        #{multiline_text_svg(100, row_top + 23, board.home_participant&.display_name || "-", "table-cell-small", 10, "middle", max_lines: 2, line_height: 18)}
         <text x="312" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.home_deck_name.presence || "-", 18))}</text>
         <text x="512" y="#{row_top + 31}" text-anchor="middle" class="base score">#{escape(board.score_text || "- -")}</text>
         <text x="712" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.away_deck_name.presence || "-", 18))}</text>
-        <text x="924" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.away_participant&.display_name || "-", 16))}</text>
+        #{multiline_text_svg(924, row_top + 23, board.away_participant&.display_name || "-", "table-cell-small", 10, "middle", max_lines: 2, line_height: 18)}
       SVG
     end
 
@@ -210,8 +213,8 @@ module MatchExports
       names.each_with_index.map do |name, index|
         y = 264 + (index * 42)
         <<~SVG
-          <rect x="#{x}" y="#{y}" width="140" height="38" fill="#ffe082" stroke="#111827" stroke-width="1"/>
-          <text x="#{x + 70}" y="#{y + 26}" text-anchor="middle" class="base table-cell">#{escape(truncate(name, 11))}</text>
+          <rect x="#{x}" y="#{y}" width="128" height="38" fill="#ffe082" stroke="#111827" stroke-width="1"/>
+          #{multiline_text_svg(x + 64, y + 17, name, "table-cell-small", 8, "middle", max_lines: 2, line_height: 15)}
         SVG
       end.join
     end
@@ -239,17 +242,41 @@ module MatchExports
       parts.compact.join(" ")
     end
 
-    def multiline_text_svg(x, y, text, klass, max_chars, anchor)
-      lines = wrap_text(text.to_s, max_chars).first(2)
+    def multiline_text_svg(x, y, text, klass, max_chars, anchor, max_lines: 2, line_height: 30)
+      lines = wrap_text(text.to_s, max_chars).first(max_lines)
       lines = [text.to_s] if lines.empty?
-      offset = lines.length == 1 ? 0 : -12
+      offset =
+        case lines.length
+        when 1 then 0
+        when 2 then -(line_height / 2)
+        else -line_height
+        end
 
       tspans = lines.each_with_index.map do |line, index|
-        dy = index.zero? ? offset : 34
+        dy = index.zero? ? offset : line_height
         %(<tspan x="#{x}" dy="#{dy}">#{escape(line)}</tspan>)
       end.join
 
       %(<text x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}">#{tspans}</text>)
+    end
+
+    def canvas_background_svg
+      if match.league.header_image.attached?
+        <<~SVG
+          <image x="0" y="0" width="#{WIDTH}" height="#{HEIGHT}" preserveAspectRatio="xMidYMid slice" href="#{header_image_data_uri}" />
+          <rect x="0" y="0" width="#{WIDTH}" height="#{HEIGHT}" fill="rgba(238, 242, 255, 0.84)"/>
+        SVG
+      else
+        <<~SVG
+          <rect width="#{WIDTH}" height="#{HEIGHT}" fill="url(#canvasGradient)"/>
+        SVG
+      end
+    end
+
+    def header_image_data_uri
+      blob = match.league.header_image.blob
+      encoded = Base64.strict_encode64(match.league.header_image.download)
+      "data:#{blob.content_type};base64,#{encoded}"
     end
 
     def wrap_text(text, max_chars)

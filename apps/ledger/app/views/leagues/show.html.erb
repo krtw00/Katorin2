@@ -25,6 +25,20 @@
   </article>
 
   <article class="panel">
+    <h2><%= t("leagues.header_image.title") %></h2>
+    <% if @league.header_image.attached? %>
+      <div class="stack stack--compact">
+        <p class="muted"><%= t("leagues.header_image.ready") %></p>
+        <div class="image-preview-card">
+          <%= image_tag @league.header_image, alt: t("leagues.form.header_image"), class: "image-preview-card__image" %>
+        </div>
+      </div>
+    <% else %>
+      <p class="empty-copy"><%= t("leagues.header_image.empty") %></p>
+    <% end %>
+  </article>
+
+  <article class="panel">
     <h2><%= t("leagues.ruleset.title") %></h2>
     <p class="muted"><%= localized_ruleset_text(ruleset["description"]) %></p>
     <ul class="compact-list">

@@ -18,7 +18,7 @@
     <%= link_to t("actions.back"), phase_week_path(phase_id: @match.phase, id: @match.week), class: "button" %>
     <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
     <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
-    <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
+    <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
   </div>
 </section>
 
@@ -51,21 +51,10 @@
 
   <article class="panel">
     <h2><%= t("matches.result_card") %></h2>
-    <% if @result_card_export&.file_path.present? %>
-      <div class="stack stack--compact">
-        <p class="muted"><%= t("matches.result_card_ready") %></p>
-        <div class="page-actions">
-          <%= link_to t("actions.open_export"), match_result_card_export_path(match_id: @match), class: "button", target: "_blank", rel: "noopener" %>
-          <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
-          <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
-        </div>
-      </div>
-    <% else %>
-      <div class="stack stack--compact">
-        <p class="empty-copy"><%= t("matches.result_card_empty") %></p>
-        <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
-      </div>
-    <% end %>
+    <div class="stack stack--compact">
+      <p class="muted"><%= t("matches.result_card_download") %></p>
+      <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
+    </div>
   </article>
 
   <article class="panel">
