@@ -5,15 +5,25 @@
   <div>
     <p class="eyebrow"><%= t("leagues.eyebrow") %></p>
     <h1><%= @league.name %></h1>
-    <p class="muted"><%= t("leagues.meta", rule_module_key: localized_ruleset_text(ruleset["name"]).presence || @league.rule_module_key, slug: @league.slug) %></p>
+    <p class="muted"><%= t("leagues.meta", rule_module_key: localized_ruleset_text(ruleset["name"]).presence || @league.rule_module_key, number: @league.display_number) %></p>
   </div>
   <div class="page-actions">
     <%= link_to t("actions.edit"), edit_league_path(id: @league), class: "button" %>
+    <%= link_to t("actions.manage_teams"), league_teams_path(league_id: @league), class: "button" %>
     <%= link_to t("actions.create_phase"), new_league_phase_path(league_id: @league), class: "button button--primary" %>
   </div>
 </section>
 
 <section class="dashboard-grid">
+  <article class="panel">
+    <h2><%= t("leagues.team_management.title") %></h2>
+    <p class="muted"><%= t("leagues.team_management.lede") %></p>
+    <div class="page-actions">
+      <%= link_to t("actions.manage_teams"), league_teams_path(league_id: @league), class: "button" %>
+      <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+    </div>
+  </article>
+
   <article class="panel">
     <h2><%= t("leagues.ruleset.title") %></h2>
     <p class="muted"><%= localized_ruleset_text(ruleset["description"]) %></p>
@@ -49,32 +59,6 @@
           <%= link_to phase.name, league_phase_path(league_id: @league, id: phase) %>
           <span class="muted">(<%= translated_enum("enums.phase.kind", phase.kind) %>)</span>
         </li>
-      <% end %>
-    </ul>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("leagues.teams") %></h2>
-    <ul class="compact-list">
-      <% @teams.each do |team| %>
-        <li>
-          <strong><%= team.display_name %></strong>
-          <span class="muted">
-            <% if team.block %>
-              / <%= team.block.name %>
-            <% end %>
-            / <%= t("labels.participants_count", count: team.participants.size) %>
-          </span>
-        </li>
-      <% end %>
-    </ul>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("leagues.participants") %></h2>
-    <ul class="compact-list">
-      <% @participants.first(12).each do |participant| %>
-        <li><%= participant.display_name %> <span class="muted">/ <%= participant.team.display_name %></span></li>
       <% end %>
     </ul>
   </article>

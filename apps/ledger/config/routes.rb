@@ -31,13 +31,18 @@ Rails.application.routes.draw do
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
     resources :organizer_members, only: %i[index new create edit update]
+    resources :stage_assets, only: %i[index new create edit update]
     resources :rule_templates, only: %i[index new create edit update]
 
-    resources :leagues, only: %i[index show new create edit update] do
-      resources :phases, only: %i[show new create edit update]
+    resources :leagues, only: %i[index show new create edit update destroy] do
+      resources :teams, only: %i[index show new create edit update destroy] do
+        resources :participants, only: %i[new create edit update destroy]
+      end
+      resources :phases, only: %i[show new create edit update destroy]
     end
 
     resources :phases, only: [] do
+      resources :blocks, only: %i[new create edit update destroy]
       resources :weeks, only: %i[show new create edit update]
     end
 
@@ -45,6 +50,9 @@ Rails.application.routes.draw do
       resources :matches, only: %i[new create]
     end
 
-    resources :matches, only: %i[show edit update]
+    resources :matches, only: %i[show edit update] do
+      resource :result_entry, only: %i[edit update], controller: "match_result_entries"
+      resource :result_card_export, only: :create, controller: "match_exports"
+    end
   end
 end

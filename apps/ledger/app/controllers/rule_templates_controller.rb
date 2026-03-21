@@ -1,8 +1,8 @@
 class RuleTemplatesController < ApplicationController
+  before_action :ensure_rule_templates_seeded
   before_action :set_rule_template, only: %i[edit update]
 
   def index
-    @builtin_rule_templates = RuleSets::Registry.builtin
     @rule_templates = current_organizer_account.rule_templates.order(:created_at)
   end
 
@@ -45,7 +45,8 @@ class RuleTemplatesController < ApplicationController
   end
 
   def source_definition
-    RuleSets::Registry.fetch(params[:source_key].presence || RuleSets::Registry.default_key, organizer_account: current_organizer_account)
+    source_key = params[:source_key].presence || current_organizer_account.rule_templates.order(:created_at).pick(:key) || RuleSets::Registry.default_key
+    RuleSets::Registry.fetch(source_key, organizer_account: current_organizer_account)
   rescue KeyError
     RuleSets::Registry.fetch(RuleSets::Registry.default_key, organizer_account: current_organizer_account)
   end
@@ -94,7 +95,8 @@ class RuleTemplatesController < ApplicationController
 
   def assign_rule_template_from_form(rule_template)
     form = template_form_params.to_h
-    rule_template.key = form["key"]
+    resolved_key = form["key"].presence || fallback_key_for(form["name_en"], form["name_ja"], prefix: "ruleset")
+    rule_template.key = resolved_key
     rule_template.name_ja = form["name_ja"]
     rule_template.name_en = form["name_en"].presence || form["name_ja"]
     rule_template.description_ja = form["description_ja"]
@@ -135,20 +137,25 @@ class RuleTemplatesController < ApplicationController
     enabled = index == 1 || ActiveModel::Type::Boolean.new.cast(form["stage#{index}_enabled"])
     return unless enabled
 
+    stage_key = form["stage#{index}_key"].presence || fallback_key_for(form["stage#{index}_name_en"], form["stage#{index}_name_ja"], prefix: "stage#{index}")
+    default_format = index == 1 ? "round_robin" : "single_elimination"
+    default_participant_scope = index == 1 ? "all_teams" : "qualified_teams"
+    default_advancement_rule = index == 1 ? "top_n_per_group" : "none"
+
     compact_blank(
-      "key" => form["stage#{index}_key"].presence,
+      "key" => stage_key,
       "name" => compact_blank(
         "ja" => form["stage#{index}_name_ja"].presence,
         "en" => form["stage#{index}_name_en"].presence || form["stage#{index}_name_ja"].presence
       ),
-      "format" => form["stage#{index}_format"].presence,
-      "participant_scope" => form["stage#{index}_participant_scope"].presence,
+      "format" => form["stage#{index}_format"].presence || default_format,
+      "participant_scope" => form["stage#{index}_participant_scope"].presence || default_participant_scope,
       "group_count" => integer_or_nil(form["stage#{index}_group_count"]),
       "round_count" => integer_or_nil(form["stage#{index}_round_count"]),
       "bracket_size" => integer_or_nil(form["stage#{index}_bracket_size"]),
-      "advancement_rule" => form["stage#{index}_advancement_rule"].presence,
+      "advancement_rule" => form["stage#{index}_advancement_rule"].presence || default_advancement_rule,
       "advancement_value" => integer_or_nil(form["stage#{index}_advancement_value"]),
-      "ranking_rule_key" => form["stage#{index}_ranking_rule_key"].presence,
+      "ranking_rule_key" => form["stage#{index}_ranking_rule_key"].presence || "#{stage_key}_ranking",
       "match_rule_key" => form["stage#{index}_match_rule_key"].presence || form["default_match_rule_key"].presence
     )
   end
@@ -216,5 +223,14 @@ class RuleTemplatesController < ApplicationController
     else
       value
     end
+  end
+
+  def fallback_key_for(primary, secondary, prefix:)
+    candidate = primary.to_s.parameterize(separator: "_").presence || secondary.to_s.parameterize(separator: "_").presence
+    candidate || "#{prefix}_#{Time.current.to_i}"
+  end
+
+  def ensure_rule_templates_seeded
+    current_organizer_account.ensure_default_rule_templates!
   end
 end

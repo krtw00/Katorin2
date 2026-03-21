@@ -10,24 +10,36 @@ ja:
     home: ホーム
     leagues: リーグ
     organizer_members: 運営メンバー
+    stage_assets: ステージアセット
     rule_templates: ルールセット
     login: ログイン
     logout: ログアウト
   actions:
     back: 戻る
     edit: 編集
+    edit_result: 結果入力
+    generate_export: 画像出力
+    open_export: 画像を開く
+    delete: 削除
     create_league: リーグ作成
+    manage_teams: チーム管理
+    create_team: チーム追加
+    create_participant: メンバー追加
     create_organizer_member: メンバー追加
+    create_stage_asset: ステージアセット作成
     create_rule_template: ルールセット作成
     create_phase: フェーズ作成
+    create_block: ブロック作成
     create_week: 週作成
     create_match: 対戦作成
   labels:
     locale: 言語
     vs: vs
+    win: 勝ち
+    lose: 負け
     none: "-"
-    on: 有効
-    off: 無効
+    "on": 有効
+    "off": 無効
     status: 状態
     export: 画像
     judge: 審判
@@ -39,7 +51,7 @@ ja:
     bracket: ブラケット
     kind: 種別
     number: 番号
-    participants_count: "参加者 %{count}"
+    participants_count: "メンバー %{count}"
     scheduled_at: 対戦日時
   flash:
     auth:
@@ -54,21 +66,45 @@ ja:
     organizer_members:
       created: 運営メンバーを登録しました。
       updated: 運営メンバーを更新しました。
+    stage_assets:
+      created: ステージアセットを作成しました。
+      updated: ステージアセットを更新しました。
     rule_templates:
       created: ルールセットを作成しました。
       updated: ルールセットを更新しました。
     leagues:
       created: リーグを作成しました。
       updated: リーグを更新しました。
+      deleted: リーグを削除しました。
+      delete_blocked: リーグ削除は下書き状態でのみ可能です。
+    teams:
+      created: チームを作成しました。
+      updated: チームを更新しました。
+      deleted: チームを削除しました。
+      delete_blocked: このチームは対戦で使われているため削除できません。公開後の離脱は状態をドロップに変更してください。
+    participants:
+      created: メンバーを作成しました。
+      updated: メンバーを更新しました。
+      deleted: メンバーを削除しました。
+      delete_blocked: このメンバーは試合結果で使われているため削除できません。公開後は削除せず残します。
     phases:
       created: フェーズを作成しました。
       updated: フェーズを更新しました。
+      deleted: フェーズを削除しました。
+      delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
+    blocks:
+      created: ブロックを作成しました。
+      updated: ブロックを更新しました。
+      deleted: ブロックを削除しました。
     weeks:
       created: 週を作成しました。
       updated: 週を更新しました。
     matches:
       created: 対戦カードを作成しました。
       updated: 対戦カードを更新しました。
+      results_updated: 対戦結果を更新しました。
+      export_generated: 対戦画像を出力しました。
+      export_failed: "対戦画像の出力に失敗しました: %{message}"
   shared:
     errors:
       title: 入力内容を確認してください。
@@ -106,12 +142,16 @@ ja:
     title_index: リーグ一覧
     title_new: リーグ作成
     title_edit: リーグ編集
-    meta: "ルール: %{rule_module_key} / slug: %{slug}"
+    meta: "ルール: %{rule_module_key} / 大会番号: %{number}"
+    reference: "大会番号 %{number}"
     phases: フェーズ
     teams: チーム
-    participants: 参加者
+    participants: メンバー
     recent_matches: 最近の対戦
     empty_matches: 対戦はまだありません。
+    team_management:
+      title: チーム管理
+      lede: チーム作成と参加者追加はここから進めます。
     ruleset:
       title: ルールセット
       template: テンプレート
@@ -122,11 +162,45 @@ ja:
       stages: ステージ構成
     form:
       name: リーグ名
-      slug: slug
       rule_module_key: ルールセット
       status: 状態
       started_at: 開始日
       ended_at: 終了日
+      identifier_hint: 大会番号は保存時に自動で割り当てます。
+      stage_asset_hint: ステージ設定は大会作成後に、ステージアセットを選んで追加します。
+    delete_confirm: このリーグを削除します。よろしいですか？
+  teams:
+    eyebrow: チーム
+    title_index: "%{league} のチーム"
+    title_new: "%{league} にチーム追加"
+    title_edit: "%{team} を編集"
+    empty: チームがまだありません。
+    empty_participants: メンバーがまだいません。
+    sections:
+      participants: メンバー
+    form:
+      display_name: チーム名
+      block: ブロック
+      no_block: 未設定
+      status: 状態
+      status_hint: "%{draft_label} のリーグでは削除できます。公開後の離脱は %{withdrawn_label} を使います。"
+      notes: メモ
+    delete_confirm: このチームを削除します。よろしいですか？
+    delete_hint: 対戦で未使用のチームだけ削除できます。
+  participants:
+    eyebrow: メンバー
+    title_new: "%{team} にメンバー追加"
+    title_edit: "%{participant} を編集"
+    title_new_inline: メンバー追加
+    submit_create: メンバーを作成
+    submit_update: メンバーを更新
+    form:
+      display_name: メンバー名
+      position: 並び順
+      status: 状態
+      notes: メモ
+    delete_confirm: このメンバーを削除します。よろしいですか？
+    delete_hint: 試合結果で未使用のメンバーだけ削除できます。
   organizer_members:
     eyebrow: 運営メンバー
     lede: 運営チームの担当者一覧を管理します。
@@ -146,23 +220,57 @@ ja:
     password_status:
       configured: パス設定済み
       not_configured: パス未設定
+  stage_assets:
+    eyebrow: ステージアセット
+    lede: 予選や決勝など、ステージ単位で使い回す設定を管理します。
+    title_index: ステージアセット
+    title_new: ステージアセット作成
+    title_edit: ステージアセット編集
+    sections:
+      basic: 基本情報
+      structure: ステージ構成
+      advanced: 詳細設定
+    labels:
+      phase_kind: フェーズ種別
+      participant_scope: 参加対象
+      group_count: ブロック数
+      round_count: 回戦数
+      bracket_size: ブラケット人数
+      advancement: 勝ち上がり
+    form:
+      key: キー
+      name_ja: 名前（日本語）
+      name_en: 名前（英語）
+      name_hint: 日本語名を主に使い、英語名は海外ボランティア向けの補助表示として入れます。英語が未入力でも保存できます。
+      description_ja: 説明（日本語）
+      description_en: 説明（英語）
+      active: 有効化
+      format: 形式
+      phase_kind: フェーズ種別
+      participant_scope: 参加対象
+      advancement_rule: 勝ち上がり
+      group_count: ブロック数
+      round_count: 回戦数
+      bracket_size: ブラケット人数
+      advancement_value: 勝ち上がり人数
+      ranking_rule_key: 順位ルールキー
+      match_rule_key: 対戦ルールキー
   rule_templates:
     eyebrow: ルールセット
     lede: 大会形式のテンプレートを作成し、リーグ作成時に再利用します。
     title_index: ルールセット
     title_new: ルールセット作成
     title_edit: ルールセット編集
-    source_labels:
-      builtin: 組み込み
-      custom: カスタム
     sections:
       basic: 基本情報
       roster: チーム編成
       stage: "ステージ %{number}"
+      advanced: 詳細設定
     form:
       key: キー
       name_ja: 名前（日本語）
       name_en: 名前（英語）
+      name_hint: 日本語名を主に使い、英語名は海外ボランティア向けの補助表示として入れます。英語が未入力でも保存できます。
       description_ja: 説明（日本語）
       description_en: 説明（英語）
       active: 有効化
@@ -195,11 +303,29 @@ ja:
     weeks_count: "対戦数 %{count}"
     form:
       name: フェーズ名
+      name_placeholder: 未入力ならステージアセット名を使います
+      name_hint: 固有の表示名が必要な場合だけ入力してください。
+      stage_asset: ステージアセット
+      stage_asset_prompt: 選択してください
+      asset_hint: 種別や順位ルールはステージアセット側の設定を使います。
+      position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
       rule_module_key: ルールモジュール
       ranking_rule_key: 順位ルール
       bracket_enabled: ブラケットを有効化
+    delete_confirm: このフェーズを削除します。よろしいですか？
+    delete_hint: 週や対戦を持たないフェーズだけ削除できます。
+  blocks:
+    eyebrow: ブロック
+    title_new: ブロック作成
+    title_edit: ブロック編集
+    empty: ブロックがまだありません。
+    usage: "チーム %{teams} / 対戦 %{matches}"
+    delete_confirm: このブロックを削除します。よろしいですか？
+    form:
+      name: ブロック名
+      position: 並び順
   weeks:
     eyebrow: 週
     title_new: 週作成
@@ -219,6 +345,9 @@ ja:
     title_edit: 対戦カード編集
     progress: 進行状況
     official_result: 公式結果
+    result_card: 結果画像
+    result_card_ready: 最新画像を確認できます。
+    result_card_empty: まだ画像は出力されていません。
     rounds: ラウンド
     empty_result: 公式結果はまだありません。
     empty_rounds: ラウンドはまだありません。
@@ -226,6 +355,23 @@ ja:
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
     export_stale: 再出力が必要
     export_pending: 出力待ち
+    result_entry:
+      title: 対戦結果入力
+      short: 結果入力
+      submit: 結果を保存
+      empty: 結果はまだ入力されていません。
+      round_title: "ラウンド %{number}"
+      board_member: "卓 %{number} %{team}"
+      deck_name: "%{team} デッキ"
+      deck_placeholder: デッキ名を入力
+      game_wins: "%{team} ゲーム数"
+      no_score: 未入力
+      home_member: "卓 %{number} ホーム"
+      away_member: "卓 %{number} アウェイ"
+      winner: "卓 %{number} 勝者"
+      no_winner: 未選択
+      board_summary: "卓 %{number}: %{home} vs %{away} / 勝者 %{winner}"
+      board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
     form:
       home_team: ホームチーム
       away_team: アウェイチーム
@@ -301,22 +447,41 @@ ja:
         void: 無効
       decision_type:
         normal: 通常
+    team:
+      status:
+        active: 有効
+        inactive: 非表示
+        withdrawn: 辞退 / ドロップ
+    participant:
+      status:
+        active: 有効
+        inactive: 非表示
   activerecord:
     models:
       league: リーグ
       organizer_member: 運営メンバー
       phase: フェーズ
+      stage_asset: ステージアセット
       rule_template: ルールセット
       week: 週
       match: 対戦カード
     attributes:
       league:
         name: リーグ名
-        slug: slug
+        serial_number: 大会番号
         rule_module_key: ルールセット
         status: 状態
         started_at: 開始日
         ended_at: 終了日
+      team:
+        display_name: チーム名
+        status: 状態
+        notes: メモ
+      participant:
+        display_name: メンバー名
+        position: 並び順
+        status: 状態
+        notes: メモ
       organizer_member:
         display_name: 表示名
         role: 権限
@@ -328,9 +493,17 @@ ja:
         name: フェーズ名
         kind: 種別
         position: 並び順
+        stage_asset: ステージアセット
         rule_module_key: ルールモジュール
         ranking_rule_key: 順位ルール
         bracket_enabled: ブラケット有効化
+      stage_asset:
+        name_ja: 名前（日本語）
+        name_en: 名前（英語）
+        format: 形式
+        phase_kind: フェーズ種別
+        participant_scope: 参加対象
+        advancement_rule: 勝ち上がり
       rule_template:
         key: キー
         name_ja: 名前（日本語）
@@ -357,6 +530,12 @@ ja:
         bracket_slot: ブラケット位置
         room_id: ルームID
         spectator_room_id: 観戦ID
+    errors:
+      models:
+        board_result:
+          attributes:
+            base:
+              invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-2, 0-2 のいずれかで入力してください。
         notes: メモ
   helpers:
     submit:

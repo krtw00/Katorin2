@@ -1,0 +1,114 @@
+<%= render "shared/errors", record: stage_asset %>
+
+<%= form_with model: stage_asset, class: "stack" do |form| %>
+  <div class="panel">
+    <h2><%= t("stage_assets.sections.basic") %></h2>
+    <p class="muted"><%= t("stage_assets.form.name_hint") %></p>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :name_ja, t("stage_assets.form.name_ja") %>
+        <%= form.text_field :name_ja, required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :name_en, t("stage_assets.form.name_en") %>
+        <%= form.text_field :name_en %>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :description_ja, t("stage_assets.form.description_ja") %>
+        <%= form.text_area :description_ja, rows: 3 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :description_en, t("stage_assets.form.description_en") %>
+        <%= form.text_area :description_en, rows: 3 %>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :active, t("stage_assets.form.active") %>
+        <%= form.select :active, [[t("labels.on"), true], [t("labels.off"), false]], {}, required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><%= t("stage_assets.sections.structure") %></h2>
+
+    <div class="field-grid field-grid--quad">
+      <div class="field">
+        <%= form.label :format, t("stage_assets.form.format") %>
+        <%= form.select :format, enum_options("rulesets.formats", StageAsset::FORMATS), {}, required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :phase_kind, t("stage_assets.form.phase_kind") %>
+        <%= form.select :phase_kind, enum_options("enums.phase.kind", StageAsset::PHASE_KINDS), {}, required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :participant_scope, t("stage_assets.form.participant_scope") %>
+        <%= form.select :participant_scope, enum_options("rulesets.participant_scopes", StageAsset::PARTICIPANT_SCOPES), {}, required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :advancement_rule, t("stage_assets.form.advancement_rule") %>
+        <%= form.select :advancement_rule, enum_options("rulesets.advancement_rules", StageAsset::ADVANCEMENT_RULES), {}, required: true %>
+      </div>
+    </div>
+
+    <div class="field-grid field-grid--quad">
+      <div class="field">
+        <%= form.label :group_count, t("stage_assets.form.group_count") %>
+        <%= form.number_field :group_count, min: 0 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :round_count, t("stage_assets.form.round_count") %>
+        <%= form.number_field :round_count, min: 0 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :bracket_size, t("stage_assets.form.bracket_size") %>
+        <%= form.number_field :bracket_size, min: 0 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :advancement_value, t("stage_assets.form.advancement_value") %>
+        <%= form.number_field :advancement_value, min: 0 %>
+      </div>
+    </div>
+
+    <details class="details-block">
+      <summary><%= t("stage_assets.sections.advanced") %></summary>
+      <div class="details-block__body stack">
+        <div class="field-grid field-grid--quad">
+          <div class="field">
+            <%= form.label :key, t("stage_assets.form.key") %>
+            <%= form.text_field :key %>
+          </div>
+
+          <div class="field">
+            <%= form.label :ranking_rule_key, t("stage_assets.form.ranking_rule_key") %>
+            <%= form.text_field :ranking_rule_key %>
+          </div>
+
+          <div class="field">
+            <%= form.label :match_rule_key, t("stage_assets.form.match_rule_key") %>
+            <%= form.text_field :match_rule_key %>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), stage_assets_path, class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

@@ -1,6 +1,8 @@
 <%= render "shared/errors", record: week %>
 
-<%= form_with model: [phase, week], class: "stack" do |form| %>
+<% week_form_url = week.persisted? ? phase_week_path(phase_id: phase, id: week) : phase_weeks_path(phase_id: phase) %>
+
+<%= form_with model: week, url: week_form_url, class: "stack" do |form| %>
   <div class="field-grid">
     <div class="field">
       <%= form.label :number, t("weeks.form.number") %>

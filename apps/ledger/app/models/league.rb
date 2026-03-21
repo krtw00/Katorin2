@@ -9,10 +9,13 @@ class League < ApplicationRecord
   has_many :matches, dependent: :destroy
   has_many :exports, dependent: :destroy
 
+  before_validation :assign_serial_number, on: :create
+  before_validation :assign_slug
   before_validation :sync_ruleset_snapshot
 
-  validates :name, :slug, :rule_module_key, presence: true
+  validates :name, :slug, :rule_module_key, :serial_number, presence: true
   validates :slug, uniqueness: true
+  validates :serial_number, numericality: { only_integer: true, greater_than: 0 }, uniqueness: { scope: :organizer_account_id }
   validate :rule_module_key_must_exist
 
   def effective_ruleset_snapshot
@@ -21,7 +24,45 @@ class League < ApplicationRecord
     {}
   end
 
+  def draft_status?
+    status == "draft"
+  end
+
+  def destroyable?
+    draft_status?
+  end
+
+  def destroy_for_management!
+    transaction do
+      exports.destroy_all
+      matches.destroy_all
+      weeks.destroy_all
+      blocks.destroy_all
+      participants.destroy_all
+      teams.destroy_all
+      phases.destroy_all
+      destroy!
+    end
+  end
+
+  def display_number
+    format("%03d", serial_number) if serial_number.present?
+  end
+
   private
+
+  def assign_serial_number
+    return if serial_number.present? || organizer_account.blank?
+
+    self.serial_number = organizer_account.leagues.maximum(:serial_number).to_i + 1
+  end
+
+  def assign_slug
+    return if slug.present?
+    return if organizer_account_id.blank? || serial_number.blank?
+
+    self.slug = "league-#{organizer_account_id.delete('-').first(8)}-#{format('%03d', serial_number)}"
+  end
 
   def sync_ruleset_snapshot
     return if rule_module_key.blank?

@@ -1,0 +1,12 @@
+<% page_title t("blocks.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("blocks.eyebrow") %></p>
+    <h1><%= t("blocks.title_new") %></h1>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "form", phase: @phase, block: @block %>
+</section>

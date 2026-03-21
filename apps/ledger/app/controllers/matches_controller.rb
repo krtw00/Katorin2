@@ -6,6 +6,7 @@ class MatchesController < ApplicationController
   def show
     @match_result = @match.match_result
     @rounds = @match.rounds.includes(:board_results).order(:number)
+    @result_card_export = @match.exports.find { |export| export.export_type == "match_result_card" }
   end
 
   def new
@@ -51,7 +52,7 @@ class MatchesController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :phase, :week, :block, :home_team, :away_team)
+      .includes(:league, :phase, :week, :block, :home_team, :away_team, :exports)
       .first!
 
     @week ||= @match.week

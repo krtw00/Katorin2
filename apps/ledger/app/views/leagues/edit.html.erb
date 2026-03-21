@@ -5,6 +5,12 @@
     <p class="eyebrow"><%= t("leagues.eyebrow") %></p>
     <h1><%= t("leagues.title_edit") %></h1>
   </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
+    <% if @league.destroyable? %>
+      <%= button_to t("actions.delete"), league_path(id: @league), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("leagues.delete_confirm") } } %>
+    <% end %>
+  </div>
 </section>
 
 <section class="panel">

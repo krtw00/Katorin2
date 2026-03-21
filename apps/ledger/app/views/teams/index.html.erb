@@ -1,0 +1,36 @@
+<% page_title t("teams.title_index", league: @league.name) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+    <h1><%= t("teams.title_index", league: @league.name) %></h1>
+    <p class="muted"><%= league_reference_text(@league) %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
+    <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="stack">
+  <% if @teams.any? %>
+    <% @teams.each do |team| %>
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2><%= link_to team.display_name, league_team_path(league_id: @league, id: team) %></h2>
+            <p class="muted"><%= t("labels.participants_count", count: team.participants.size) %></p>
+          </div>
+          <div class="page-actions">
+            <%= status_badge translated_enum("enums.team.status", team.status), "neutral" %>
+            <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: team), class: "button" %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  <% else %>
+    <article class="panel">
+      <p class="empty-copy"><%= t("teams.empty") %></p>
+    </article>
+  <% end %>
+</section>

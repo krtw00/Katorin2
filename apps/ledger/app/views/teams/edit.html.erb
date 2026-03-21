@@ -1,0 +1,14 @@
+<% page_title t("teams.title_edit", team: @team.display_name) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+    <h1><%= t("teams.title_edit", team: @team.display_name) %></h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_team_path(league_id: @league, id: @team), class: "button" %>
+    <%= button_to t("actions.delete"), league_team_path(league_id: @league, id: @team), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("teams.delete_confirm") } } %>
+  </div>
+</section>
+
+<%= render "form", league: @league, team: @team %>

@@ -9,6 +9,7 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
     <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
     <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
   </div>
 </section>
@@ -28,10 +29,17 @@
 
   <article class="panel">
     <h2><%= t("phases.blocks") %></h2>
-    <ul class="compact-list">
-      <% @blocks.each do |block| %>
-        <li><%= block.name %></li>
-      <% end %>
-    </ul>
+    <% if @blocks.any? %>
+      <ul class="compact-list">
+        <% @blocks.each do |block| %>
+          <li>
+            <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
+            <span class="muted">/ <%= t("blocks.usage", teams: block.teams.count, matches: block.matches.count) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy"><%= t("blocks.empty") %></p>
+    <% end %>
   </article>
 </section>

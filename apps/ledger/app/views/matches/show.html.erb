@@ -17,6 +17,8 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), phase_week_path(phase_id: @match.phase, id: @match.week), class: "button" %>
     <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
+    <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+    <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
   </div>
 </section>
 
@@ -48,12 +50,46 @@
   </article>
 
   <article class="panel">
+    <h2><%= t("matches.result_card") %></h2>
+    <% if @result_card_export&.file_path.present? %>
+      <div class="stack stack--compact">
+        <p class="muted"><%= t("matches.result_card_ready") %></p>
+        <div class="page-actions">
+          <%= link_to t("actions.open_export"), @result_card_export.file_path, class: "button", target: "_blank", rel: "noopener" %>
+          <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="stack stack--compact">
+        <p class="empty-copy"><%= t("matches.result_card_empty") %></p>
+        <%= button_to t("actions.generate_export"), match_result_card_export_path(match_id: @match), method: :post, class: "button" %>
+      </div>
+    <% end %>
+  </article>
+
+  <article class="panel">
     <h2><%= t("matches.rounds") %></h2>
     <% if @rounds.any? %>
       <ul class="compact-list">
         <% @rounds.each do |round| %>
           <li>
             <%= t("matches.rounds_count", number: round.number, status: translated_enum("enums.match_result.result_status", round.result_status), count: round.board_results.size) %>
+            <% if round.board_results.any? %>
+              <ul class="compact-list compact-list--nested">
+                <% round.board_results.each do |board| %>
+                  <li>
+                    <%= t("matches.result_entry.board_summary_with_score",
+                      number: board.board_number,
+                      home: board.home_participant&.display_name || t("labels.none"),
+                      home_deck: board.home_deck_name.presence || t("labels.none"),
+                      home_score: board.home_game_wins.nil? ? t("labels.none") : board.home_game_wins,
+                      away_score: board.away_game_wins.nil? ? t("labels.none") : board.away_game_wins,
+                      away_deck: board.away_deck_name.presence || t("labels.none"),
+                      away: board.away_participant&.display_name || t("labels.none")) %>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
           </li>
         <% end %>
       </ul>

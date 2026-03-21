@@ -11,7 +11,6 @@ class RuleTemplate < ApplicationRecord
 
   validates :key, presence: true, uniqueness: { scope: :organizer_account_id }, format: { with: /\A[a-z0-9][a-z0-9_-]*\z/ }
   validates :name_ja, :name_en, presence: true
-  validate :key_must_not_shadow_builtin
   validate :definition_must_be_valid
 
   def definition_for_registry
@@ -29,12 +28,6 @@ class RuleTemplate < ApplicationRecord
   end
 
   private
-
-  def key_must_not_shadow_builtin
-    return if RuleSets::Registry.builtin_keys.exclude?(key)
-
-    errors.add(:key, :taken)
-  end
 
   def definition_must_be_valid
     payload = definition_for_registry

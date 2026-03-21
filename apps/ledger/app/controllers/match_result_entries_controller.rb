@@ -1,0 +1,45 @@
+class MatchResultEntriesController < ApplicationController
+  before_action :set_match
+  before_action :set_result_form_state
+
+  def edit
+  end
+
+  def update
+    MatchResults::Recorder.new(@match, result_entry_params).save!
+    redirect_to edit_match_result_entry_path(match_id: @match), notice: t("flash.matches.results_updated")
+  rescue ActiveRecord::RecordInvalid => error
+    flash.now[:alert] = error.record.errors.full_messages.to_sentence
+    set_result_form_state
+    render :edit, status: :unprocessable_entity
+  end
+
+  private
+
+  def set_match
+    @match = Match.joins(:league)
+      .where(id: params[:match_id], leagues: { organizer_account_id: current_organizer_account.id })
+      .includes(:league, :phase, :week, :home_team, :away_team, rounds: :board_results)
+      .first!
+  end
+
+  def set_result_form_state
+    @home_participant_options = @match.home_team.participants.order(:position, :created_at)
+    @away_participant_options = @match.away_team.participants.order(:position, :created_at)
+    @match_result = @match.match_result
+    @round_entries = (1..3).map do |round_number|
+      round = @match.rounds.find { |existing_round| existing_round.number == round_number } || Round.new(number: round_number, result_status: "partial")
+      boards = (1..3).map do |board_number|
+        round.board_results.find { |existing_board| existing_board.board_number == board_number } || BoardResult.new(board_number: board_number, result_status: "partial")
+      end
+
+      { round: round, boards: boards }
+    end
+  end
+
+  def result_entry_params
+    return {} unless params[:result_entry].is_a?(ActionController::Parameters)
+
+    params.require(:result_entry).permit!.to_h
+  end
+end

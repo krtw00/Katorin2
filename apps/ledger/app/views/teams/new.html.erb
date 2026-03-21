@@ -1,0 +1,10 @@
+<% page_title t("teams.title_new", league: @league.name) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+    <h1><%= t("teams.title_new", league: @league.name) %></h1>
+  </div>
+</section>
+
+<%= render "form", league: @league, team: @team %>
