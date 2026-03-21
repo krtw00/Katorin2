@@ -6,10 +6,33 @@ class OrganizerMember < ApplicationRecord
   }.freeze
 
   belongs_to :organizer_account
+  has_secure_password :admin_password, validations: false
 
   enum :role, ROLES, validate: true
 
   normalizes :display_name, with: ->(value) { value.strip }
 
   validates :display_name, presence: true, uniqueness: { scope: :organizer_account_id }
+  validates :admin_password, length: { minimum: 4 }, allow_nil: true
+  validate :admin_password_required_for_privileged_roles
+  validate :admin_password_confirmation_matches
+
+  def admin_password_configured?
+    admin_password_digest.present?
+  end
+
+  private
+
+  def admin_password_required_for_privileged_roles
+    return unless owner? || admin?
+    return if admin_password_digest.present? || admin_password.present?
+
+    errors.add(:admin_password, :blank)
+  end
+
+  def admin_password_confirmation_matches
+    return if admin_password.blank? || admin_password == admin_password_confirmation
+
+    errors.add(:admin_password_confirmation, :confirmation)
+  end
 end
