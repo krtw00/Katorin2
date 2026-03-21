@@ -1,24 +1,24 @@
-<% page_title "Katorin2" %>
+<% page_title t("home.title") %>
 
 <section class="hero hero--landing">
   <div class="hero-card hero-card--stone">
-    <p class="eyebrow">WMGP Ledger</p>
-    <h1>Katorin2</h1>
+    <p class="eyebrow"><%= t("home.eyebrow") %></p>
+    <h1><%= t("home.title") %></h1>
     <p class="lede">
-      Discord の運用はそのままに、リーグ管理、結果整理、画像出力をまとめる台帳です。
+      <%= t("home.lede") %>
     </p>
 
     <div class="hero-actions">
-      <%= link_to "ログイン", new_session_path, class: "button button--primary" %>
+      <%= link_to t("home.login"), new_session_path, class: "button button--primary" %>
     </div>
   </div>
 
   <div class="hero-card hero-card--gem">
-    <h2>台帳</h2>
+    <h2><%= t("home.features_title") %></h2>
     <ul class="feature-list">
-      <li>リーグ単位の台帳管理</li>
-      <li>試合結果入力と確認導線</li>
-      <li>結果画像出力を最優先</li>
+      <li><%= t("home.features.leagues") %></li>
+      <li><%= t("home.features.results") %></li>
+      <li><%= t("home.features.exports") %></li>
     </ul>
   </div>
 </section>

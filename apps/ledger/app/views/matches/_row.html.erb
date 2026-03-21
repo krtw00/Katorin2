@@ -1,6 +1,6 @@
 <div class="record-row">
   <div>
-    <strong><%= link_to "#{match.home_team.display_name} vs #{match.away_team.display_name}", match_path(match) %></strong>
+    <strong><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", match_path(match) %></strong>
     <div class="muted">
       <%= match.phase.name %> / <%= match.week.name %>
       <% if match.scheduled_on %>
@@ -12,11 +12,11 @@
     </div>
   </div>
   <div class="record-row__meta">
-    <%= status_badge match.status, "neutral" %>
+    <%= status_badge translated_enum("enums.match.status", match.status), "neutral" %>
     <% if match.export_status == "stale" %>
-      <%= status_badge "export stale", "danger" %>
+      <%= status_badge t("matches.export_stale"), "danger" %>
     <% elsif match.export_status == "pending" %>
-      <%= status_badge "export pending", "warning" %>
+      <%= status_badge t("matches.export_pending"), "warning" %>
     <% end %>
   </div>
 </div>

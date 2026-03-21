@@ -17,7 +17,7 @@ module Authentication
   def require_authentication
     return if organizer_signed_in?
 
-    redirect_to new_session_path, alert: "ログインしてください。"
+    redirect_to new_session_path, alert: I18n.t("flash.auth.required")
   end
 
   def resume_session

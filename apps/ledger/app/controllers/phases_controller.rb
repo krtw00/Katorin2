@@ -15,7 +15,7 @@ class PhasesController < ApplicationController
     @phase = @league.phases.new(phase_params)
 
     if @phase.save
-      redirect_to league_phase_path(@league, @phase), notice: "フェーズを作成しました。"
+      redirect_to league_phase_path(@league, @phase), notice: t("flash.phases.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -26,7 +26,7 @@ class PhasesController < ApplicationController
 
   def update
     if @phase.update(phase_params)
-      redirect_to league_phase_path(@league, @phase), notice: "フェーズを更新しました。"
+      redirect_to league_phase_path(@league, @phase), notice: t("flash.phases.updated")
     else
       render :edit, status: :unprocessable_entity
     end

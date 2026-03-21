@@ -1,31 +1,248 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  app:
+    name: Katorin2
+    application_name: Ledger
+    ledger_name: WMGP Ledger
+  locales:
+    ja: Japanese
+    en: English
+  nav:
+    home: Home
+    leagues: Leagues
+    login: Log in
+    logout: Log out
+  actions:
+    back: Back
+    edit: Edit
+    create_league: Create league
+    create_phase: Create phase
+    create_week: Create week
+    create_match: Create match
+  labels:
+    locale: Language
+    vs: vs
+    none: "-"
+    on: "On"
+    off: "Off"
+    status: Status
+    export: Export
+    judge: Judge
+    room: Room
+    spectator: Spectator
+    block: Block
+    winner: Winner
+    decision: Decision
+    bracket: Bracket
+    kind: Kind
+    number: Number
+    participants_count: "Participants: %{count}"
+    scheduled_at: Scheduled at
+  flash:
+    auth:
+      required: Please log in.
+    sessions:
+      created: Logged in.
+      destroyed: Logged out.
+      invalid: The login ID or password is incorrect.
+    leagues:
+      created: League created.
+      updated: League updated.
+    phases:
+      created: Phase created.
+      updated: Phase updated.
+    weeks:
+      created: Week created.
+      updated: Week updated.
+    matches:
+      created: Match created.
+      updated: Match updated.
+  shared:
+    errors:
+      title: Please review the highlighted fields.
+  home:
+    eyebrow: WMGP Ledger
+    title: Katorin2
+    lede: A ledger for league management, result tracking, and image export while keeping Discord operations unchanged.
+    features_title: Ledger
+    login: Log in
+    features:
+      leagues: League-level operations ledger
+      results: Match result entry and review
+      exports: Prioritize result image export
+  dashboard:
+    eyebrow: Dashboard
+    title: Home
+    lede: Prioritize matches that need action now.
+    metrics:
+      today_matches: Today's matches
+      result_pending: Result pending
+      stale_exports: Export refresh needed
+    sections:
+      today_matches: Today's matches
+      result_pending: Result pending
+      stale_exports: Export refresh queue
+      leagues: Leagues
+    empty:
+      today_matches: No matches scheduled for today.
+      result_pending: No pending results.
+      stale_exports: No exports waiting for refresh.
+      leagues: No leagues yet.
+  leagues:
+    eyebrow: League
+    eyebrow_index: League Ledger
+    title_index: Leagues
+    title_new: Create league
+    title_edit: Edit league
+    meta: "Rules: %{rule_module_key} / slug: %{slug}"
+    phases: Phases
+    teams: Teams
+    participants: Participants
+    recent_matches: Recent matches
+    empty_matches: No matches yet.
+    form:
+      name: League name
+      slug: Slug
+      rule_module_key: Rule module
+      status: Status
+      started_at: Start date
+      ended_at: End date
+  phases:
+    eyebrow: Phase
+    title_new: Create phase
+    title_edit: Edit phase
+    meta: "%{kind} / bracket: %{bracket}"
+    weeks: Weeks
+    blocks: Blocks
+    weeks_count: "Matches: %{count}"
+    form:
+      name: Phase name
+      kind: Kind
+      position: Position
+      rule_module_key: Rule module
+      ranking_rule_key: Ranking rule
+      bracket_enabled: Enable bracket
+  weeks:
+    eyebrow: Week
+    title_new: Create week
+    title_edit: Edit week
+    meta: "Number: %{number} / Kind: %{kind}"
+    matches: Matches
+    empty_matches: No matches yet.
+    form:
+      number: Week number
+      name: Display name
+      kind: Kind
+      position: Position
+      locked_at: Locked at
+  matches:
+    eyebrow: Match
+    title_new: Create match
+    title_edit: Edit match
+    progress: Progress
+    official_result: Official result
+    rounds: Rounds
+    empty_result: No official result yet.
+    empty_rounds: No rounds yet.
+    round_wins: Round wins
+    rounds_count: "Round %{number} / %{status} / Boards: %{count}"
+    export_stale: Export stale
+    export_pending: Export pending
+    form:
+      home_team: Home team
+      away_team: Away team
+      select_prompt: Please select
+      block: Block
+      stage_key: Stage key
+      scheduled_on: Match date
+      scheduled_time: Start time
+      status: Match status
+      export_status: Export status
+      judge_name: Judge name
+      bracket_slot: Bracket slot
+      room_id: Room ID
+      spectator_room_id: Spectator ID
+      notes: Notes
+  sessions:
+    title: Log in
+    login_id: Account ID
+    password: Password
+    submit: Log in
+  enums:
+    league:
+      status:
+        draft: Draft
+        active: Active
+        completed: Completed
+    phase:
+      kind:
+        regular_season: Regular season
+        playoff: Playoff
+    week:
+      kind:
+        regular: Regular
+        playoff: Playoff
+    match:
+      status:
+        draft: Draft
+        scheduled: Scheduled
+        in_progress: In progress
+        result_pending: Result pending
+        confirmed: Confirmed
+        cancelled: Cancelled
+      export_status:
+        not_required: Not required
+        pending: Pending
+        generated: Generated
+        stale: Stale
+    match_result:
+      result_status:
+        partial: Partial
+        confirmed: Confirmed
+        void: Void
+      decision_type:
+        normal: Standard
+  activerecord:
+    models:
+      league: League
+      phase: Phase
+      week: Week
+      match: Match
+    attributes:
+      league:
+        name: League name
+        slug: Slug
+        rule_module_key: Rule module
+        status: Status
+        started_at: Start date
+        ended_at: End date
+      phase:
+        name: Phase name
+        kind: Kind
+        position: Position
+        rule_module_key: Rule module
+        ranking_rule_key: Ranking rule
+        bracket_enabled: Bracket enabled
+      week:
+        number: Week number
+        name: Name
+        kind: Kind
+        position: Position
+        locked_at: Locked at
+      match:
+        home_team_id: Home team
+        away_team_id: Away team
+        block_id: Block
+        stage_key: Stage key
+        scheduled_on: Match date
+        scheduled_time: Start time
+        status: Match status
+        export_status: Export status
+        judge_name: Judge name
+        bracket_slot: Bracket slot
+        room_id: Room ID
+        spectator_room_id: Spectator ID
+        notes: Notes
+  helpers:
+    submit:
+      create: "Create %{model}"
+      update: "Update %{model}"

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Katorin2" %></title>
+    <title><%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Ledger">
+    <meta name="application-name" content="<%= t("app.application_name") %>">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -27,6 +27,14 @@
 
   <body class="<%= "body--auth" if auth_screen %>">
     <div class="shell <%= "shell--auth" if auth_screen %>">
+      <div class="shell-locale">
+        <span class="shell-locale__label"><%= t("labels.locale") %></span>
+        <% available_locales.each do |locale| %>
+          <% active = I18n.locale == locale %>
+          <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
+        <% end %>
+      </div>
+
       <% unless auth_screen %>
         <header class="topbar">
           <div class="brand">
@@ -40,13 +48,13 @@
 
           <% if organizer_signed_in? %>
             <nav class="topnav">
-              <%= nav_link_to "Home", dashboard_path %>
-              <%= nav_link_to "Leagues", leagues_path, active_paths: ["/leagues"] %>
+              <%= nav_link_to t("nav.home"), dashboard_path %>
+              <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
             </nav>
 
             <div class="account-box">
               <span><%= current_organizer_account.display_name %></span>
-              <%= button_to "ログアウト", session_path, method: :delete, class: "button button--ghost" %>
+              <%= button_to t("nav.logout"), session_path, method: :delete, class: "button button--ghost" %>
             </div>
           <% end %>
         </header>

@@ -20,7 +20,7 @@ class LeaguesController < ApplicationController
     @league = current_organizer_account.leagues.new(league_params)
 
     if @league.save
-      redirect_to league_path(@league), notice: "リーグを作成しました。"
+      redirect_to league_path(@league), notice: t("flash.leagues.created")
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,7 +31,7 @@ class LeaguesController < ApplicationController
 
   def update
     if @league.update(league_params)
-      redirect_to league_path(@league), notice: "リーグを更新しました。"
+      redirect_to league_path(@league), notice: t("flash.leagues.updated")
     else
       render :edit, status: :unprocessable_entity
     end

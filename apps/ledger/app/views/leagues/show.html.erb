@@ -2,31 +2,31 @@
 
 <section class="page-header">
   <div>
-    <p class="eyebrow">League</p>
+    <p class="eyebrow"><%= t("leagues.eyebrow") %></p>
     <h1><%= @league.name %></h1>
-    <p class="muted">ルール: <%= @league.rule_module_key %> / slug: <%= @league.slug %></p>
+    <p class="muted"><%= t("leagues.meta", rule_module_key: @league.rule_module_key, slug: @league.slug) %></p>
   </div>
   <div class="page-actions">
-    <%= link_to "編集", edit_league_path(@league), class: "button" %>
-    <%= link_to "フェーズ作成", new_league_phase_path(@league), class: "button button--primary" %>
+    <%= link_to t("actions.edit"), edit_league_path(@league), class: "button" %>
+    <%= link_to t("actions.create_phase"), new_league_phase_path(@league), class: "button button--primary" %>
   </div>
 </section>
 
 <section class="dashboard-grid">
   <article class="panel">
-    <h2>Phases</h2>
+    <h2><%= t("leagues.phases") %></h2>
     <ul class="compact-list">
       <% @phases.each do |phase| %>
         <li>
           <%= link_to phase.name, league_phase_path(@league, phase) %>
-          <span class="muted">(<%= phase.kind %>)</span>
+          <span class="muted">(<%= translated_enum("enums.phase.kind", phase.kind) %>)</span>
         </li>
       <% end %>
     </ul>
   </article>
 
   <article class="panel">
-    <h2>Teams</h2>
+    <h2><%= t("leagues.teams") %></h2>
     <ul class="compact-list">
       <% @teams.each do |team| %>
         <li>
@@ -35,7 +35,7 @@
             <% if team.block %>
               / <%= team.block.name %>
             <% end %>
-            / 参加者 <%= team.participants.size %>
+            / <%= t("labels.participants_count", count: team.participants.size) %>
           </span>
         </li>
       <% end %>
@@ -43,7 +43,7 @@
   </article>
 
   <article class="panel">
-    <h2>Participants</h2>
+    <h2><%= t("leagues.participants") %></h2>
     <ul class="compact-list">
       <% @participants.first(12).each do |participant| %>
         <li><%= participant.display_name %> <span class="muted">/ <%= participant.team.display_name %></span></li>
@@ -52,7 +52,7 @@
   </article>
 
   <article class="panel">
-    <h2>Recent Matches</h2>
+    <h2><%= t("leagues.recent_matches") %></h2>
     <% if @recent_matches.any? %>
       <ul class="record-list">
         <% @recent_matches.each do |match| %>
@@ -60,7 +60,7 @@
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-copy">対戦はまだありません。</p>
+      <p class="empty-copy"><%= t("leagues.empty_matches") %></p>
     <% end %>
   </article>
 </section>

@@ -1,4 +1,4 @@
-<% page_title "ログイン" %>
+<% page_title t("sessions.title") %>
 
 <section class="login-screen">
   <div class="login-panel">
@@ -9,17 +9,17 @@
 
     <%= form_with url: session_path, class: "login-form" do |form| %>
       <div class="login-form__row">
-        <%= form.label :login_id, "アカウント", class: "login-form__label" %>
+        <%= form.label :login_id, t("sessions.login_id"), class: "login-form__label" %>
         <%= form.text_field :login_id, required: true, autofocus: true, autocomplete: "username", class: "login-form__input" %>
       </div>
 
       <div class="login-form__row">
-        <%= form.label :password, "パスワード", class: "login-form__label" %>
+        <%= form.label :password, t("sessions.password"), class: "login-form__label" %>
         <%= form.password_field :password, required: true, autocomplete: "current-password", class: "login-form__input" %>
       </div>
 
       <div class="login-form__actions">
-        <%= form.submit "ログイン", class: "button button--auth" %>
+        <%= form.submit t("sessions.submit"), class: "button button--auth" %>
       </div>
     <% end %>
   </div>

@@ -1,12 +1,12 @@
-<% page_title "リーグ一覧" %>
+<% page_title t("leagues.title_index") %>
 
 <section class="page-header">
   <div>
-    <p class="eyebrow">League Ledger</p>
-    <h1>リーグ一覧</h1>
+    <p class="eyebrow"><%= t("leagues.eyebrow_index") %></p>
+    <h1><%= t("leagues.title_index") %></h1>
   </div>
   <div class="page-actions">
-    <%= link_to "リーグ作成", new_league_path, class: "button button--primary" %>
+    <%= link_to t("actions.create_league"), new_league_path, class: "button button--primary" %>
   </div>
 </section>
 
@@ -18,7 +18,7 @@
           <h2><%= link_to league.name, league_path(league) %></h2>
           <p class="muted"><%= league.slug %></p>
         </div>
-        <%= status_badge league.status, "neutral" %>
+        <%= status_badge translated_enum("enums.league.status", league.status), "neutral" %>
       </div>
     </article>
   <% end %>
