@@ -1,6 +1,6 @@
 <div class="record-row">
   <div>
-    <strong><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", match_path(match) %></strong>
+    <strong><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", match_path(id: match) %></strong>
     <div class="muted">
       <%= match.phase.name %> / <%= match.week.name %>
       <% if match.scheduled_on %>

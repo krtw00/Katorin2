@@ -38,7 +38,7 @@
   </div>
 
   <div class="page-actions">
-    <%= link_to t("actions.back"), league.persisted? ? league_path(league) : leagues_path, class: "button" %>
+    <%= link_to t("actions.back"), league.persisted? ? league_path(id: league) : leagues_path, class: "button" %>
     <%= form.submit class: "button button--primary" %>
   </div>
 <% end %>

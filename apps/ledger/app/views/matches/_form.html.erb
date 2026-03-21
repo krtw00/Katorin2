@@ -1,6 +1,6 @@
 <%= render "shared/errors", record: match %>
 
-<% form_url = match.persisted? ? match_path(match) : week_matches_path(week) %>
+<% form_url = match.persisted? ? match_path(id: match) : week_matches_path(week_id: week) %>
 <% form_method = match.persisted? ? :patch : :post %>
 
 <%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
@@ -82,7 +82,7 @@
   </div>
 
   <div class="page-actions">
-    <%= link_to t("actions.back"), match.persisted? ? match_path(match) : phase_week_path(week.phase, week), class: "button" %>
+    <%= link_to t("actions.back"), match.persisted? ? match_path(id: match) : phase_week_path(phase_id: week.phase, id: week), class: "button" %>
     <%= form.submit class: "button button--primary" %>
   </div>
 <% end %>

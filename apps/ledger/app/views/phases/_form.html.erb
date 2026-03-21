@@ -40,7 +40,7 @@
   </div>
 
   <div class="page-actions">
-    <%= link_to t("actions.back"), phase.persisted? ? league_phase_path(league, phase) : league_path(league), class: "button" %>
+    <%= link_to t("actions.back"), phase.persisted? ? league_phase_path(league_id: league, id: phase) : league_path(id: league), class: "button" %>
     <%= form.submit class: "button button--primary" %>
   </div>
 <% end %>

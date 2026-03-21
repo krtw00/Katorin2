@@ -7,9 +7,9 @@
     <p class="muted"><%= t("weeks.meta", number: @week.number, kind: translated_enum("enums.week.kind", @week.kind)) %></p>
   </div>
   <div class="page-actions">
-    <%= link_to t("actions.back"), league_phase_path(@phase.league, @phase), class: "button" %>
-    <%= link_to t("actions.edit"), edit_phase_week_path(@phase, @week), class: "button" %>
-    <%= link_to t("actions.create_match"), new_week_match_path(@week), class: "button button--primary" %>
+    <%= link_to t("actions.back"), league_phase_path(league_id: @phase.league, id: @phase), class: "button" %>
+    <%= link_to t("actions.edit"), edit_phase_week_path(phase_id: @phase, id: @week), class: "button" %>
+    <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week), class: "button button--primary" %>
   </div>
 </section>
 

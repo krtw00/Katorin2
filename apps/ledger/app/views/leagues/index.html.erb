@@ -15,7 +15,7 @@
     <article class="panel">
       <div class="panel-header">
         <div>
-          <h2><%= link_to league.name, league_path(league) %></h2>
+          <h2><%= link_to league.name, league_path(id: league) %></h2>
           <p class="muted"><%= league.slug %></p>
         </div>
         <%= status_badge translated_enum("enums.league.status", league.status), "neutral" %>
