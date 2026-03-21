@@ -13,15 +13,6 @@ DEMO_LEAGUE_SLUGS = %w[
 ].freeze
 DEMO_LEAGUE_SPECS = [
   {
-    season_label: "7",
-    seed_key: 7,
-    slug: "demo-wmgp-season-7",
-    team_count: 32,
-    block_count: 4,
-    started_at: Date.new(2025, 1, 13),
-    ended_at: Date.new(2025, 3, 30),
-  },
-  {
     season_label: "7.5",
     seed_key: 75,
     slug: "demo-wmgp-season-7-5",
