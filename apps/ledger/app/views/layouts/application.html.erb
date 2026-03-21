@@ -27,13 +27,15 @@
 
   <body class="<%= "body--auth" if auth_screen %>">
     <div class="shell <%= "shell--auth" if auth_screen %>">
-      <div class="shell-locale">
-        <span class="shell-locale__label"><%= t("labels.locale") %></span>
-        <% available_locales.each do |locale| %>
-          <% active = I18n.locale == locale %>
-          <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
-        <% end %>
-      </div>
+      <% if auth_screen %>
+        <div class="shell-locale shell-locale--floating">
+          <span class="shell-locale__label"><%= t("labels.locale") %></span>
+          <% available_locales.each do |locale| %>
+            <% active = I18n.locale == locale %>
+            <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
+          <% end %>
+        </div>
+      <% end %>
 
       <% unless auth_screen %>
         <header class="topbar">
@@ -52,9 +54,19 @@
               <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
             </nav>
 
-            <div class="account-box">
-              <span><%= current_organizer_account.display_name %></span>
-              <%= button_to t("nav.logout"), session_path, method: :delete, class: "button button--ghost" %>
+            <div class="topbar__actions">
+              <div class="shell-locale">
+                <span class="shell-locale__label"><%= t("labels.locale") %></span>
+                <% available_locales.each do |locale| %>
+                  <% active = I18n.locale == locale %>
+                  <%= link_to locale_label(locale), locale_switcher_path(locale), class: ["shell-locale__link", ("is-active" if active)].compact.join(" ") %>
+                <% end %>
+              </div>
+
+              <div class="account-box">
+                <span><%= current_organizer_account.display_name %></span>
+                <%= button_to t("nav.logout"), session_path, method: :delete, class: "button button--ghost" %>
+              </div>
             </div>
           <% end %>
         </header>
