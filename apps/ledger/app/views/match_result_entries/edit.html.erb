@@ -1,0 +1,82 @@
+<% page_title t("matches.result_entry.title") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("matches.eyebrow") %></p>
+    <h1><%= t("matches.result_entry.title") %></h1>
+    <p class="muted"><%= @match.home_team.display_name %> <%= t("labels.vs") %> <%= @match.away_team.display_name %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+    <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button" %>
+  </div>
+</section>
+
+<section class="panel">
+  <% if @match_result.present? %>
+    <div class="kv-list">
+      <div><span><%= t("matches.round_wins") %></span><strong><%= @match_result.home_round_wins %> - <%= @match_result.away_round_wins %></strong></div>
+      <div><span><%= t("labels.status") %></span><strong><%= translated_enum("enums.match_result.result_status", @match_result.result_status) %></strong></div>
+      <div><span><%= t("labels.winner") %></span><strong><%= @match_result.winner_team&.display_name || t("labels.none") %></strong></div>
+    </div>
+  <% else %>
+    <p class="empty-copy"><%= t("matches.result_entry.empty") %></p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <%= form_with url: match_result_entry_path(match_id: @match), method: :patch, scope: :result_entry, class: "stack" do |form| %>
+    <% @round_entries.each do |entry| %>
+      <% round = entry[:round] %>
+      <article class="panel panel--nested">
+        <div class="panel-header">
+          <div>
+            <h2><%= t("matches.result_entry.round_title", number: round.number) %></h2>
+            <p class="muted"><%= translated_enum("enums.match_result.result_status", round.result_status || "partial") %></p>
+          </div>
+        </div>
+
+        <div class="stack stack--compact">
+          <% entry[:boards].each do |board| %>
+            <div class="result-board-grid">
+              <div class="field">
+                <label><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "home")) %></label>
+                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_participant_id]", options_from_collection_for_select(@home_participant_options, :id, :display_name, board.home_participant_id), include_blank: t("matches.form.select_prompt") %>
+              </div>
+
+              <div class="field">
+                <label><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "home")) %></label>
+                <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_deck_name]", board.home_deck_name, placeholder: t("matches.result_entry.deck_placeholder") %>
+              </div>
+
+              <div class="field">
+                <label><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) %></label>
+                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_game_wins]", options_for_select(game_win_options, board.home_game_wins), include_blank: false %>
+              </div>
+
+              <div class="field">
+                <label><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) %></label>
+                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_game_wins]", options_for_select(game_win_options, board.away_game_wins), include_blank: false %>
+              </div>
+
+              <div class="field">
+                <label><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "away")) %></label>
+                <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_deck_name]", board.away_deck_name, placeholder: t("matches.result_entry.deck_placeholder") %>
+              </div>
+
+              <div class="field">
+                <label><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "away")) %></label>
+                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_participant_id]", options_from_collection_for_select(@away_participant_options, :id, :display_name, board.away_participant_id), include_blank: t("matches.form.select_prompt") %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </article>
+    <% end %>
+
+    <div class="page-actions">
+      <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+      <%= form.submit t("matches.result_entry.submit"), class: "button button--primary" %>
+    </div>
+  <% end %>
+</section>

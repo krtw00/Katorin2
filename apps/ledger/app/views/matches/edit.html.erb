@@ -5,6 +5,10 @@
     <p class="eyebrow"><%= t("matches.eyebrow") %></p>
     <h1><%= t("matches.title_edit") %></h1>
   </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+    <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+  </div>
 </section>
 
 <section class="panel">

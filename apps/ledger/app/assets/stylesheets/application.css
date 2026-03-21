@@ -359,6 +359,12 @@ h2 {
   color: white;
 }
 
+.button--danger {
+  border-color: var(--danger);
+  background: #fff5f4;
+  color: var(--danger);
+}
+
 .button--ghost {
   background: transparent;
 }
@@ -504,6 +510,10 @@ h2 {
   gap: 1rem;
 }
 
+.stack--compact {
+  gap: 0.75rem;
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -512,6 +522,27 @@ h2 {
 
 .field-grid--quad {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.details-block {
+  margin-top: 1rem;
+  border-top: 1px dashed var(--line);
+  padding-top: 0.9rem;
+}
+
+.details-block summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+  list-style: none;
+}
+
+.details-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.details-block__body {
+  margin-top: 0.85rem;
 }
 
 .field {
@@ -589,6 +620,14 @@ h2 {
   padding-left: 0;
 }
 
+.compact-list {
+  padding-left: 1.1rem;
+}
+
+.compact-list--nested {
+  margin-top: 0.55rem;
+}
+
 .record-list li + li,
 .compact-list li + li {
   margin-top: 0.8rem;
@@ -607,6 +646,25 @@ h2 {
   border-bottom: 1px solid rgba(68, 64, 60, 0.08);
 }
 
+.record-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.record-row__title {
+  display: block;
+  line-height: 1.4;
+}
+
+.record-row__title a {
+  overflow-wrap: anywhere;
+}
+
+.record-row__subtext {
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+}
+
 .record-list li:last-child .record-row {
   border-bottom: 0;
   padding-bottom: 0;
@@ -619,13 +677,44 @@ h2 {
 .record-row__meta {
   display: flex;
   flex-wrap: wrap;
+  flex: 0 0 auto;
+  align-items: center;
   gap: 0.5rem;
   justify-content: end;
+}
+
+.inline-link {
+  color: var(--gem-deep);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.panel--nested {
+  padding: 1rem;
+  background: var(--bg-deep);
+}
+
+.result-board-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr) 6.5rem 6.5rem minmax(0, 1.1fr) minmax(0, 1.4fr);
+  gap: 0.85rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.result-board-grid:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.result-board-grid .field label {
+  white-space: nowrap;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
   min-height: 1.9rem;
   padding: 0 0.75rem;
   border-radius: 0.65rem;
@@ -704,6 +793,10 @@ h2 {
   }
 
   .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-board-grid {
     grid-template-columns: 1fr;
   }
 

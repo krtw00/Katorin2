@@ -1,0 +1,22 @@
+<%= render "shared/errors", record: block %>
+
+<% block_form_url = block.persisted? ? phase_block_path(phase_id: phase, id: block) : phase_blocks_path(phase_id: phase) %>
+
+<%= form_with model: block, url: block_form_url, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :name, t("blocks.form.name") %>
+      <%= form.text_field :name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :position, t("blocks.form.position") %>
+      <%= form.number_field :position, min: 1, required: true %>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: phase.league, id: phase), class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>

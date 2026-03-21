@@ -1,0 +1,41 @@
+<% page_title @team.display_name %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+    <h1><%= @team.display_name %></h1>
+    <p class="muted"><%= [translated_enum("enums.team.status", @team.status), @team.block&.name, t("labels.participants_count", count: @participants.size)].compact.join(" / ") %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_teams_path(league_id: @league), class: "button" %>
+    <%= link_to t("actions.edit"), edit_league_team_path(league_id: @league, id: @team), class: "button" %>
+    <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button button--primary" %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <h2><%= t("teams.sections.participants") %></h2>
+    <% if @participants.any? %>
+      <ul class="compact-list">
+        <% @participants.each do |participant| %>
+          <li>
+            <strong><%= participant.display_name %></strong>
+            <span class="muted">/ <%= t("labels.number") %> <%= participant.position || "-" %> / <%= translated_enum("enums.participant.status", participant.status) %></span>
+            <%= link_to t("actions.edit"), edit_league_team_participant_path(league_id: @league, team_id: @team, id: participant), class: "inline-link" %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy"><%= t("teams.empty_participants") %></p>
+    <% end %>
+  </article>
+
+  <article class="panel">
+    <div class="panel-header">
+      <h2><%= t("participants.title_new_inline") %></h2>
+      <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button" %>
+    </div>
+    <%= render "participants/form", league: @league, team: @team, participant: @participant %>
+  </article>
+</section>

@@ -7,35 +7,11 @@
     <p class="muted"><%= t("rule_templates.lede") %></p>
   </div>
   <div class="page-actions">
-    <%= link_to t("actions.create_rule_template"), new_rule_template_path(source_key: RuleSets::Registry.default_key), class: "button button--primary" %>
+    <%= link_to t("actions.create_rule_template"), new_rule_template_path(source_key: @rule_templates.first&.key || RuleSets::Registry.default_key), class: "button button--primary" %>
   </div>
 </section>
 
 <section class="stack">
-  <% @builtin_rule_templates.each do |rule_template| %>
-    <article class="panel">
-      <div class="panel-header">
-        <div>
-          <h2><%= localized_ruleset_text(rule_template["name"]) %></h2>
-          <p class="muted"><code><%= rule_template["key"] %></code></p>
-        </div>
-        <div class="page-actions">
-          <%= status_badge t("rule_templates.source_labels.builtin"), "neutral" %>
-          <%= link_to t("actions.create_rule_template"), new_rule_template_path(source_key: rule_template["key"]), class: "button" %>
-        </div>
-      </div>
-
-      <p class="muted"><%= localized_ruleset_text(rule_template["description"]) %></p>
-
-      <ul class="compact-list">
-        <li><strong><%= t("leagues.ruleset.default_match_rule_key") %>:</strong> <code><%= rule_template["default_match_rule_key"] %></code></li>
-        <% Array(rule_template["stages"]).each do |stage| %>
-          <li><strong><%= localized_ruleset_text(stage["name"]) %></strong> <span class="muted">/ <%= ruleset_stage_summary(stage) %></span></li>
-        <% end %>
-      </ul>
-    </article>
-  <% end %>
-
   <% @rule_templates.each do |rule_template| %>
     <% definition = rule_template.definition_for_registry %>
     <article class="panel">
@@ -45,18 +21,27 @@
           <p class="muted"><code><%= rule_template.key %></code></p>
         </div>
         <div class="page-actions">
-          <%= status_badge t("rule_templates.source_labels.custom"), "success" %>
           <%= status_badge rule_template.active? ? t("labels.on") : t("labels.off"), rule_template.active? ? "success" : "neutral" %>
+          <%= link_to t("actions.create_rule_template"), new_rule_template_path(source_key: rule_template.key), class: "button" %>
           <%= link_to t("actions.edit"), edit_rule_template_path(id: rule_template), class: "button" %>
         </div>
       </div>
 
       <p class="muted"><%= rule_template.description_ja.presence || rule_template.description_en %></p>
+      <% if rule_template.description_en.present? && rule_template.description_en != rule_template.description_ja %>
+        <p class="muted"><%= rule_template.description_en %></p>
+      <% end %>
 
       <ul class="compact-list">
         <li><strong><%= t("leagues.ruleset.default_match_rule_key") %>:</strong> <code><%= definition["default_match_rule_key"] %></code></li>
         <% Array(definition["stages"]).each do |stage| %>
-          <li><strong><%= localized_ruleset_text(stage["name"]) %></strong> <span class="muted">/ <%= ruleset_stage_summary(stage) %></span></li>
+          <li>
+            <strong><%= stage.dig("name", "ja") %></strong>
+            <% if stage.dig("name", "en").present? && stage.dig("name", "en") != stage.dig("name", "ja") %>
+              <span class="muted">/ <%= stage.dig("name", "en") %></span>
+            <% end %>
+            <span class="muted">/ <%= ruleset_stage_summary(stage) %></span>
+          </li>
         <% end %>
       </ul>
     </article>

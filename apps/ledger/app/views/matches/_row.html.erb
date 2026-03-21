@@ -1,7 +1,7 @@
 <div class="record-row">
-  <div>
-    <strong><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", match_path(id: match) %></strong>
-    <div class="muted">
+  <div class="record-row__body">
+    <strong class="record-row__title"><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", edit_match_result_entry_path(match_id: match) %></strong>
+    <div class="muted record-row__subtext">
       <%= match.phase.name %> / <%= match.week.name %>
       <% if match.scheduled_on %>
         / <%= match.scheduled_on %>
@@ -13,6 +13,7 @@
   </div>
   <div class="record-row__meta">
     <%= status_badge translated_enum("enums.match.status", match.status), "neutral" %>
+    <%= link_to t("matches.result_entry.short"), edit_match_result_entry_path(match_id: match), class: "inline-link" %>
     <% if match.export_status == "stale" %>
       <%= status_badge t("matches.export_stale"), "danger" %>
     <% elsif match.export_status == "pending" %>

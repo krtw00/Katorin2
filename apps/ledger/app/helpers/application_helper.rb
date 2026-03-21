@@ -25,8 +25,17 @@ module ApplicationHelper
   end
 
   def ruleset_options
-    RuleSets::Registry.all(organizer_account: current_organizer_account).map do |definition|
-      [localized_ruleset_text(definition["name"]), definition.fetch("key")]
+    current_organizer_account.ensure_default_rule_templates!
+    current_organizer_account.rule_templates.order(:created_at).map do |rule_template|
+      definition = rule_template.definition_for_registry
+      ["#{definition.dig("name", "ja")} / #{definition.dig("name", "en")}", rule_template.key]
+    end
+  end
+
+  def stage_asset_options
+    current_organizer_account.ensure_default_stage_assets!
+    current_organizer_account.stage_assets.where(active: true).order(:created_at).map do |stage_asset|
+      ["#{stage_asset.name_ja} / #{stage_asset.display_name_en}", stage_asset.id]
     end
   end
 
@@ -34,6 +43,24 @@ module ApplicationHelper
     return value.to_s unless value.is_a?(Hash)
 
     value[I18n.locale.to_s].presence || value[I18n.default_locale.to_s].presence || value.values.compact.first.to_s
+  end
+
+  def league_reference_text(league)
+    t("leagues.reference", number: league.display_number)
+  end
+
+  def match_side_name(match, side)
+    side.to_s == "home" ? match.home_team.display_name : match.away_team.display_name
+  end
+
+  def board_winner_text(match, winner_side)
+    return t("labels.none") if winner_side.blank?
+
+    "#{match_side_name(match, winner_side)} #{t('labels.win')}"
+  end
+
+  def game_win_options
+    [[t("matches.result_entry.no_score"), ""], [0, 0], [1, 1], [2, 2]]
   end
 
   def ruleset_stage_summary(stage)
