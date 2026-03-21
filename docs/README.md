@@ -28,7 +28,7 @@
 - `deployment-environments.md`
   - production / staging 分離方針と deploy 手順
 - `git-workflow.md`
-  - `main / beta / feature/*` のブランチ運用
+  - `main / staging / feature/*` のブランチ運用
 
 補足:
 
