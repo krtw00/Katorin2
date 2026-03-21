@@ -58,7 +58,8 @@ bin/dev
 - `bootstrap`
   - 共通運営アカウントだけ作る
 - `demo`
-  - 既定では `admin / demo` の demo 運営アカウントと demo WMGP データを作る
+  - 既定では `admin / demo` の demo 運営アカウントと、WMGP 資料ベースの `Season 7` / `Season 5` 完結済みデータを作る
+  - 旧 `Season 8` demo リーグは seed 実行時に削除される
   - `DEMO_ORGANIZER_LOGIN_ID`, `DEMO_ORGANIZER_PASSWORD`, `DEMO_ORGANIZER_EMAIL` で上書きできる
 
 ## Current Status
