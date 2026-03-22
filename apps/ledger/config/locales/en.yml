@@ -65,6 +65,8 @@ en:
     organizer_members:
       created: Organizer member created.
       updated: Organizer member updated.
+      deleted: Organizer member deleted.
+      delete_blocked: The last privileged member cannot be deleted.
     leagues:
       created: League created.
       updated: League updated.
@@ -89,12 +91,17 @@ en:
       created: Block created.
       updated: Block updated.
       deleted: Block deleted.
+      delete_blocked: This block cannot be deleted because it still has teams or matches. Only draft leagues can clean it up.
     weeks:
       created: Week created.
       updated: Week updated.
+      deleted: Week deleted.
+      delete_blocked: This week cannot be deleted because it still has matches. Only draft leagues can remove it.
     matches:
       created: Match created.
       updated: Match updated.
+      deleted: Match deleted.
+      delete_blocked: This match cannot be deleted because it already has results. Only draft or result-empty matches can be deleted.
       lineup_updated: Order updated.
       results_updated: Match result updated.
       export_failed: "Failed to generate match image: %{message}"
@@ -208,6 +215,7 @@ en:
     title_index: Organizer members
     title_new: Add member
     title_edit: Edit member
+    delete_confirm: Delete this organizer member?
     sections:
       admin_password: Admin password
     form:
@@ -333,6 +341,7 @@ en:
     empty: No blocks yet.
     usage: "Teams %{teams} / Matches %{matches}"
     delete_confirm: Delete this block?
+    delete_hint: Only blocks without teams or matches can be deleted.
     form:
       name: Block name
       position: Position
@@ -343,7 +352,10 @@ en:
     reference: "Week %{number}"
     meta: "Number: %{number} / Kind: %{kind}"
     matches: Matches
+    unassigned_block: Unassigned block
     empty_matches: No matches yet.
+    delete_confirm: Delete this week?
+    delete_hint: Only weeks without matches can be deleted. Draft leagues can remove their child matches together.
     form:
       number: Week number
       number_hint: The label is generated automatically from the week number.
@@ -361,6 +373,8 @@ en:
     rounds: Rounds
     empty_result: No official result yet.
     empty_rounds: No rounds yet.
+    delete_confirm: Delete this match?
+    delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
     rounds_count: "Round %{number} / %{status} / Boards: %{count}"
     export_stale: Export stale

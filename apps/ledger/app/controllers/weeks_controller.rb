@@ -1,9 +1,14 @@
 class WeeksController < ApplicationController
   before_action :set_phase
-  before_action :set_week, only: %i[show edit update]
+  before_action :set_week, only: %i[show edit update destroy]
 
   def show
     @matches = @week.matches.includes(:home_team, :away_team, :block).order(:scheduled_on, :scheduled_time, :created_at)
+    grouped = @matches.group_by(&:block)
+    @block_sections = @phase.blocks.order(:position).map { |block| [block, grouped.delete(block) || []] }
+    if grouped.key?(nil)
+      @block_sections << [nil, grouped.delete(nil)]
+    end
   end
 
   def new
@@ -29,6 +34,15 @@ class WeeksController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    unless @week.destroyable?
+      return redirect_to phase_week_path(phase_id: @phase, id: @week), alert: t("flash.weeks.delete_blocked")
+    end
+
+    @week.destroy_for_management!
+    redirect_to league_phase_path(league_id: @phase.league, id: @phase), notice: t("flash.weeks.deleted")
   end
 
   private

@@ -1,5 +1,5 @@
 class OrganizerMembersController < ApplicationController
-  before_action :set_organizer_member, only: %i[edit update]
+  before_action :set_organizer_member, only: %i[edit update destroy]
 
   def index
     @organizer_members = current_organizer_account.organizer_members.order(:created_at)
@@ -28,6 +28,15 @@ class OrganizerMembersController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    unless @organizer_member.destroyable?
+      return redirect_to organizer_members_path, alert: t("flash.organizer_members.delete_blocked")
+    end
+
+    @organizer_member.destroy_for_management!
+    redirect_to organizer_members_path, notice: t("flash.organizer_members.deleted")
   end
 
   private

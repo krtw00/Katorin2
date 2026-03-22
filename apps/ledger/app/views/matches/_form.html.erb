@@ -10,6 +10,7 @@
 <%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
   <%= form.hidden_field :stage_key if match.stage_key.present? %>
   <%= form.hidden_field :bracket_slot if match.bracket_slot.present? %>
+  <%= hidden_field_tag :block_id, @selected_block.id if @selected_block.present? && !match.persisted? %>
 
   <div class="field-grid">
     <div class="field">
@@ -24,10 +25,17 @@
   </div>
 
   <div class="field-grid">
-    <div class="field">
-      <%= form.label :block_id, t("matches.form.block") %>
-      <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
-    </div>
+    <% if @selected_block.present? && !match.persisted? %>
+      <div class="field">
+        <label><%= t("matches.form.block") %></label>
+        <div class="field-static"><%= @selected_block.name %></div>
+      </div>
+    <% else %>
+      <div class="field">
+        <%= form.label :block_id, t("matches.form.block") %>
+        <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
+      </div>
+    <% end %>
 
     <div class="field">
       <%= form.label :scheduled_on, t("matches.form.scheduled_on") %>

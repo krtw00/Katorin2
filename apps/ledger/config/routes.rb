@@ -30,7 +30,7 @@ Rails.application.routes.draw do
     resource :registration, only: %i[new create], controller: "registrations"
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
-    resources :organizer_members, only: %i[index new create edit update]
+    resources :organizer_members, only: %i[index new create edit update destroy]
 
     resources :leagues, only: %i[index show new create edit update destroy] do
       resources :teams, only: %i[index show new create edit update destroy] do
@@ -43,14 +43,14 @@ Rails.application.routes.draw do
 
     resources :phases, only: [] do
       resources :blocks, only: %i[new create edit update destroy]
-      resources :weeks, only: %i[show new create edit update]
+      resources :weeks, only: %i[show new create edit update destroy]
     end
 
     resources :weeks, only: [] do
       resources :matches, only: %i[new create]
     end
 
-    resources :matches, only: %i[show edit update] do
+    resources :matches, only: %i[show edit update destroy] do
       resource :lineup, only: %i[edit update], controller: "match_lineups"
       resource :result_entry, only: %i[edit update], controller: "match_result_entries"
       resource :result_card_export, only: [], controller: "match_exports" do

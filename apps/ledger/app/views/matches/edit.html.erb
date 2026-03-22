@@ -17,6 +17,7 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
     <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+    <%= button_to t("actions.delete"), match_path(id: @match), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("matches.delete_confirm") } } %>
   </div>
 </section>
 

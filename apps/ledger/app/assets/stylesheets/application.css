@@ -256,6 +256,17 @@ ol {
   margin-bottom: 1.5rem;
 }
 
+.field-static {
+  display: flex;
+  align-items: center;
+  min-height: 2.9rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--bg-deep);
+  color: var(--text);
+}
+
 .hero {
   display: grid;
   grid-template-columns: 1.35fr 0.85fr;
