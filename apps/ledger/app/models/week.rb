@@ -21,6 +21,14 @@ class Week < ApplicationRecord
     I18n.t("weeks.reference", number:)
   end
 
+  def destroyable?
+    league.draft_status? || matches.none?
+  end
+
+  def destroy_for_management!
+    destroy!
+  end
+
   private
 
   def assign_name

@@ -16,19 +16,51 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), league_phase_path(league_id: @phase.league, id: @phase), class: "button" %>
     <%= link_to t("actions.edit"), edit_phase_week_path(phase_id: @phase, id: @week), class: "button" %>
-    <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week), class: "button button--primary" %>
   </div>
 </section>
 
-<section class="panel">
-  <h2><%= t("weeks.matches") %></h2>
+<section class="stack">
   <% if @matches.any? %>
-    <ul class="record-list">
-      <% @matches.each do |match| %>
-        <li><%= render "matches/row", match: match %></li>
-      <% end %>
-    </ul>
+    <% @block_sections.each do |block, matches| %>
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2><%= block&.name || t("weeks.unassigned_block") %></h2>
+          </div>
+          <div class="page-actions">
+            <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block&.id), class: "button" %>
+          </div>
+        </div>
+        <% if matches.any? %>
+          <ul class="record-list">
+            <% matches.each do |match| %>
+              <li><%= render "matches/row", match: match %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="empty-copy"><%= t("weeks.empty_matches") %></p>
+        <% end %>
+      </article>
+    <% end %>
   <% else %>
-    <p class="empty-copy"><%= t("weeks.empty_matches") %></p>
+    <article class="panel">
+      <% if @phase.blocks.any? %>
+        <% @phase.blocks.order(:position).each do |block| %>
+          <div class="panel-header">
+            <div>
+              <h2><%= block.name %></h2>
+            </div>
+            <div class="page-actions">
+              <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block.id), class: "button" %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <h2><%= t("weeks.matches") %></h2>
+        <div class="page-actions">
+          <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week), class: "button" %>
+        </div>
+      <% end %>
+    </article>
   <% end %>
 </section>

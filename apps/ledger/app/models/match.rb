@@ -33,6 +33,14 @@ class Match < ApplicationRecord
   validates :home_team, :away_team, presence: true
   validate :distinct_teams
 
+  def destroyable?
+    league.draft_status? || (match_result.blank? && rounds.none?)
+  end
+
+  def destroy_for_management!
+    destroy!
+  end
+
   def lineup_size
     league.lineup_size.presence || 3
   end

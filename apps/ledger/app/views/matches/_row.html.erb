@@ -1,6 +1,6 @@
 <div class="record-row">
   <div class="record-row__body">
-    <strong class="record-row__title"><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", edit_match_result_entry_path(match_id: match) %></strong>
+    <strong class="record-row__title"><%= link_to "#{match.home_team.display_name} #{t("labels.vs")} #{match.away_team.display_name}", match_path(id: match) %></strong>
     <div class="muted record-row__subtext">
       <%= match.phase.name %> / <%= match.week.display_name %>
       <% if match.scheduled_on %>

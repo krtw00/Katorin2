@@ -65,6 +65,8 @@ ja:
     organizer_members:
       created: 運営メンバーを登録しました。
       updated: 運営メンバーを更新しました。
+      deleted: 運営メンバーを削除しました。
+      delete_blocked: 最後の管理権限メンバーは削除できません。
     leagues:
       created: リーグを作成しました。
       updated: リーグを更新しました。
@@ -89,12 +91,17 @@ ja:
       created: ブロックを作成しました。
       updated: ブロックを更新しました。
       deleted: ブロックを削除しました。
+      delete_blocked: このブロックにはチームまたは対戦があるため削除できません。下書きリーグのみ整理削除できます。
     weeks:
       created: 週を作成しました。
       updated: 週を更新しました。
+      deleted: 週を削除しました。
+      delete_blocked: この週には対戦があるため削除できません。下書きリーグのみ削除できます。
     matches:
       created: 対戦カードを作成しました。
       updated: 対戦カードを更新しました。
+      deleted: 対戦カードを削除しました。
+      delete_blocked: この対戦は結果が入っているため削除できません。削除できるのは下書きか未結果入力の対戦だけです。
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
@@ -208,6 +215,7 @@ ja:
     title_index: 運営メンバー
     title_new: メンバー追加
     title_edit: メンバー編集
+    delete_confirm: この運営メンバーを削除します。よろしいですか？
     sections:
       admin_password: 管理パス
     form:
@@ -333,6 +341,7 @@ ja:
     empty: ブロックがまだありません。
     usage: "チーム %{teams} / 対戦 %{matches}"
     delete_confirm: このブロックを削除します。よろしいですか？
+    delete_hint: チームや対戦を持たないブロックだけ削除できます。
     form:
       name: ブロック名
       position: 並び順
@@ -343,7 +352,10 @@ ja:
     reference: "Week %{number}"
     meta: "番号: %{number} / 種別: %{kind}"
     matches: 対戦カード
+    unassigned_block: 未設定ブロック
     empty_matches: 対戦カードがまだありません。
+    delete_confirm: この週を削除します。よろしいですか？
+    delete_hint: 対戦を持たない週だけ削除できます。下書きリーグでは配下対戦ごと削除します。
     form:
       number: 週番号
       number_hint: Week 番号から自動表示します。
@@ -361,6 +373,8 @@ ja:
     rounds: ラウンド
     empty_result: 公式結果はまだありません。
     empty_rounds: ラウンドはまだありません。
+    delete_confirm: この対戦カードを削除します。よろしいですか？
+    delete_hint: 結果が入っていない対戦だけ削除できます。下書きリーグではオーダーごと削除します。
     round_wins: ラウンド勝数
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
     export_stale: 再出力が必要

@@ -17,6 +17,16 @@ class OrganizerMember < ApplicationRecord
   validate :admin_password_required_for_privileged_roles
   validate :admin_password_confirmation_matches
 
+  def destroyable?
+    return true unless owner? || admin?
+
+    organizer_account.organizer_members.where(role: %w[owner admin], active: true).where.not(id: id).exists?
+  end
+
+  def destroy_for_management!
+    destroy!
+  end
+
   def admin_password_configured?
     admin_password_digest.present?
   end

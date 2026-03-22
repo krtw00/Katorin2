@@ -13,6 +13,10 @@
     <p class="eyebrow"><%= t("weeks.eyebrow") %></p>
     <h1><%= t("weeks.title_edit") %></h1>
   </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), phase_week_path(phase_id: @phase, id: @week), class: "button" %>
+    <%= button_to t("actions.delete"), phase_week_path(phase_id: @phase, id: @week), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("weeks.delete_confirm") } } %>
+  </div>
 </section>
 
 <section class="panel">

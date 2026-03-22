@@ -1,9 +1,21 @@
 <% page_title t("organizer_members.title_edit") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("organizer_members.title_index"), organizer_members_path),
+  breadcrumb_item(@organizer_member.display_name),
+  breadcrumb_item(t("actions.edit"))
+]) %>
 
 <section class="page-header">
   <div>
     <p class="eyebrow"><%= t("organizer_members.eyebrow") %></p>
     <h1><%= t("organizer_members.title_edit") %></h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), organizer_members_path, class: "button" %>
+    <% if @organizer_member.destroyable? %>
+      <%= button_to t("actions.delete"), organizer_member_path(id: @organizer_member), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("organizer_members.delete_confirm") } } %>
+    <% end %>
   </div>
 </section>
 

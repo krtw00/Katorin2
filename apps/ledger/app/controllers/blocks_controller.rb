@@ -29,7 +29,11 @@ class BlocksController < ApplicationController
   end
 
   def destroy
-    @block.destroy!
+    unless @block.destroyable?
+      return redirect_to league_phase_path(league_id: @phase.league, id: @phase), alert: t("flash.blocks.delete_blocked")
+    end
+
+    @block.destroy_for_management!
     redirect_to league_phase_path(league_id: @phase.league, id: @phase), notice: t("flash.blocks.deleted")
   end
 
