@@ -1,0 +1,17 @@
+<% page_title t("teams.title_new", league: @league.name) %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(t("teams.eyebrow"), league_teams_path(league_id: @league)),
+  breadcrumb_item(t("actions.create_team"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+    <h1><%= t("teams.title_new", league: @league.name) %></h1>
+  </div>
+</section>
+
+<%= render "form", league: @league, team: @team %>

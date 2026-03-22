@@ -1,9 +1,23 @@
 <% page_title t("matches.title_edit") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@week.league.name, league_path(id: @week.league)),
+  breadcrumb_item(@week.phase.name, league_phase_path(league_id: @week.league, id: @week.phase)),
+  breadcrumb_item(@week.display_name, phase_week_path(phase_id: @week.phase, id: @week)),
+  breadcrumb_item("#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}", match_path(id: @match)),
+  breadcrumb_item(t("actions.edit"))
+]) %>
 
 <section class="page-header">
   <div>
     <p class="eyebrow"><%= t("matches.eyebrow") %></p>
     <h1><%= t("matches.title_edit") %></h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+    <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+    <%= button_to t("actions.delete"), match_path(id: @match), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("matches.delete_confirm") } } %>
   </div>
 </section>
 

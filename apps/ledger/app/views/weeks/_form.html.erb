@@ -1,15 +1,13 @@
 <%= render "shared/errors", record: week %>
 
-<%= form_with model: [phase, week], class: "stack" do |form| %>
+<% week_form_url = week.persisted? ? phase_week_path(phase_id: phase, id: week) : phase_weeks_path(phase_id: phase) %>
+
+<%= form_with model: week, url: week_form_url, class: "stack" do |form| %>
   <div class="field-grid">
     <div class="field">
       <%= form.label :number, t("weeks.form.number") %>
       <%= form.number_field :number, min: 1, required: true %>
-    </div>
-
-    <div class="field">
-      <%= form.label :name, t("weeks.form.name") %>
-      <%= form.text_field :name, required: true %>
+      <p class="ghost-note"><%= t("weeks.form.number_hint") %></p>
     </div>
   </div>
 

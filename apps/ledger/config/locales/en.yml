@@ -9,21 +9,34 @@ en:
   nav:
     home: Home
     leagues: Leagues
+    organizer_members: Members
     login: Log in
     logout: Log out
   actions:
     back: Back
     edit: Edit
+    edit_lineup: Order
+    edit_result: Enter result
+    download_export: Download image
+    delete: Delete
     create_league: Create league
+    manage_teams: Manage teams
+    create_team: Add team
+    create_participant: Add member
+    create_organizer_member: Add member
     create_phase: Create phase
+    create_block: Create block
     create_week: Create week
     create_match: Create match
+    view_bracket: Bracket
   labels:
     locale: Language
     vs: vs
+    win: Win
+    lose: Lose
     none: "-"
-    on: "On"
-    off: "Off"
+    "on": "On"
+    "off": "Off"
     status: Status
     export: Export
     judge: Judge
@@ -31,11 +44,13 @@ en:
     spectator: Spectator
     block: Block
     winner: Winner
+    score: Score
     decision: Decision
     bracket: Bracket
     kind: Kind
     number: Number
-    participants_count: "Participants: %{count}"
+    board: Board
+    participants_count: "Members: %{count}"
     scheduled_at: Scheduled at
   flash:
     auth:
@@ -47,18 +62,49 @@ en:
     registrations:
       created: Account created.
       invalid: Please review the registration details.
+    organizer_members:
+      created: Organizer member created.
+      updated: Organizer member updated.
+      deleted: Organizer member deleted.
+      delete_blocked: The last privileged member cannot be deleted.
     leagues:
       created: League created.
       updated: League updated.
+      deleted: League deleted.
+      delete_blocked: Leagues can only be deleted while they are in draft.
+    teams:
+      created: Team created.
+      updated: Team updated.
+      deleted: Team deleted.
+      delete_blocked: This team cannot be deleted because it is already used in matches. Use the dropped status after publishing.
+    participants:
+      created: Member created.
+      updated: Member updated.
+      deleted: Member deleted.
+      delete_blocked: This member cannot be deleted because it is already used in results. Keep it for audit after publishing.
     phases:
       created: Phase created.
       updated: Phase updated.
+      deleted: Phase deleted.
+      delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
+    blocks:
+      created: Block created.
+      updated: Block updated.
+      deleted: Block deleted.
+      delete_blocked: This block cannot be deleted because it still has teams or matches. Only draft leagues can clean it up.
     weeks:
       created: Week created.
       updated: Week updated.
+      deleted: Week deleted.
+      delete_blocked: This week cannot be deleted because it still has matches. Only draft leagues can remove it.
     matches:
       created: Match created.
       updated: Match updated.
+      deleted: Match deleted.
+      delete_blocked: This match cannot be deleted because it already has results. Only draft or result-empty matches can be deleted.
+      lineup_updated: Order updated.
+      results_updated: Match result updated.
+      export_failed: "Failed to generate match image: %{message}"
   shared:
     errors:
       title: Please review the highlighted fields.
@@ -96,52 +142,223 @@ en:
     title_index: Leagues
     title_new: Create league
     title_edit: Edit league
-    meta: "Rules: %{rule_module_key} / slug: %{slug}"
+    meta: "League No. %{number} / Status: %{status}"
+    reference: "League No. %{number}"
     phases: Phases
     teams: Teams
-    participants: Participants
+    participants: Members
     recent_matches: Recent matches
     empty_matches: No matches yet.
-    ruleset:
-      title: Ruleset
-      template: Template
-      key: Key
-      roster: Roster
-      roster_summary: "%{min}-%{max} members / lineup %{lineup} / sub %{sub}"
-      default_match_rule_key: Default match rule
-      stages: Stages
+    team_management:
+      title: Team management
+      lede: Create teams and add participants from here.
+    roster:
+      title: Roster settings
+      min_members: Minimum members
+      max_members: Maximum members
+      lineup_size: Lineup size
+      substitute_size: Substitute size
     form:
       name: League name
-      slug: Slug
-      rule_module_key: Ruleset
       status: Status
+      roster_min_members: Minimum members
+      roster_max_members: Maximum members
+      lineup_size: Lineup size
+      substitute_size: Substitute size
       started_at: Start date
       ended_at: End date
+      header_image: Background image
+      header_image_hint: Used as the background of match result images. If none is set, the default background is used.
+      identifier_hint: The league number is assigned automatically on save.
+    header_image:
+      title: Background image
+      ready: This image is used as the match export background.
+      empty: No background image has been configured yet. The default background will be used.
+    delete_confirm: Delete this league?
+  teams:
+    eyebrow: Teams
+    title_index: "%{league} teams"
+    title_new: "Add team to %{league}"
+    title_edit: "Edit %{team}"
+    submit_create: Create team
+    submit_update: Update team
+    empty: No teams yet.
+    empty_participants: No members yet.
+    sections:
+      participants: Members
+    form:
+      display_name: Team name
+      block: Block
+      no_block: Unassigned
+      status: Status
+      status_hint: "Draft leagues allow deletion. After publishing, use %{withdrawn_label} when a team drops."
+      notes: Notes
+    delete_confirm: Delete this team?
+    delete_hint: Only teams that are not used in matches can be deleted.
+  participants:
+    eyebrow: Members
+    title_new: "Add member to %{team}"
+    title_edit: "Edit %{participant}"
+    title_new_inline: Add member
+    submit_create: Create member
+    submit_update: Update member
+    form:
+      display_name: Member name
+      position: Position
+      status: Status
+      notes: Notes
+    delete_confirm: Delete this member?
+    delete_hint: Only members not used in results can be deleted.
+  organizer_members:
+    eyebrow: Organizer members
+    lede: Manage the operators who run this organizer account.
+    title_index: Organizer members
+    title_new: Add member
+    title_edit: Edit member
+    delete_confirm: Delete this organizer member?
+    sections:
+      admin_password: Admin password
+    form:
+      display_name: Display name
+      role: Role
+      active: Active
+      notes: Notes
+      admin_password: Admin password
+      admin_password_confirmation: Confirm admin password
+      admin_password_hint: Owner and admin members need an admin password for privileged actions. Staff can leave this blank.
+    password_status:
+      configured: Password set
+      not_configured: Password missing
+  stage_assets:
+    eyebrow: Stage assets
+    lede: Manage reusable settings for each stage such as regular season or finals.
+    title_index: Stage assets
+    title_new: Create stage asset
+    title_edit: Edit stage asset
+    sections:
+      basic: Basics
+      structure: Stage structure
+      advanced: Advanced settings
+    labels:
+      phase_kind: Phase kind
+      participant_scope: Participant scope
+      group_count: Group count
+      round_count: Round count
+      bracket_size: Bracket size
+      advancement: Advancement
+    form:
+      key: Key
+      name_ja: Name (Japanese)
+      name_en: Name (English)
+      name_hint: Use the Japanese name as the main label and add English as the support label for overseas volunteers. English can be left blank.
+      description_ja: Description (Japanese)
+      description_en: Description (English)
+      active: Active
+      format: Format
+      phase_kind: Phase kind
+      participant_scope: Participant scope
+      advancement_rule: Advancement rule
+      group_count: Group count
+      round_count: Round count
+      bracket_size: Bracket size
+      advancement_value: Advancement value
+      ranking_rule_key: Ranking rule key
+      match_rule_key: Match rule key
+  rule_templates:
+    eyebrow: Rulesets
+    lede: Create reusable competition rulesets for league setup.
+    title_index: Rulesets
+    title_new: Create ruleset
+    title_edit: Edit ruleset
+    sections:
+      basic: Basics
+      roster: Roster rules
+      stage: "Stage %{number}"
+      advanced: Advanced settings
+    form:
+      key: Key
+      name_ja: Name (Japanese)
+      name_en: Name (English)
+      name_hint: Use the Japanese name as the main label and add English as the support label for overseas volunteers. English can be left blank.
+      description_ja: Description (Japanese)
+      description_en: Description (English)
+      active: Active
+      roster_min_members: Minimum members
+      roster_max_members: Maximum members
+      roster_lineup_size: Lineup size
+      roster_substitute_size: Substitute size
+      roster_updates: Roster update rule
+      default_match_rule_key: Default match rule
+      stage2_enabled: Enable stage 2
+      stage_key: Stage key
+      stage_name_ja: Stage name (Japanese)
+      stage_name_en: Stage name (English)
+      stage_format: Format
+      stage_participant_scope: Participant scope
+      stage_group_count: Group count
+      stage_round_count: Round count
+      stage_bracket_size: Bracket size
+      stage_advancement_rule: Advancement rule
+      stage_advancement_value: Advancement value
+      stage_ranking_rule_key: Ranking rule key
+      stage_match_rule_key: Match rule key
   phases:
     eyebrow: Phase
     title_new: Create phase
     title_edit: Edit phase
+    bracket: Bracket
+    bracket_size: Bracket size
+    byes: Byes
+    bracket_summary: "Participants %{participants} / size %{bracket_size} / byes %{byes}"
+    empty_bracket: No bracket weeks yet.
+    empty_slot: "Slot %{number}"
+    empty_slot_help: Click an empty slot to create a match
     meta: "%{kind} / bracket: %{bracket}"
     weeks: Weeks
     blocks: Blocks
     weeks_count: "Matches: %{count}"
     form:
       name: Phase name
+      name_placeholder: Leave blank to generate it from the phase kind
+      name_hint: Only enter this when you need a custom display name.
+      bracket_participant_count: Participant count
+      bracket_participant_count_hint: Used only for playoff phases. Any non-power-of-two count is shown with automatic byes.
+      position_hint: Order is assigned automatically on create. Reordering should be handled separately.
       kind: Kind
       position: Position
       rule_module_key: Rule module
       ranking_rule_key: Ranking rule
       bracket_enabled: Enable bracket
+    default_names:
+      regular: Regular
+      playoff: Playoff
+    delete_confirm: Delete this phase?
+    delete_hint: Only phases without weeks or matches can be deleted.
+  blocks:
+    eyebrow: Block
+    title_new: Create block
+    title_edit: Edit block
+    empty: No blocks yet.
+    usage: "Teams %{teams} / Matches %{matches}"
+    delete_confirm: Delete this block?
+    delete_hint: Only blocks without teams or matches can be deleted.
+    form:
+      name: Block name
+      position: Position
   weeks:
     eyebrow: Week
     title_new: Create week
     title_edit: Edit week
+    reference: "Week %{number}"
     meta: "Number: %{number} / Kind: %{kind}"
     matches: Matches
+    unassigned_block: Unassigned block
     empty_matches: No matches yet.
+    delete_confirm: Delete this week?
+    delete_hint: Only weeks without matches can be deleted. Draft leagues can remove their child matches together.
     form:
       number: Week number
-      name: Display name
+      number_hint: The label is generated automatically from the week number.
       kind: Kind
       position: Position
       locked_at: Locked at
@@ -151,16 +368,51 @@ en:
     title_edit: Edit match
     progress: Progress
     official_result: Official result
+    result_card: Result image
+    result_card_download: The latest image is generated when you download it.
     rounds: Rounds
     empty_result: No official result yet.
     empty_rounds: No rounds yet.
+    delete_confirm: Delete this match?
+    delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
     rounds_count: "Round %{number} / %{status} / Boards: %{count}"
     export_stale: Export stale
     export_pending: Export pending
+    lineup:
+      title: Order
+      short: Order
+      submit: Save order
+      main_count: Main players
+      substitute_count: Substitutes
+      main_slot: "Main %{number}"
+      sub_slot: "Sub %{number}"
+      empty: Not set yet.
+      summary: "%{role} %{number}: %{name}"
+    result_entry:
+      title: Match result entry
+      short: Result
+      submit: Save results
+      empty: No results entered yet.
+      round_title: "Round %{number}"
+      board_member: "Board %{number} %{team}"
+      member_short: "%{team} member"
+      deck_short: "%{team} deck"
+      deck_name: "%{team} deck"
+      deck_placeholder: Enter deck name
+      game_wins: "%{team} game wins"
+      no_score: Not entered
+      home_member: "Board %{number} home"
+      away_member: "Board %{number} away"
+      winner: "Board %{number} winner"
+      no_winner: Unselected
+      board_summary: "Board %{number}: %{home} vs %{away} / Winner %{winner}"
+      board_summary_with_score: "Board %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
     form:
       home_team: Home team
       away_team: Away team
+      team_a: Team A
+      team_b: Team B
       select_prompt: Please select
       block: Block
       stage_key: Stage key
@@ -189,6 +441,8 @@ en:
     email: Email
     password: Password
     password_confirmation: Confirm password
+    initial_admin_password: Initial admin password
+    initial_admin_password_confirmation: Confirm initial admin password
     submit: Create account
     have_account: Already have an account?
     back_to_login: Back to log in
@@ -198,6 +452,11 @@ en:
         draft: Draft
         active: Active
         completed: Completed
+    organizer_member:
+      role:
+        owner: Owner
+        admin: Admin
+        staff: Staff
     phase:
       kind:
         regular_season: Regular season
@@ -226,27 +485,74 @@ en:
         void: Void
       decision_type:
         normal: Standard
+    match_lineup_member:
+      role:
+        main: Main
+        substitute: Sub
+    team:
+      status:
+        active: Active
+        inactive: Hidden
+        withdrawn: Withdrawn / Dropped
+    participant:
+      status:
+        active: Active
+        inactive: Hidden
   activerecord:
     models:
       league: League
+      organizer_member: Organizer member
       phase: Phase
+      stage_asset: Stage asset
+      rule_template: Ruleset
       week: Week
       match: Match
     attributes:
       league:
         name: League name
-        slug: Slug
+        serial_number: League number
         rule_module_key: Ruleset
         status: Status
         started_at: Start date
         ended_at: End date
+      team:
+        display_name: Team name
+        status: Status
+        notes: Notes
+      participant:
+        display_name: Member name
+        position: Position
+        status: Status
+        notes: Notes
+      organizer_member:
+        display_name: Display name
+        role: Role
+        active: Active
+        notes: Notes
+        admin_password: Admin password
+        admin_password_confirmation: Confirm admin password
       phase:
         name: Phase name
         kind: Kind
         position: Position
+        stage_asset: Stage asset
         rule_module_key: Rule module
         ranking_rule_key: Ranking rule
         bracket_enabled: Bracket enabled
+      stage_asset:
+        name_ja: Name (Japanese)
+        name_en: Name (English)
+        format: Format
+        phase_kind: Phase kind
+        participant_scope: Participant scope
+        advancement_rule: Advancement rule
+      rule_template:
+        key: Key
+        name_ja: Name (Japanese)
+        name_en: Name (English)
+        description_ja: Description (Japanese)
+        description_en: Description (English)
+        active: Active
       week:
         number: Week number
         name: Name
@@ -266,6 +572,12 @@ en:
         bracket_slot: Bracket slot
         room_id: Room ID
         spectator_room_id: Spectator ID
+    errors:
+      models:
+        board_result:
+          attributes:
+            base:
+              invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-2, or 0-2.
         notes: Notes
   helpers:
     submit:

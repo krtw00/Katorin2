@@ -1,0 +1,178 @@
+<%= render "shared/errors", record: rule_template %>
+
+<% form_values = template_form.stringify_keys %>
+
+<%= form_with url: rule_template.persisted? ? rule_template_path(id: rule_template) : rule_templates_path, method: rule_template.persisted? ? :patch : :post, scope: :rule_template_form, class: "stack" do |form| %>
+  <div class="panel">
+    <h2><%= t("rule_templates.sections.basic") %></h2>
+    <p class="muted"><%= t("rule_templates.form.name_hint") %></p>
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :name_ja, t("rule_templates.form.name_ja") %>
+        <%= form.text_field :name_ja, value: form_values["name_ja"], required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :name_en, t("rule_templates.form.name_en") %>
+        <%= form.text_field :name_en, value: form_values["name_en"] %>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :description_ja, t("rule_templates.form.description_ja") %>
+        <%= form.text_area :description_ja, value: form_values["description_ja"], rows: 3 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :description_en, t("rule_templates.form.description_en") %>
+        <%= form.text_area :description_en, value: form_values["description_en"], rows: 3 %>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :active, t("rule_templates.form.active") %>
+        <%= form.select :active, [[t("labels.on"), true], [t("labels.off"), false]], { selected: form_values["active"] }, required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><%= t("rule_templates.sections.roster") %></h2>
+    <div class="field-grid field-grid--quad">
+      <div class="field">
+        <%= form.label :roster_min_members, t("rule_templates.form.roster_min_members") %>
+        <%= form.number_field :roster_min_members, value: form_values["roster_min_members"], min: 1 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :roster_max_members, t("rule_templates.form.roster_max_members") %>
+        <%= form.number_field :roster_max_members, value: form_values["roster_max_members"], min: 1 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :roster_lineup_size, t("rule_templates.form.roster_lineup_size") %>
+        <%= form.number_field :roster_lineup_size, value: form_values["roster_lineup_size"], min: 1 %>
+      </div>
+
+      <div class="field">
+        <%= form.label :roster_substitute_size, t("rule_templates.form.roster_substitute_size") %>
+        <%= form.number_field :roster_substitute_size, value: form_values["roster_substitute_size"], min: 0 %>
+      </div>
+    </div>
+
+  </div>
+
+  <% [1, 2].each do |index| %>
+    <div class="panel">
+      <h2><%= t("rule_templates.sections.stage", number: index) %></h2>
+
+      <% if index == 2 %>
+        <div class="field">
+          <label>
+            <%= form.check_box :stage2_enabled, { checked: ActiveModel::Type::Boolean.new.cast(form_values["stage2_enabled"]) }, "1", "0" %>
+            <%= t("rule_templates.form.stage2_enabled") %>
+          </label>
+        </div>
+      <% end %>
+
+      <div class="field-grid">
+        <div class="field">
+          <%= form.label :"stage#{index}_name_ja", t("rule_templates.form.stage_name_ja") %>
+          <%= form.text_field :"stage#{index}_name_ja", value: form_values["stage#{index}_name_ja"] %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_name_en", t("rule_templates.form.stage_name_en") %>
+          <%= form.text_field :"stage#{index}_name_en", value: form_values["stage#{index}_name_en"] %>
+        </div>
+      </div>
+
+      <div class="field-grid field-grid--quad">
+        <div class="field">
+          <%= form.label :"stage#{index}_format", t("rule_templates.form.stage_format") %>
+          <%= form.select :"stage#{index}_format", enum_options("rulesets.formats", RuleTemplate::FORMATS), { selected: form_values["stage#{index}_format"] } %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_participant_scope", t("rule_templates.form.stage_participant_scope") %>
+          <%= form.select :"stage#{index}_participant_scope", enum_options("rulesets.participant_scopes", RuleTemplate::PARTICIPANT_SCOPES), { selected: form_values["stage#{index}_participant_scope"] } %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_group_count", t("rule_templates.form.stage_group_count") %>
+          <%= form.number_field :"stage#{index}_group_count", value: form_values["stage#{index}_group_count"], min: 0 %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_round_count", t("rule_templates.form.stage_round_count") %>
+          <%= form.number_field :"stage#{index}_round_count", value: form_values["stage#{index}_round_count"], min: 0 %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_bracket_size", t("rule_templates.form.stage_bracket_size") %>
+          <%= form.number_field :"stage#{index}_bracket_size", value: form_values["stage#{index}_bracket_size"], min: 0 %>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <%= form.label :"stage#{index}_advancement_rule", t("rule_templates.form.stage_advancement_rule") %>
+          <%= form.select :"stage#{index}_advancement_rule", enum_options("rulesets.advancement_rules", RuleTemplate::ADVANCEMENT_RULES), { selected: form_values["stage#{index}_advancement_rule"] } %>
+        </div>
+
+        <div class="field">
+          <%= form.label :"stage#{index}_advancement_value", t("rule_templates.form.stage_advancement_value") %>
+          <%= form.number_field :"stage#{index}_advancement_value", value: form_values["stage#{index}_advancement_value"], min: 0 %>
+        </div>
+      </div>
+
+      <details class="details-block">
+        <summary><%= t("rule_templates.sections.advanced") %></summary>
+        <div class="details-block__body stack">
+          <% if index == 1 %>
+            <div class="field-grid">
+              <div class="field">
+                <%= form.label :key, t("rule_templates.form.key") %>
+                <%= form.text_field :key, value: form_values["key"] %>
+              </div>
+
+              <div class="field">
+                <%= form.label :default_match_rule_key, t("rule_templates.form.default_match_rule_key") %>
+                <%= form.text_field :default_match_rule_key, value: form_values["default_match_rule_key"] %>
+              </div>
+            </div>
+
+            <div class="field">
+              <%= form.label :roster_updates, t("rule_templates.form.roster_updates") %>
+              <%= form.text_field :roster_updates, value: form_values["roster_updates"] %>
+            </div>
+          <% end %>
+
+          <div class="field-grid field-grid--quad">
+            <div class="field">
+              <%= form.label :"stage#{index}_key", t("rule_templates.form.stage_key") %>
+              <%= form.text_field :"stage#{index}_key", value: form_values["stage#{index}_key"] %>
+            </div>
+
+            <div class="field">
+              <%= form.label :"stage#{index}_ranking_rule_key", t("rule_templates.form.stage_ranking_rule_key") %>
+              <%= form.text_field :"stage#{index}_ranking_rule_key", value: form_values["stage#{index}_ranking_rule_key"] %>
+            </div>
+
+            <div class="field">
+              <%= form.label :"stage#{index}_match_rule_key", t("rule_templates.form.stage_match_rule_key") %>
+              <%= form.text_field :"stage#{index}_match_rule_key", value: form_values["stage#{index}_match_rule_key"] %>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  <% end %>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), rule_templates_path, class: "button" %>
+    <%= form.submit t(rule_template.persisted? ? "helpers.submit.update" : "helpers.submit.create", model: RuleTemplate.model_name.human), class: "button button--primary" %>
+  </div>
+<% end %>

@@ -1,0 +1,49 @@
+<%= render "shared/errors", record: organizer_member %>
+
+<%= form_with model: organizer_member, url: organizer_member.persisted? ? organizer_member_path(id: organizer_member) : organizer_members_path, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :display_name, t("organizer_members.form.display_name") %>
+      <%= form.text_field :display_name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :role, t("organizer_members.form.role") %>
+      <%= form.select :role, enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values), {}, required: true %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :active, t("organizer_members.form.active") %>
+      <%= form.select :active, [[t("labels.on"), true], [t("labels.off"), false]], {}, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :notes, t("organizer_members.form.notes") %>
+      <%= form.text_field :notes %>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><%= t("organizer_members.sections.admin_password") %></h2>
+    <p class="muted"><%= t("organizer_members.form.admin_password_hint") %></p>
+
+    <div class="field-grid">
+      <div class="field">
+        <%= form.label :admin_password, t("organizer_members.form.admin_password") %>
+        <%= form.password_field :admin_password, autocomplete: "new-password" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :admin_password_confirmation, t("organizer_members.form.admin_password_confirmation") %>
+        <%= form.password_field :admin_password_confirmation, autocomplete: "new-password" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), organizer_members_path, class: "button" %>
+    <%= form.submit class: "button button--primary" %>
+  </div>
+<% end %>
