@@ -62,6 +62,10 @@ ja:
     registrations:
       created: アカウントを作成しました。
       invalid: 入力内容を確認してください。
+    organizer_setup:
+      required: 初回セットアップを完了してください。
+      completed: 初期管理ユーザーを作成しました。
+      invalid: セットアップ内容を確認してください。
     organizer_members:
       created: 運営メンバーを登録しました。
       updated: 運営メンバーを更新しました。
@@ -125,16 +129,13 @@ ja:
     metrics:
       today_matches: 今日の対戦
       result_pending: 結果未確定
-      stale_exports: 再出力待ち
     sections:
       today_matches: 今日の対戦
       result_pending: 結果未確定
-      stale_exports: 画像再出力待ち
       leagues: リーグ
     empty:
       today_matches: 本日の対戦はありません。
       result_pending: 未確定の対戦はありません。
-      stale_exports: 再出力待ちはありません。
       leagues: リーグがまだありません。
   leagues:
     eyebrow: リーグ
@@ -224,7 +225,6 @@ ja:
       active: 有効化
       notes: メモ
       admin_password: 管理パス
-      admin_password_confirmation: 管理パス確認
       admin_password_hint: owner と admin は管理操作用のパスが必要です。staff は未入力のままで構いません。
     password_status:
       configured: パス設定済み
@@ -377,8 +377,6 @@ ja:
     delete_hint: 結果が入っていない対戦だけ削除できます。下書きリーグではオーダーごと削除します。
     round_wins: ラウンド勝数
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
-    export_stale: 再出力が必要
-    export_pending: 出力待ち
     lineup:
       title: オーダー登録
       short: オーダー
@@ -419,7 +417,6 @@ ja:
       scheduled_on: 対戦日
       scheduled_time: 開始時刻
       status: 進行状態
-      export_status: 画像状態
       judge_name: 審判名
       bracket_slot: ブラケット位置
       room_id: ルームID
@@ -435,17 +432,20 @@ ja:
     register: 新規登録
   registrations:
     title: 新規登録
-    lede: 運営アカウントを新しく作成します。
+    lede: 運営アカウントを新しく作成します。管理ユーザーは初回ログイン後に登録します。
     display_name: 団体名
     login_id: アカウントID
     email: メール
     password: パスワード
-    password_confirmation: パスワード確認
-    initial_admin_password: 初期管理パス
-    initial_admin_password_confirmation: 初期管理パス確認
     submit: 登録する
     have_account: すでにアカウントをお持ちの場合
     back_to_login: ログインへ戻る
+  organizer_setup:
+    title: 初期セットアップ
+    lede: 最初の管理ユーザーを登録します。
+    display_name: 管理ユーザー名
+    admin_password: 管理パス
+    submit: セットアップを完了
   enums:
     league:
       status:
@@ -473,11 +473,6 @@ ja:
         result_pending: 結果確認中
         confirmed: 確定
         cancelled: 中止
-      export_status:
-        not_required: 不要
-        pending: 未出力
-        generated: 出力済み
-        stale: 再出力待ち
     match_result:
       result_status:
         partial: 入力中
@@ -530,7 +525,6 @@ ja:
         active: 有効化
         notes: メモ
         admin_password: 管理パス
-        admin_password_confirmation: 管理パス確認
       phase:
         name: フェーズ名
         kind: 種別
@@ -567,7 +561,6 @@ ja:
         scheduled_on: 対戦日
         scheduled_time: 開始時刻
         status: 進行状態
-        export_status: 画像状態
         judge_name: 審判名
         bracket_slot: ブラケット位置
         room_id: ルームID

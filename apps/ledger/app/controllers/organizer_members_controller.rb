@@ -46,6 +46,6 @@ class OrganizerMembersController < ApplicationController
   end
 
   def organizer_member_params
-    params.require(:organizer_member).permit(:display_name, :role, :active, :notes, :admin_password, :admin_password_confirmation)
+    params.require(:organizer_member).permit(:display_name, :role, :active, :notes, :admin_password)
   end
 end

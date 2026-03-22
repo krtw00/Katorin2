@@ -17,7 +17,8 @@ class ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to dashboard_path(locale: :ja)
+    expected_path = organizer_account.organizer_members.exists? ? dashboard_path(locale: :ja) : new_organizer_setup_path(locale: :ja)
+    assert_redirected_to expected_path
     follow_redirect!
     assert_response :success
   end

@@ -23,7 +23,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <% auth_screen = %w[sessions registrations].include?(controller_name) && %w[new create].include?(action_name) %>
+  <% auth_screen = %w[sessions registrations organizer_setups].include?(controller_name) && %w[new create].include?(action_name) %>
 
   <body class="<%= "body--auth" if auth_screen %>">
     <div class="shell <%= "shell--auth" if auth_screen %>">
@@ -48,7 +48,7 @@
             <% end %>
           </div>
 
-          <% if organizer_signed_in? %>
+          <% if organizer_signed_in? && !organizer_setup_required? %>
             <nav class="topnav">
               <%= nav_link_to t("nav.home"), dashboard_path %>
               <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
