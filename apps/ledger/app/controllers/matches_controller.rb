@@ -15,8 +15,7 @@ class MatchesController < ApplicationController
       block: selected_block,
       stage_key: params[:stage_key],
       bracket_slot: params[:bracket_slot],
-      status: "draft",
-      export_status: "pending"
+      status: "draft"
     )
   end
 

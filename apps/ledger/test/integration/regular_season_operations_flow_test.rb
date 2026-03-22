@@ -7,10 +7,13 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       display_name: "E2E Organizer",
       login_id: "e2e-admin",
       email: "e2e-admin@example.com",
-      password: @password,
-      password_confirmation: @password,
-      initial_admin_password: "1234",
-      initial_admin_password_confirmation: "1234"
+      password: @password
+    )
+    @organizer_account.organizer_members.create!(
+      display_name: "Owner",
+      role: "owner",
+      active: true,
+      admin_password: "1234"
     )
     @judge = @organizer_account.organizer_members.create!(
       display_name: "Judge One",
@@ -107,7 +110,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
     match.reload
     assert_equal "confirmed", match.status
-    assert_equal "pending", match.export_status
     assert_equal team_a, match.match_result.winner_team
     assert_equal [2, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
     assert_equal 3, match.rounds.count
@@ -141,8 +143,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       block:,
       home_team: team,
       away_team: league.teams.create!(display_name: "Delete Team 2", block:, status: "active"),
-      status: "draft",
-      export_status: "pending"
+      status: "draft"
     )
     staff = @organizer_account.organizer_members.create!(display_name: "Delete Staff", role: "staff", active: true)
 
@@ -191,6 +192,36 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       delete league_path(locale: :ja, id: league)
     end
     assert_redirected_to leagues_path(locale: :ja)
+  end
+
+  test "registration redirects to initial organizer setup and creates first owner" do
+    post registration_path(locale: :ja), params: {
+      organizer_account: {
+        display_name: "New Organizer",
+        login_id: "new-organizer",
+        email: "new-organizer@example.com",
+        password: "password"
+      }
+    }
+
+    organizer_account = OrganizerAccount.find_by!(login_id: "new-organizer")
+    assert_redirected_to new_organizer_setup_path(locale: :ja)
+    assert_equal 0, organizer_account.organizer_members.count
+
+    follow_redirect!
+    assert_response :success
+
+    post organizer_setup_path(locale: :ja), params: {
+      organizer_member: {
+        display_name: "root",
+        admin_password: "1234"
+      }
+    }
+
+    assert_redirected_to dashboard_path(locale: :ja)
+    organizer_account.reload
+    assert_equal 1, organizer_account.organizer_members.count
+    assert_equal "owner", organizer_account.organizer_members.first.role
   end
 
   private

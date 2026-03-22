@@ -62,6 +62,10 @@ en:
     registrations:
       created: Account created.
       invalid: Please review the registration details.
+    organizer_setup:
+      required: Please finish the initial setup first.
+      completed: Initial admin user created.
+      invalid: Please review the setup details.
     organizer_members:
       created: Organizer member created.
       updated: Organizer member updated.
@@ -125,16 +129,13 @@ en:
     metrics:
       today_matches: Today's matches
       result_pending: Result pending
-      stale_exports: Export refresh needed
     sections:
       today_matches: Today's matches
       result_pending: Result pending
-      stale_exports: Export refresh queue
       leagues: Leagues
     empty:
       today_matches: No matches scheduled for today.
       result_pending: No pending results.
-      stale_exports: No exports waiting for refresh.
       leagues: No leagues yet.
   leagues:
     eyebrow: League
@@ -224,7 +225,6 @@ en:
       active: Active
       notes: Notes
       admin_password: Admin password
-      admin_password_confirmation: Confirm admin password
       admin_password_hint: Owner and admin members need an admin password for privileged actions. Staff can leave this blank.
     password_status:
       configured: Password set
@@ -377,8 +377,6 @@ en:
     delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
     rounds_count: "Round %{number} / %{status} / Boards: %{count}"
-    export_stale: Export stale
-    export_pending: Export pending
     lineup:
       title: Order
       short: Order
@@ -419,7 +417,6 @@ en:
       scheduled_on: Match date
       scheduled_time: Start time
       status: Match status
-      export_status: Export status
       judge_name: Judge name
       bracket_slot: Bracket slot
       room_id: Room ID
@@ -435,17 +432,20 @@ en:
     register: Sign up
   registrations:
     title: Sign up
-    lede: Create a new organizer account.
+    lede: Create a new organizer account. Add the first admin user after the first login.
     display_name: Organization name
     login_id: Account ID
     email: Email
     password: Password
-    password_confirmation: Confirm password
-    initial_admin_password: Initial admin password
-    initial_admin_password_confirmation: Confirm initial admin password
     submit: Create account
     have_account: Already have an account?
     back_to_login: Back to log in
+  organizer_setup:
+    title: Initial setup
+    lede: Create the first admin user for this organizer account.
+    display_name: Admin member name
+    admin_password: Admin password
+    submit: Complete setup
   enums:
     league:
       status:
@@ -473,11 +473,6 @@ en:
         result_pending: Result pending
         confirmed: Confirmed
         cancelled: Cancelled
-      export_status:
-        not_required: Not required
-        pending: Pending
-        generated: Generated
-        stale: Stale
     match_result:
       result_status:
         partial: Partial
@@ -530,7 +525,6 @@ en:
         active: Active
         notes: Notes
         admin_password: Admin password
-        admin_password_confirmation: Confirm admin password
       phase:
         name: Phase name
         kind: Kind
@@ -567,7 +561,6 @@ en:
         scheduled_on: Match date
         scheduled_time: Start time
         status: Match status
-        export_status: Export status
         judge_name: Judge name
         bracket_slot: Bracket slot
         room_id: Room ID

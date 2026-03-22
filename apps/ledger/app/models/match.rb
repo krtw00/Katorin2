@@ -8,13 +8,6 @@ class Match < ApplicationRecord
     cancelled: "cancelled",
   }.freeze
 
-  EXPORT_STATUSES = {
-    not_required: "not_required",
-    pending: "pending",
-    generated: "generated",
-    stale: "stale",
-  }.freeze
-
   belongs_to :league
   belongs_to :phase
   belongs_to :week
@@ -28,7 +21,6 @@ class Match < ApplicationRecord
   has_many :match_lineup_members, -> { order(:side, :role, :slot_number, :created_at) }, dependent: :destroy
 
   enum :status, STATUSES, validate: true
-  enum :export_status, EXPORT_STATUSES, validate: true
 
   validates :home_team, :away_team, presence: true
   validate :distinct_teams

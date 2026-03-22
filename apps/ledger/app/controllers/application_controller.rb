@@ -9,6 +9,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_locale
   before_action :require_authentication
+  before_action :require_organizer_setup
 
   helper_method :available_locales, :locale_label
 
@@ -38,5 +39,17 @@ class ApplicationController < ActionController::Base
 
   def locale_label(locale)
     I18n.t("locales.#{locale}", default: locale.to_s)
+  end
+
+  def post_auth_redirect_path
+    organizer_setup_required? ? new_organizer_setup_path : dashboard_path
+  end
+
+  def require_organizer_setup
+    return unless organizer_setup_required?
+    return if controller_name == "organizer_setups"
+    return if controller_name == "sessions" && action_name == "destroy"
+
+    redirect_to new_organizer_setup_path, alert: t("flash.organizer_setup.required")
   end
 end

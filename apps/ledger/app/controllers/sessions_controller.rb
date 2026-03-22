@@ -2,7 +2,7 @@ class SessionsController < ApplicationController
   allow_unauthenticated_access only: %i[new create]
 
   def new
-    return redirect_to dashboard_path if organizer_signed_in?
+    return redirect_to(post_auth_redirect_path) if organizer_signed_in?
   end
 
   def create
@@ -13,7 +13,7 @@ class SessionsController < ApplicationController
 
     if organizer_account&.authenticate(session_params[:password].to_s)
       start_session!(organizer_account)
-      redirect_to dashboard_path, notice: t("flash.sessions.created")
+      redirect_to post_auth_redirect_path, notice: t("flash.sessions.created")
     else
       flash.now[:alert] = t("flash.sessions.invalid")
       render :new, status: :unprocessable_entity

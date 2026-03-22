@@ -37,8 +37,6 @@ module MatchExports
         file_path: public_file_path
       )
       export.save!
-
-      match.update!(export_status: "generated")
       export
     end
 

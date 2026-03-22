@@ -8,6 +8,5 @@ class DashboardController < ApplicationController
 
     @today_matches = base_scope.where(scheduled_on: @today).order(:scheduled_time)
     @result_pending_matches = base_scope.result_pending.order(:scheduled_on, :scheduled_time)
-    @stale_exports = base_scope.stale.order(:updated_at)
   end
 end

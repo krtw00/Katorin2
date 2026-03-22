@@ -118,13 +118,11 @@ module MatchResults
       result.save!
 
       match.status = result.result_status == "confirmed" ? "confirmed" : "result_pending"
-      match.export_status = match.export_status == "generated" ? "stale" : "pending"
       match.save!
     end
 
     def reset_match_state!
       match.status = "scheduled" if match.status.in?(%w[result_pending confirmed])
-      match.export_status = "pending" if match.export_status != "not_required"
       match.save!
     end
 

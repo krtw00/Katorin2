@@ -32,21 +32,6 @@
         <%= form.password_field :password, required: true, autocomplete: "new-password", class: "login-form__input" %>
       </div>
 
-      <div class="login-form__row">
-        <%= form.label :password_confirmation, t("registrations.password_confirmation"), class: "login-form__label" %>
-        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "login-form__input" %>
-      </div>
-
-      <div class="login-form__row">
-        <%= form.label :initial_admin_password, t("registrations.initial_admin_password"), class: "login-form__label" %>
-        <%= form.password_field :initial_admin_password, required: true, autocomplete: "new-password", class: "login-form__input" %>
-      </div>
-
-      <div class="login-form__row">
-        <%= form.label :initial_admin_password_confirmation, t("registrations.initial_admin_password_confirmation"), class: "login-form__label" %>
-        <%= form.password_field :initial_admin_password_confirmation, required: true, autocomplete: "new-password", class: "login-form__input" %>
-      </div>
-
       <div class="login-form__actions">
         <%= form.submit t("registrations.submit"), class: "button button--auth" %>
       </div>

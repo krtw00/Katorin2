@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_22_133000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_22_143000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -152,7 +152,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_133000) do
     t.uuid "block_id"
     t.string "bracket_slot"
     t.datetime "created_at", null: false
-    t.string "export_status", default: "pending", null: false
     t.uuid "home_team_id", null: false
     t.string "judge_name"
     t.uuid "league_id", null: false
@@ -174,7 +173,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_133000) do
     t.index ["phase_id"], name: "index_matches_on_phase_id"
     t.index ["week_id", "status"], name: "index_matches_on_week_id_and_status"
     t.index ["week_id"], name: "index_matches_on_week_id"
-    t.check_constraint "export_status::text = ANY (ARRAY['not_required'::character varying::text, 'pending'::character varying::text, 'generated'::character varying::text, 'stale'::character varying::text])", name: "matches_export_status_inclusion"
     t.check_constraint "home_team_id <> away_team_id", name: "matches_distinct_teams"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'scheduled'::character varying::text, 'in_progress'::character varying::text, 'result_pending'::character varying::text, 'confirmed'::character varying::text, 'cancelled'::character varying::text])", name: "matches_status_inclusion"
   end
