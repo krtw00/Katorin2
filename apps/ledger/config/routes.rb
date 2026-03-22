@@ -31,14 +31,14 @@ Rails.application.routes.draw do
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
     resources :organizer_members, only: %i[index new create edit update]
-    resources :stage_assets, only: %i[index new create edit update]
-    resources :rule_templates, only: %i[index new create edit update]
 
     resources :leagues, only: %i[index show new create edit update destroy] do
       resources :teams, only: %i[index show new create edit update destroy] do
         resources :participants, only: %i[new create edit update destroy]
       end
-      resources :phases, only: %i[show new create edit update destroy]
+      resources :phases, only: %i[show new create edit update destroy] do
+        get :bracket, on: :member
+      end
     end
 
     resources :phases, only: [] do
@@ -51,6 +51,7 @@ Rails.application.routes.draw do
     end
 
     resources :matches, only: %i[show edit update] do
+      resource :lineup, only: %i[edit update], controller: "match_lineups"
       resource :result_entry, only: %i[edit update], controller: "match_result_entries"
       resource :result_card_export, only: [], controller: "match_exports" do
         get :download, on: :member

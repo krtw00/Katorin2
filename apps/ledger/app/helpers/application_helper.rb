@@ -3,6 +3,15 @@ module ApplicationHelper
     value ? content_for(:title, value) : content_for(:title)
   end
 
+  def set_breadcrumbs(items)
+    content_for(:breadcrumbs) { render "shared/breadcrumbs", items: items }
+    nil
+  end
+
+  def breadcrumb_item(label, path = nil, current: false)
+    { label:, path:, current: current || path.blank? }
+  end
+
   def nav_link_to(label, path, active_paths: [])
     request_path = normalized_request_path
     active = current_page?(path) || active_paths.any? { |candidate| request_path.start_with?(candidate) }

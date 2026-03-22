@@ -232,7 +232,7 @@ module MatchExports
     end
 
     def week_label
-      match.week.name.presence || "WEEK #{match.week.number}"
+      match.week.display_name
     end
 
     def scheduled_label

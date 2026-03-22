@@ -10,13 +10,12 @@ ja:
     home: ホーム
     leagues: リーグ
     organizer_members: 運営メンバー
-    stage_assets: ステージアセット
-    rule_templates: ルールセット
     login: ログイン
     logout: ログアウト
   actions:
     back: 戻る
     edit: 編集
+    edit_lineup: オーダー
     edit_result: 結果入力
     download_export: 画像をダウンロード
     delete: 削除
@@ -25,12 +24,11 @@ ja:
     create_team: チーム追加
     create_participant: メンバー追加
     create_organizer_member: メンバー追加
-    create_stage_asset: ステージアセット作成
-    create_rule_template: ルールセット作成
     create_phase: フェーズ作成
     create_block: ブロック作成
     create_week: 週作成
     create_match: 対戦作成
+    view_bracket: ブラケット
   labels:
     locale: 言語
     vs: vs
@@ -67,12 +65,6 @@ ja:
     organizer_members:
       created: 運営メンバーを登録しました。
       updated: 運営メンバーを更新しました。
-    stage_assets:
-      created: ステージアセットを作成しました。
-      updated: ステージアセットを更新しました。
-    rule_templates:
-      created: ルールセットを作成しました。
-      updated: ルールセットを更新しました。
     leagues:
       created: リーグを作成しました。
       updated: リーグを更新しました。
@@ -103,6 +95,7 @@ ja:
     matches:
       created: 対戦カードを作成しました。
       updated: 対戦カードを更新しました。
+      lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
   shared:
@@ -142,7 +135,7 @@ ja:
     title_index: リーグ一覧
     title_new: リーグ作成
     title_edit: リーグ編集
-    meta: "ルール: %{rule_module_key} / 大会番号: %{number}"
+    meta: "大会番号: %{number} / 状態: %{status}"
     reference: "大会番号 %{number}"
     phases: フェーズ
     teams: チーム
@@ -152,24 +145,24 @@ ja:
     team_management:
       title: チーム管理
       lede: チーム作成と参加者追加はここから進めます。
-    ruleset:
-      title: ルールセット
-      template: テンプレート
-      key: キー
-      roster: チーム編成
-      roster_summary: "%{min}〜%{max}名 / 出場 %{lineup}名 / サブ %{sub}名"
-      default_match_rule_key: 既定の対戦ルール
-      stages: ステージ構成
+    roster:
+      title: 編成設定
+      min_members: 最小人数
+      max_members: 最大人数
+      lineup_size: 出場人数
+      substitute_size: サブ人数
     form:
       name: リーグ名
-      rule_module_key: ルールセット
       status: 状態
+      roster_min_members: 最小人数
+      roster_max_members: 最大人数
+      lineup_size: 出場人数
+      substitute_size: サブ人数
       started_at: 開始日
       ended_at: 終了日
       header_image: 背景画像
       header_image_hint: 対戦画像の背景に使います。素材がなければ未設定のままでバニラ背景を使います。
       identifier_hint: 大会番号は保存時に自動で割り当てます。
-      stage_asset_hint: ステージ設定は大会作成後に、ステージアセットを選んで追加します。
     header_image:
       title: 背景画像
       ready: 現在の対戦画像背景です。
@@ -180,6 +173,8 @@ ja:
     title_index: "%{league} のチーム"
     title_new: "%{league} にチーム追加"
     title_edit: "%{team} を編集"
+    submit_create: チームを作成
+    submit_update: チームを更新
     empty: チームがまだありません。
     empty_participants: メンバーがまだいません。
     sections:
@@ -303,23 +298,32 @@ ja:
     eyebrow: フェーズ
     title_new: フェーズ作成
     title_edit: フェーズ編集
+    bracket: ブラケット
+    bracket_size: 枠数
+    byes: BYE数
+    bracket_summary: "参加 %{participants} / 枠 %{bracket_size} / BYE %{byes}"
+    empty_bracket: ブラケット用の週がまだありません。
+    empty_slot: "枠 %{number}"
+    empty_slot_help: 空欄をクリックして対戦を作成
     meta: "%{kind} / ブラケット: %{bracket}"
     weeks: 週一覧
     blocks: ブロック
     weeks_count: "対戦数 %{count}"
     form:
       name: フェーズ名
-      name_placeholder: 未入力ならステージアセット名を使います
+      name_placeholder: 未入力なら種別から自動で補います
       name_hint: 固有の表示名が必要な場合だけ入力してください。
-      stage_asset: ステージアセット
-      stage_asset_prompt: 選択してください
-      asset_hint: 種別や順位ルールはステージアセット側の設定を使います。
+      bracket_participant_count: 参加数
+      bracket_participant_count_hint: playoff のときだけ使います。任意人数を入れると、表示側では必要な分だけ BYE を補います。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
       rule_module_key: ルールモジュール
       ranking_rule_key: 順位ルール
       bracket_enabled: ブラケットを有効化
+    default_names:
+      regular: 予選
+      playoff: 決勝
     delete_confirm: このフェーズを削除します。よろしいですか？
     delete_hint: 週や対戦を持たないフェーズだけ削除できます。
   blocks:
@@ -336,12 +340,13 @@ ja:
     eyebrow: 週
     title_new: 週作成
     title_edit: 週編集
+    reference: "Week %{number}"
     meta: "番号: %{number} / 種別: %{kind}"
     matches: 対戦カード
     empty_matches: 対戦カードがまだありません。
     form:
       number: 週番号
-      name: 表示名
+      number_hint: Week 番号から自動表示します。
       kind: 種別
       position: 並び順
       locked_at: ロック日時
@@ -360,6 +365,16 @@ ja:
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
     export_stale: 再出力が必要
     export_pending: 出力待ち
+    lineup:
+      title: オーダー登録
+      short: オーダー
+      submit: オーダーを保存
+      main_count: メイン人数
+      substitute_count: サブ人数
+      main_slot: "メイン %{number}"
+      sub_slot: "サブ %{number}"
+      empty: まだ登録されていません。
+      summary: "%{role} %{number}: %{name}"
     result_entry:
       title: 対戦結果入力
       short: 結果入力
@@ -382,6 +397,8 @@ ja:
     form:
       home_team: ホームチーム
       away_team: アウェイチーム
+      team_a: チームA
+      team_b: チームB
       select_prompt: 選択してください
       block: ブロック
       stage_key: ステージキー
@@ -454,6 +471,10 @@ ja:
         void: 無効
       decision_type:
         normal: 通常
+    match_lineup_member:
+      role:
+        main: メイン
+        substitute: サブ
     team:
       status:
         active: 有効

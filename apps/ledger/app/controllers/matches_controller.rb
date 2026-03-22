@@ -12,13 +12,22 @@ class MatchesController < ApplicationController
     @match = @week.matches.new(
       league: @week.league,
       phase: @week.phase,
+      stage_key: params[:stage_key],
+      bracket_slot: params[:bracket_slot],
       status: "draft",
       export_status: "pending"
     )
   end
 
   def create
-    @match = @week.matches.new(match_params.merge(league: @week.league, phase: @week.phase))
+    @match = @week.matches.new(
+      match_params.merge(
+        league: @week.league,
+        phase: @week.phase,
+        stage_key: params[:stage_key].presence || params.dig(:match, :stage_key).presence,
+        bracket_slot: params[:bracket_slot].presence || params.dig(:match, :bracket_slot).presence
+      )
+    )
 
     if @match.save
       redirect_to match_path(id: @match), notice: t("flash.matches.created")
@@ -51,7 +60,7 @@ class MatchesController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :phase, :week, :block, :home_team, :away_team, :exports)
+      .includes(:league, :phase, :week, :block, :home_team, :away_team, :exports, match_lineup_members: :participant)
       .first!
 
     @week ||= @match.week
@@ -62,6 +71,7 @@ class MatchesController < ApplicationController
     phase = @week&.phase || @match.phase
     @team_options = league.teams.order(:display_name)
     @block_options = phase.blocks.order(:position)
+    @judge_options = current_organizer_account.organizer_members.where(active: true).order(:display_name).pluck(:display_name)
   end
 
   def match_params
@@ -74,10 +84,9 @@ class MatchesController < ApplicationController
       :judge_name,
       :room_id,
       :spectator_room_id,
+      :status,
       :stage_key,
       :bracket_slot,
-      :status,
-      :export_status,
       :notes
     )
   end

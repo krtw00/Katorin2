@@ -19,13 +19,13 @@ class MatchResultEntriesController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:match_id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :phase, :week, :home_team, :away_team, rounds: :board_results)
+      .includes(:league, :phase, :week, :home_team, :away_team, :match_lineup_members, rounds: :board_results)
       .first!
   end
 
   def set_result_form_state
-    @home_participant_options = @match.home_team.participants.order(:position, :created_at)
-    @away_participant_options = @match.away_team.participants.order(:position, :created_at)
+    @home_participant_options = @match.participant_options_for_result("home")
+    @away_participant_options = @match.participant_options_for_result("away")
     @match_result = @match.match_result
     @round_entries = (1..3).map do |round_number|
       round = @match.rounds.find { |existing_round| existing_round.number == round_number } || Round.new(number: round_number, result_status: "partial")

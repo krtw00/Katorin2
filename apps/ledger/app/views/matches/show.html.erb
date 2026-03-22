@@ -1,11 +1,19 @@
 <% page_title "#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}" %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@match.league.name, league_path(id: @match.league)),
+  breadcrumb_item(@match.phase.name, league_phase_path(league_id: @match.league, id: @match.phase)),
+  breadcrumb_item(@match.week.display_name, phase_week_path(phase_id: @match.phase, id: @match.week)),
+  breadcrumb_item("#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}")
+]) %>
 
 <section class="page-header">
   <div>
     <p class="eyebrow"><%= t("matches.eyebrow") %></p>
     <h1><%= @match.home_team.display_name %> <%= t("labels.vs") %> <%= @match.away_team.display_name %></h1>
     <p class="muted">
-      <%= @match.phase.name %> / <%= @match.week.name %>
+      <%= @match.phase.name %> / <%= @match.week.display_name %>
       <% if @match.scheduled_on %>
         / <%= @match.scheduled_on %>
       <% end %>
@@ -17,8 +25,8 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), phase_week_path(phase_id: @match.phase, id: @match.week), class: "button" %>
     <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
+    <%= link_to t("actions.edit_lineup"), edit_match_lineup_path(match_id: @match), class: "button" %>
     <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
-    <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
   </div>
 </section>
 
@@ -27,11 +35,41 @@
     <h2><%= t("matches.progress") %></h2>
     <div class="kv-list">
       <div><span><%= t("labels.status") %></span><strong><%= translated_enum("enums.match.status", @match.status) %></strong></div>
-      <div><span><%= t("labels.export") %></span><strong><%= translated_enum("enums.match.export_status", @match.export_status) %></strong></div>
       <div><span><%= t("labels.judge") %></span><strong><%= @match.judge_name.presence || t("labels.none") %></strong></div>
       <div><span><%= t("labels.room") %></span><strong><%= @match.room_id.presence || t("labels.none") %></strong></div>
       <div><span><%= t("labels.spectator") %></span><strong><%= @match.spectator_room_id.presence || t("labels.none") %></strong></div>
       <div><span><%= t("labels.block") %></span><strong><%= @match.block&.name || t("labels.none") %></strong></div>
+    </div>
+  </article>
+
+  <article class="panel">
+    <h2><%= t("matches.lineup.title") %></h2>
+    <div class="dashboard-grid">
+      <article class="panel panel--nested">
+        <h3><%= @match.home_team.display_name %></h3>
+        <% if @match.lineup_members_for("home").any? %>
+          <ul class="compact-list">
+            <% @match.lineup_members_for("home").each do |entry| %>
+              <li><%= t("matches.lineup.summary", role: translated_enum("enums.match_lineup_member.role", entry.role), number: entry.slot_number, name: entry.participant.display_name) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="empty-copy"><%= t("matches.lineup.empty") %></p>
+        <% end %>
+      </article>
+
+      <article class="panel panel--nested">
+        <h3><%= @match.away_team.display_name %></h3>
+        <% if @match.lineup_members_for("away").any? %>
+          <ul class="compact-list">
+            <% @match.lineup_members_for("away").each do |entry| %>
+              <li><%= t("matches.lineup.summary", role: translated_enum("enums.match_lineup_member.role", entry.role), number: entry.slot_number, name: entry.participant.display_name) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="empty-copy"><%= t("matches.lineup.empty") %></p>
+        <% end %>
+      </article>
     </div>
   </article>
 
@@ -47,14 +85,6 @@
     <% else %>
       <p class="empty-copy"><%= t("matches.empty_result") %></p>
     <% end %>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("matches.result_card") %></h2>
-    <div class="stack stack--compact">
-      <p class="muted"><%= t("matches.result_card_download") %></p>
-      <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
-    </div>
   </article>
 
   <article class="panel">

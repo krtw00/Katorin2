@@ -7,11 +7,7 @@
     <div class="field">
       <%= form.label :number, t("weeks.form.number") %>
       <%= form.number_field :number, min: 1, required: true %>
-    </div>
-
-    <div class="field">
-      <%= form.label :name, t("weeks.form.name") %>
-      <%= form.text_field :name, required: true %>
+      <p class="ghost-note"><%= t("weeks.form.number_hint") %></p>
     </div>
   </div>
 
