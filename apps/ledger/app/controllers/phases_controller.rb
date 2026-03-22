@@ -1,10 +1,15 @@
 class PhasesController < ApplicationController
   before_action :set_league
-  before_action :set_phase, only: %i[show edit update]
+  before_action :set_phase, only: %i[show edit update destroy bracket]
 
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)
-    @blocks = @phase.blocks.order(:position)
+    @blocks = @phase.blocks.includes(:teams, :matches).order(:position)
+  end
+
+  def bracket
+    @weeks = @phase.weeks.includes(matches: %i[home_team away_team match_result]).order(:position)
+    @bracket = Brackets::PhaseLayout.new(@phase, routes: view_context).build
   end
 
   def new
@@ -13,6 +18,7 @@ class PhasesController < ApplicationController
 
   def create
     @phase = @league.phases.new(phase_params)
+    @phase.position ||= next_position
 
     if @phase.save
       redirect_to league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.created")
@@ -32,6 +38,15 @@ class PhasesController < ApplicationController
     end
   end
 
+  def destroy
+    unless @phase.destroyable?
+      return redirect_to league_phase_path(league_id: @league, id: @phase), alert: t("flash.phases.delete_blocked")
+    end
+
+    @phase.destroy_for_management!
+    redirect_to league_path(id: @league), notice: t("flash.phases.deleted")
+  end
+
   private
 
   def set_league
@@ -43,7 +58,7 @@ class PhasesController < ApplicationController
   end
 
   def phase_params
-    params.require(:phase).permit(:name, :kind, :position, :rule_module_key, :ranking_rule_key, :bracket_enabled)
+    params.require(:phase).permit(:name, :kind, :bracket_participant_count)
   end
 
   def next_position

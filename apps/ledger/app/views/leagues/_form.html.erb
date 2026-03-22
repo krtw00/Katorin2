@@ -5,23 +5,39 @@
     <div class="field">
       <%= form.label :name, t("leagues.form.name") %>
       <%= form.text_field :name, required: true %>
-    </div>
-
-    <div class="field">
-      <%= form.label :slug, t("leagues.form.slug") %>
-      <%= form.text_field :slug, required: true %>
+      <p class="ghost-note"><%= t("leagues.form.identifier_hint") %></p>
     </div>
   </div>
 
   <div class="field-grid">
     <div class="field">
-      <%= form.label :rule_module_key, t("leagues.form.rule_module_key") %>
-      <%= form.select :rule_module_key, ruleset_options, {}, required: true %>
+      <%= form.label :status, t("leagues.form.status") %>
+      <%= form.select :status, enum_options("enums.league.status", ["draft", "active", "completed"]) %>
+      <p class="ghost-note"><%= t("leagues.form.identifier_hint") %></p>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :roster_min_members, t("leagues.form.roster_min_members") %>
+      <%= form.number_field :roster_min_members, min: 0 %>
     </div>
 
     <div class="field">
-      <%= form.label :status, t("leagues.form.status") %>
-      <%= form.select :status, enum_options("enums.league.status", ["draft", "active", "completed"]) %>
+      <%= form.label :roster_max_members, t("leagues.form.roster_max_members") %>
+      <%= form.number_field :roster_max_members, min: 1 %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :lineup_size, t("leagues.form.lineup_size") %>
+      <%= form.number_field :lineup_size, min: 1 %>
+    </div>
+
+    <div class="field">
+      <%= form.label :substitute_size, t("leagues.form.substitute_size") %>
+      <%= form.number_field :substitute_size, min: 0 %>
     </div>
   </div>
 
@@ -34,6 +50,19 @@
     <div class="field">
       <%= form.label :ended_at, t("leagues.form.ended_at") %>
       <%= form.date_field :ended_at %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :header_image, t("leagues.form.header_image") %>
+      <%= form.file_field :header_image, accept: "image/png,image/jpeg,image/webp" %>
+      <p class="ghost-note"><%= t("leagues.form.header_image_hint") %></p>
+      <% if league.header_image.attached? %>
+        <div class="image-preview-card">
+          <%= image_tag league.header_image, alt: t("leagues.form.header_image"), class: "image-preview-card__image" %>
+        </div>
+      <% end %>
     </div>
   </div>
 

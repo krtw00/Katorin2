@@ -10,10 +10,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_22_133000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.uuid "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "blocks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -30,10 +58,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
 
   create_table "board_results", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "away_deck_name"
+    t.integer "away_game_wins"
     t.uuid "away_participant_id"
     t.integer "board_number", null: false
     t.datetime "created_at", null: false
     t.string "home_deck_name"
+    t.integer "home_game_wins"
     t.uuid "home_participant_id"
     t.text "notes"
     t.string "result_status", default: "partial", null: false
@@ -67,16 +97,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   create_table "leagues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "ended_at"
+    t.integer "lineup_size", default: 3, null: false
     t.string "name", null: false
     t.uuid "organizer_account_id", null: false
+    t.integer "roster_max_members", default: 15, null: false
+    t.integer "roster_min_members", default: 6, null: false
     t.string "rule_module_key", default: "wmgp", null: false
     t.json "ruleset_snapshot"
+    t.integer "serial_number", null: false
     t.string "slug", null: false
     t.date "started_at"
     t.string "status", default: "draft", null: false
+    t.integer "substitute_size", default: 1, null: false
     t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "serial_number"], name: "index_leagues_on_organizer_account_id_and_serial_number", unique: true
     t.index ["organizer_account_id"], name: "index_leagues_on_organizer_account_id"
     t.index ["slug"], name: "index_leagues_on_slug", unique: true
+  end
+
+  create_table "match_lineup_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "match_id", null: false
+    t.uuid "participant_id", null: false
+    t.string "role", null: false
+    t.string "side", null: false
+    t.integer "slot_number", null: false
+    t.uuid "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id", "participant_id"], name: "index_match_lineup_members_on_match_and_participant", unique: true
+    t.index ["match_id", "side", "role", "slot_number"], name: "index_match_lineup_members_on_slot", unique: true
+    t.index ["match_id"], name: "index_match_lineup_members_on_match_id"
+    t.index ["participant_id"], name: "index_match_lineup_members_on_participant_id"
+    t.index ["team_id"], name: "index_match_lineup_members_on_team_id"
   end
 
   create_table "match_results", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -138,6 +190,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.index ["login_id"], name: "index_organizer_accounts_on_login_id", unique: true
   end
 
+  create_table "organizer_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "admin_password_digest"
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.text "notes"
+    t.uuid "organizer_account_id", null: false
+    t.string "role", default: "staff", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "display_name"], name: "idx_on_organizer_account_id_display_name_ae93f913dc", unique: true
+    t.index ["organizer_account_id"], name: "index_organizer_members_on_organizer_account_id"
+    t.check_constraint "role::text = ANY (ARRAY['owner'::character varying, 'admin'::character varying, 'staff'::character varying]::text[])", name: "organizer_members_role_inclusion"
+  end
+
   create_table "participants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -155,6 +221,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
 
   create_table "phases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "bracket_enabled", default: false, null: false
+    t.integer "bracket_participant_count"
     t.datetime "created_at", null: false
     t.string "kind", null: false
     t.uuid "league_id", null: false
@@ -162,10 +229,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.integer "position", null: false
     t.string "ranking_rule_key"
     t.string "rule_module_key", default: "wmgp", null: false
+    t.uuid "stage_asset_id"
     t.datetime "updated_at", null: false
     t.index ["league_id", "name"], name: "index_phases_on_league_id_and_name", unique: true
     t.index ["league_id", "position"], name: "index_phases_on_league_id_and_position", unique: true
     t.index ["league_id"], name: "index_phases_on_league_id"
+    t.index ["stage_asset_id"], name: "index_phases_on_stage_asset_id"
   end
 
   create_table "rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -186,6 +255,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.index ["match_id"], name: "index_rounds_on_match_id"
     t.index ["winner_team_id"], name: "index_rounds_on_winner_team_id"
     t.check_constraint "result_status::text = ANY (ARRAY['partial'::character varying::text, 'confirmed'::character varying::text, 'void'::character varying::text])", name: "rounds_result_status_inclusion"
+  end
+
+  create_table "rule_templates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.json "definition", default: {}, null: false
+    t.text "description_en"
+    t.text "description_ja"
+    t.string "key", null: false
+    t.string "name_en", null: false
+    t.string "name_ja", null: false
+    t.uuid "organizer_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "key"], name: "index_rule_templates_on_organizer_account_id_and_key", unique: true
+    t.index ["organizer_account_id"], name: "index_rule_templates_on_organizer_account_id"
+  end
+
+  create_table "stage_assets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "advancement_rule", default: "none", null: false
+    t.integer "advancement_value"
+    t.integer "bracket_size"
+    t.datetime "created_at", null: false
+    t.text "description_en"
+    t.text "description_ja"
+    t.string "format", null: false
+    t.integer "group_count"
+    t.string "key", null: false
+    t.string "match_rule_key"
+    t.string "name_en", null: false
+    t.string "name_ja", null: false
+    t.uuid "organizer_account_id", null: false
+    t.string "participant_scope", default: "all_teams", null: false
+    t.string "phase_kind", default: "regular_season", null: false
+    t.string "ranking_rule_key"
+    t.integer "round_count"
+    t.datetime "updated_at", null: false
+    t.index ["organizer_account_id", "key"], name: "index_stage_assets_on_organizer_account_id_and_key", unique: true
+    t.index ["organizer_account_id"], name: "index_stage_assets_on_organizer_account_id"
+    t.check_constraint "advancement_rule::text = ANY (ARRAY['none'::character varying, 'top_n_per_group'::character varying, 'top_n_overall'::character varying, 'manual'::character varying]::text[])", name: "stage_assets_advancement_rule_inclusion"
+    t.check_constraint "format::text = ANY (ARRAY['round_robin'::character varying, 'swiss'::character varying, 'single_elimination'::character varying]::text[])", name: "stage_assets_format_inclusion"
+    t.check_constraint "participant_scope::text = ANY (ARRAY['all_teams'::character varying, 'qualified_teams'::character varying, 'manual_selection'::character varying]::text[])", name: "stage_assets_participant_scope_inclusion"
+    t.check_constraint "phase_kind::text = ANY (ARRAY['regular_season'::character varying, 'playoff'::character varying]::text[])", name: "stage_assets_phase_kind_inclusion"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -219,6 +331,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
     t.index ["phase_id"], name: "index_weeks_on_phase_id"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "blocks", "leagues"
   add_foreign_key "blocks", "phases"
   add_foreign_key "board_results", "participants", column: "away_participant_id"
@@ -227,6 +341,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   add_foreign_key "exports", "leagues"
   add_foreign_key "exports", "matches"
   add_foreign_key "leagues", "organizer_accounts"
+  add_foreign_key "match_lineup_members", "matches"
+  add_foreign_key "match_lineup_members", "participants"
+  add_foreign_key "match_lineup_members", "teams"
   add_foreign_key "match_results", "matches"
   add_foreign_key "match_results", "teams", column: "winner_team_id"
   add_foreign_key "matches", "blocks"
@@ -235,13 +352,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_081000) do
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
   add_foreign_key "matches", "weeks"
+  add_foreign_key "organizer_members", "organizer_accounts"
   add_foreign_key "participants", "leagues"
   add_foreign_key "participants", "teams"
   add_foreign_key "phases", "leagues"
+  add_foreign_key "phases", "stage_assets"
   add_foreign_key "rounds", "matches"
   add_foreign_key "rounds", "teams", column: "away_team_id"
   add_foreign_key "rounds", "teams", column: "home_team_id"
   add_foreign_key "rounds", "teams", column: "winner_team_id"
+  add_foreign_key "rule_templates", "organizer_accounts"
+  add_foreign_key "stage_assets", "organizer_accounts"
   add_foreign_key "teams", "blocks"
   add_foreign_key "teams", "leagues"
   add_foreign_key "weeks", "leagues"

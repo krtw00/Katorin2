@@ -1,7 +1,15 @@
 class OrganizerAccount < ApplicationRecord
   has_secure_password
+  attr_accessor :initial_admin_password, :initial_admin_password_confirmation
 
   has_many :leagues, dependent: :destroy
+  has_many :organizer_members, dependent: :destroy
+  has_many :rule_templates, dependent: :destroy
+  has_many :stage_assets, dependent: :destroy
+
+  after_create_commit :ensure_default_owner_member!
+  after_create_commit :ensure_default_rule_templates!
+  after_create_commit :ensure_default_stage_assets!
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :login_id, with: ->(login_id) { login_id.strip.downcase }
@@ -9,4 +17,80 @@ class OrganizerAccount < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :login_id, presence: true, uniqueness: true
   validates :display_name, presence: true
+  validates :initial_admin_password, presence: true, length: { minimum: 4 }, on: :create
+  validates :initial_admin_password, confirmation: true, on: :create, if: -> { initial_admin_password.present? }
+
+  def ensure_default_rule_templates!
+    return unless self.class.connection.data_source_exists?("rule_templates")
+
+    definition = RuleSets::Registry.fetch(RuleSets::Registry.default_key)
+    template = rule_templates.find_or_initialize_by(key: definition.fetch("key"))
+    return if template.persisted?
+
+    template.name_ja = definition.dig("name", "ja").to_s
+    template.name_en = definition.dig("name", "en").to_s
+    template.description_ja = definition.dig("description", "ja").to_s
+    template.description_en = definition.dig("description", "en").to_s
+    template.definition = definition.except("key", "name", "description")
+    template.active = true
+    template.save!
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+    nil
+  end
+
+  def ensure_default_stage_assets!
+    return unless self.class.connection.data_source_exists?("stage_assets")
+
+    definition = RuleSets::Registry.fetch(RuleSets::Registry.default_key)
+
+    Array(definition["stages"]).each do |stage|
+      key = "wmgp_#{stage.fetch('key')}"
+      template = stage_assets.find_or_initialize_by(key:)
+      next if template.persisted?
+
+      template.name_ja = stage.dig("name", "ja").to_s
+      template.name_en = stage.dig("name", "en").to_s
+      template.description_ja = definition.dig("description", "ja").to_s
+      template.description_en = definition.dig("description", "en").to_s
+      template.format = stage.fetch("format")
+      template.phase_kind = stage.fetch("format") == "single_elimination" ? "playoff" : "regular_season"
+      template.participant_scope = stage.fetch("participant_scope", "all_teams")
+      template.group_count = stage["group_count"]
+      template.round_count = stage["round_count"]
+      template.bracket_size = stage["bracket_size"]
+      template.advancement_rule = stage.fetch("advancement_rule", "none")
+      template.advancement_value = stage["advancement_value"]
+      template.ranking_rule_key = stage["ranking_rule_key"]
+      template.match_rule_key = stage["match_rule_key"]
+      template.active = true
+      template.save!
+    end
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+    nil
+  end
+
+  private
+
+  def ensure_default_owner_member!
+    return unless self.class.connection.data_source_exists?("organizer_members")
+    return if organizer_members.exists?
+
+    member_attributes = {
+      display_name:,
+      role: "owner",
+      active: true,
+    }
+
+    if initial_admin_password.present?
+      member_attributes[:admin_password] = initial_admin_password
+      member_attributes[:admin_password_confirmation] = initial_admin_password_confirmation
+    else
+      member_attributes[:admin_password_digest] = password_digest
+    end
+
+    organizer_members.create!(member_attributes)
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+    nil
+  end
+
 end

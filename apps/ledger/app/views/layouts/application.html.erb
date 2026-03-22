@@ -52,6 +52,7 @@
             <nav class="topnav">
               <%= nav_link_to t("nav.home"), dashboard_path %>
               <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
+              <%= nav_link_to t("nav.organizer_members"), organizer_members_path, active_paths: ["/organizer_members"] %>
             </nav>
 
             <div class="topbar__actions">
@@ -73,6 +74,7 @@
       <% end %>
 
       <main class="content <%= "content--auth" if auth_screen %>">
+        <%= yield :breadcrumbs %>
         <%= render "shared/flash" %>
         <%= yield %>
       </main>

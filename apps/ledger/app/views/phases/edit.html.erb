@@ -1,9 +1,20 @@
 <% page_title t("phases.title_edit") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name, league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("actions.edit"))
+]) %>
 
 <section class="page-header">
   <div>
     <p class="eyebrow"><%= t("phases.eyebrow") %></p>
     <h1><%= t("phases.title_edit") %></h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= button_to t("actions.delete"), league_phase_path(league_id: @league, id: @phase), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("phases.delete_confirm") } } %>
   </div>
 </section>
 

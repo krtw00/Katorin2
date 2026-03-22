@@ -1,0 +1,12 @@
+<% page_title t("stage_assets.title_new") %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("stage_assets.eyebrow") %></p>
+    <h1><%= t("stage_assets.title_new") %></h1>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "form", stage_asset: @stage_asset %>
+</section>

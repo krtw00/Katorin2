@@ -1,0 +1,97 @@
+<% page_title "#{@phase.name} #{t("phases.bracket")}" %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name, league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("phases.bracket"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("phases.eyebrow") %></p>
+    <h1><%= @phase.name %> / <%= t("phases.bracket") %></h1>
+    <p class="muted">
+      <%= translated_enum("enums.phase.kind", @phase.kind) %>
+      <% if @bracket[:participant_count].present? %>
+        / <%= t("phases.bracket_summary", participants: @bracket[:participant_count], bracket_size: @bracket[:bracket_size], byes: @bracket[:bye_count]) %>
+      <% end %>
+    </p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+  </div>
+</section>
+
+<section class="panel panel--bracket">
+  <% if @weeks.any? %>
+    <div class="bracket-toolbar">
+      <% @weeks.each do |week| %>
+        <div class="bracket-toolbar__item">
+          <strong><%= week.display_name %></strong>
+          <span class="muted"><%= t("phases.empty_slot_help") %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="bracket-canvas">
+      <svg class="bracket-svg" viewBox="0 0 <%= @bracket[:width] %> <%= @bracket[:height] %>" role="img" aria-label="<%= @phase.name %> bracket">
+        <defs>
+          <linearGradient id="bracket-bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f8fbfd" />
+            <stop offset="100%" stop-color="#eef5f8" />
+          </linearGradient>
+        </defs>
+
+        <rect x="0" y="0" width="<%= @bracket[:width] %>" height="<%= @bracket[:height] %>" rx="18" fill="url(#bracket-bg)" />
+
+        <% @bracket[:connectors].each do |connector| %>
+          <path d="M <%= connector[:x1] %> <%= connector[:y1] %> L <%= connector[:mx] %> <%= connector[:y1] %> L <%= connector[:mx] %> <%= connector[:y2] %> L <%= connector[:x2] %> <%= connector[:y2] %>" fill="none" stroke="#a9b6c5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        <% end %>
+
+        <% @bracket[:columns].each do |column| %>
+          <text x="<%= column[:x] + 8 %>" y="34" class="bracket-svg__heading"><%= column[:label] %></text>
+
+          <% column[:cards].each do |card| %>
+            <% if card[:empty] %>
+              <a href="<%= card[:create_path] %>">
+                <rect x="<%= card[:x] %>" y="<%= card[:y] %>" width="<%= card[:width] %>" height="<%= card[:height] %>" rx="16" class="bracket-svg__card bracket-svg__card--empty" />
+                <text x="<%= card[:x] + 16 %>" y="<%= card[:y] + 40 %>" class="bracket-svg__team"><%= card[:title] %></text>
+                <text x="<%= card[:x] + 16 %>" y="<%= card[:y] + 66 %>" class="bracket-svg__meta bracket-svg__meta--empty"><%= t("actions.create_match") %></text>
+              </a>
+              <% next %>
+            <% end %>
+
+            <a href="<%= card[:edit_path] %>">
+              <rect x="<%= card[:x] %>" y="<%= card[:y] %>" width="<%= card[:width] %>" height="<%= card[:height] %>" rx="16" class="bracket-svg__card" />
+              <text x="<%= card[:x] + 16 %>" y="<%= card[:y] + 28 %>" class="bracket-svg__team">
+                <% card[:home_lines].each_with_index do |line, index| %>
+                  <tspan x="<%= card[:x] + 16 %>" dy="<%= index.zero? ? 0 : 18 %>"><%= line %></tspan>
+                <% end %>
+              </text>
+              <text x="<%= card[:x] + 16 %>" y="<%= card[:y] + 58 %>" class="bracket-svg__vs">VS</text>
+              <text x="<%= card[:x] + 16 %>" y="<%= card[:y] + 76 %>" class="bracket-svg__team bracket-svg__team--away">
+                <% card[:away_lines].each_with_index do |line, index| %>
+                  <tspan x="<%= card[:x] + 16 %>" dy="<%= index.zero? ? 0 : 18 %>"><%= line %></tspan>
+                <% end %>
+              </text>
+              <% if card[:score].present? %>
+                <text x="<%= card[:x] + card[:width] - 16 %>" y="<%= card[:y] + 30 %>" text-anchor="end" class="bracket-svg__score"><%= card[:score] %></text>
+              <% end %>
+              <% if card[:meta].present? %>
+                <text x="<%= card[:x] + card[:width] - 16 %>" y="<%= card[:y] + 52 %>" text-anchor="end" class="bracket-svg__meta"><%= card[:meta] %></text>
+              <% end %>
+            </a>
+            <a href="<%= card[:result_path] %>">
+              <rect x="<%= card[:x] + card[:width] - 86 %>" y="<%= card[:y] + card[:height] - 28 %>" width="72" height="18" rx="9" class="bracket-svg__pill" />
+              <text x="<%= card[:x] + card[:width] - 50 %>" y="<%= card[:y] + card[:height] - 15 %>" text-anchor="middle" class="bracket-svg__pill-text"><%= t("actions.edit_result") %></text>
+            </a>
+          <% end %>
+        <% end %>
+      </svg>
+    </div>
+  <% else %>
+    <p class="empty-copy"><%= t("phases.empty_bracket") %></p>
+  <% end %>
+</section>

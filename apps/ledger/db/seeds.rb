@@ -35,7 +35,10 @@ def seed_bootstrap_organizer!
   organizer.display_name = display_name
   organizer.password = password
   organizer.password_confirmation = password
+  organizer.initial_admin_password = password
+  organizer.initial_admin_password_confirmation = password
   organizer.save!
+  organizer.ensure_default_rule_templates!
 
   organizer
 end
@@ -57,7 +60,10 @@ def seed_demo_organizer!
   organizer.display_name = display_name
   organizer.password = password
   organizer.password_confirmation = password
+  organizer.initial_admin_password = password if organizer.new_record?
+  organizer.initial_admin_password_confirmation = password if organizer.new_record?
   organizer.save!
+  organizer.ensure_default_rule_templates!
 
   organizer
 end
@@ -79,6 +85,35 @@ end
 
 def sanitize_slug(value)
   value.to_s.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-+|-+\z/, "").presence || "team"
+end
+
+def normalize_demo_participant_name(value)
+  value
+    .to_s
+    .gsub(/\A[[:alnum:]!]{1,8}\s*\|\s*/, "")
+    .gsub(/\s+/, " ")
+    .gsub(/\A!+\s+/, "")
+    .strip
+end
+
+def demo_participant_notes(raw_name:, normalized_name:, mdids:)
+  notes = []
+  notes << "Raw: #{raw_name}" if normalized_name != raw_name
+  notes << "MDID: #{mdids.join(', ')}" if mdids.present?
+  notes.join(" / ").presence
+end
+
+def demo_participant_display_name(team:, normalized_name:, player_index:)
+  base_name = normalized_name.presence || "Player #{player_index + 1}"
+  candidate = base_name
+  suffix = 2
+
+  while team.participants.where(display_name: candidate).exists?
+    candidate = "#{base_name} #{suffix}"
+    suffix += 1
+  end
+
+  candidate
 end
 
 def selected_rosters_for(spec, rosters)
@@ -192,12 +227,21 @@ def create_completed_match!(week:, home_team:, away_team:, random:, block: nil, 
     away_lineup = sample_lineup(away_team, random)
 
     board_winner_sides(round_winner_side, random).each_with_index do |winner_side, board_index|
+      home_game_wins, away_game_wins =
+        if winner_side == :home
+          random.rand < 0.5 ? [2, 0] : [2, 1]
+        else
+          random.rand < 0.5 ? [0, 2] : [1, 2]
+        end
+
       round.board_results.create!(
         board_number: board_index + 1,
         home_participant: home_lineup[board_index],
         away_participant: away_lineup[board_index],
         home_deck_name: "Deck #{board_index + 1}A",
         away_deck_name: "Deck #{board_index + 1}B",
+        home_game_wins: home_game_wins,
+        away_game_wins: away_game_wins,
         winner_side: winner_side.to_s,
         result_status: "confirmed"
       )
@@ -298,14 +342,18 @@ def build_demo_league!(organizer:, spec:, rosters:)
     )
 
     team_spec.fetch("players").each_with_index do |player_spec, player_index|
-      notes = player_spec.fetch("mdids", []).presence&.join(", ")
+      raw_name = player_spec.fetch("name")
+      normalized_name = normalize_demo_participant_name(raw_name)
+      mdids = player_spec.fetch("mdids", [])
+      display_name = demo_participant_display_name(team:, normalized_name:, player_index:)
+
       league.participants.create!(
         team:,
-        name: player_spec.fetch("name"),
-        display_name: player_spec.fetch("name"),
+        name: display_name,
+        display_name: display_name,
         position: player_index + 1,
         status: "active",
-        notes: notes.present? ? "MDID: #{notes}" : nil
+        notes: demo_participant_notes(raw_name:, normalized_name:, mdids:)
       )
     end
 
