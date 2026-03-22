@@ -1,11 +1,15 @@
 <% page_title @league.name %>
-<% ruleset = @league.effective_ruleset_snapshot %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name)
+]) %>
 
 <section class="page-header">
   <div>
     <p class="eyebrow"><%= t("leagues.eyebrow") %></p>
     <h1><%= @league.name %></h1>
-    <p class="muted"><%= t("leagues.meta", rule_module_key: localized_ruleset_text(ruleset["name"]).presence || @league.rule_module_key, number: @league.display_number) %></p>
+    <p class="muted"><%= t("leagues.meta", number: @league.display_number, status: translated_enum("enums.league.status", @league.status)) %></p>
   </div>
   <div class="page-actions">
     <%= link_to t("actions.edit"), edit_league_path(id: @league), class: "button" %>
@@ -39,29 +43,12 @@
   </article>
 
   <article class="panel">
-    <h2><%= t("leagues.ruleset.title") %></h2>
-    <p class="muted"><%= localized_ruleset_text(ruleset["description"]) %></p>
+    <h2><%= t("leagues.roster.title") %></h2>
     <ul class="compact-list">
-      <li><strong><%= t("leagues.ruleset.template") %>:</strong> <%= localized_ruleset_text(ruleset["name"]) %></li>
-      <li><strong><%= t("leagues.ruleset.key") %>:</strong> <code><%= @league.rule_module_key %></code></li>
-      <% roster_rules = ruleset["roster_rules"] || {} %>
-      <li>
-        <strong><%= t("leagues.ruleset.roster") %>:</strong>
-        <%= t("leagues.ruleset.roster_summary", min: roster_rules["min_members"], max: roster_rules["max_members"], lineup: roster_rules["lineup_size"], sub: roster_rules["substitute_size"]) %>
-      </li>
-      <li><strong><%= t("leagues.ruleset.default_match_rule_key") %>:</strong> <code><%= ruleset["default_match_rule_key"] %></code></li>
-    </ul>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("leagues.ruleset.stages") %></h2>
-    <ul class="compact-list">
-      <% Array(ruleset["stages"]).each do |stage| %>
-        <li>
-          <strong><%= localized_ruleset_text(stage["name"]) %></strong>
-          <span class="muted">/ <%= ruleset_stage_summary(stage) %></span>
-        </li>
-      <% end %>
+      <li><strong><%= t("leagues.roster.min_members") %>:</strong> <%= @league.roster_min_members %></li>
+      <li><strong><%= t("leagues.roster.max_members") %>:</strong> <%= @league.roster_max_members %></li>
+      <li><strong><%= t("leagues.roster.lineup_size") %>:</strong> <%= @league.lineup_size %></li>
+      <li><strong><%= t("leagues.roster.substitute_size") %>:</strong> <%= @league.substitute_size %></li>
     </ul>
   </article>
 

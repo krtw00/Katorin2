@@ -1,0 +1,72 @@
+<% page_title t("matches.lineup.title") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@match.league.name, league_path(id: @match.league)),
+  breadcrumb_item(@match.phase.name, league_phase_path(league_id: @match.league, id: @match.phase)),
+  breadcrumb_item(@match.week.display_name, phase_week_path(phase_id: @match.phase, id: @match.week)),
+  breadcrumb_item("#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}", match_path(id: @match)),
+  breadcrumb_item(t("matches.lineup.title"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("matches.eyebrow") %></p>
+    <h1><%= t("matches.lineup.title") %></h1>
+    <p class="muted"><%= @match.home_team.display_name %> <%= t("labels.vs") %> <%= @match.away_team.display_name %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+    <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="kv-list">
+    <div><span><%= t("matches.lineup.main_count") %></span><strong><%= @lineup_size %></strong></div>
+    <div><span><%= t("matches.lineup.substitute_count") %></span><strong><%= @substitute_size %></strong></div>
+  </div>
+</section>
+
+<section class="panel">
+  <%= form_with url: match_lineup_path(match_id: @match), method: :patch, scope: :lineup, class: "stack" do %>
+    <div class="dashboard-grid">
+      <article class="panel panel--nested">
+        <h2><%= @match.home_team.display_name %></h2>
+        <div class="stack stack--compact">
+          <% @home_entries.each_with_index do |entry, index| %>
+            <div class="field-grid">
+              <div class="field">
+                <label><%= entry[:role] == "main" ? t("matches.lineup.main_slot", number: entry[:slot_number]) : t("matches.lineup.sub_slot", number: entry[:slot_number]) %></label>
+                <%= hidden_field_tag "lineup[home][slots][#{index}][role]", entry[:role] %>
+                <%= hidden_field_tag "lineup[home][slots][#{index}][slot_number]", entry[:slot_number] %>
+                <%= select_tag "lineup[home][slots][#{index}][participant_id]", options_from_collection_for_select(@home_options, :id, :display_name, entry[:participant_id]), include_blank: t("matches.form.select_prompt") %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </article>
+
+      <article class="panel panel--nested">
+        <h2><%= @match.away_team.display_name %></h2>
+        <div class="stack stack--compact">
+          <% @away_entries.each_with_index do |entry, index| %>
+            <div class="field-grid">
+              <div class="field">
+                <label><%= entry[:role] == "main" ? t("matches.lineup.main_slot", number: entry[:slot_number]) : t("matches.lineup.sub_slot", number: entry[:slot_number]) %></label>
+                <%= hidden_field_tag "lineup[away][slots][#{index}][role]", entry[:role] %>
+                <%= hidden_field_tag "lineup[away][slots][#{index}][slot_number]", entry[:slot_number] %>
+                <%= select_tag "lineup[away][slots][#{index}][participant_id]", options_from_collection_for_select(@away_options, :id, :display_name, entry[:participant_id]), include_blank: t("matches.form.select_prompt") %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </article>
+    </div>
+
+    <div class="page-actions">
+      <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
+      <%= submit_tag t("matches.lineup.submit"), class: "button button--primary" %>
+    </div>
+  <% end %>
+</section>

@@ -1,4 +1,10 @@
 <% page_title @phase.name %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name)
+]) %>
 
 <section class="page-header">
   <div>
@@ -9,18 +15,35 @@
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
     <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% if @phase.bracket_enabled? %>
+      <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% end %>
     <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
     <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
   </div>
 </section>
 
 <section class="dashboard-grid">
+  <% if @phase.bracket_enabled? %>
+    <article class="panel">
+      <h2><%= t("phases.bracket") %></h2>
+      <div class="kv-list">
+        <div><span><%= t("phases.form.bracket_participant_count") %></span><strong><%= @phase.bracket_participant_count_effective || t("labels.none") %></strong></div>
+        <div><span><%= t("phases.bracket_size") %></span><strong><%= @phase.bracket_size_effective || t("labels.none") %></strong></div>
+        <div><span><%= t("phases.byes") %></span><strong><%= @phase.bracket_bye_count || 0 %></strong></div>
+      </div>
+      <div class="page-actions">
+        <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button button--primary" %>
+      </div>
+    </article>
+  <% end %>
+
   <article class="panel">
     <h2><%= t("phases.weeks") %></h2>
     <ul class="compact-list">
-      <% @weeks.each do |week| %>
-        <li>
-          <%= link_to week.name, phase_week_path(phase_id: @phase, id: week) %>
+        <% @weeks.each do |week| %>
+          <li>
+          <%= link_to week.display_name, phase_week_path(phase_id: @phase, id: week) %>
           <span class="muted">/ <%= t("phases.weeks_count", count: week.matches.size) %></span>
         </li>
       <% end %>

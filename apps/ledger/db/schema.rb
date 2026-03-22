@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_22_103001) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_22_133000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -97,18 +97,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_103001) do
   create_table "leagues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "ended_at"
+    t.integer "lineup_size", default: 3, null: false
     t.string "name", null: false
     t.uuid "organizer_account_id", null: false
+    t.integer "roster_max_members", default: 15, null: false
+    t.integer "roster_min_members", default: 6, null: false
     t.string "rule_module_key", default: "wmgp", null: false
     t.json "ruleset_snapshot"
     t.integer "serial_number", null: false
     t.string "slug", null: false
     t.date "started_at"
     t.string "status", default: "draft", null: false
+    t.integer "substitute_size", default: 1, null: false
     t.datetime "updated_at", null: false
     t.index ["organizer_account_id", "serial_number"], name: "index_leagues_on_organizer_account_id_and_serial_number", unique: true
     t.index ["organizer_account_id"], name: "index_leagues_on_organizer_account_id"
     t.index ["slug"], name: "index_leagues_on_slug", unique: true
+  end
+
+  create_table "match_lineup_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "match_id", null: false
+    t.uuid "participant_id", null: false
+    t.string "role", null: false
+    t.string "side", null: false
+    t.integer "slot_number", null: false
+    t.uuid "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id", "participant_id"], name: "index_match_lineup_members_on_match_and_participant", unique: true
+    t.index ["match_id", "side", "role", "slot_number"], name: "index_match_lineup_members_on_slot", unique: true
+    t.index ["match_id"], name: "index_match_lineup_members_on_match_id"
+    t.index ["participant_id"], name: "index_match_lineup_members_on_participant_id"
+    t.index ["team_id"], name: "index_match_lineup_members_on_team_id"
   end
 
   create_table "match_results", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -201,6 +221,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_103001) do
 
   create_table "phases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "bracket_enabled", default: false, null: false
+    t.integer "bracket_participant_count"
     t.datetime "created_at", null: false
     t.string "kind", null: false
     t.uuid "league_id", null: false
@@ -320,6 +341,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_103001) do
   add_foreign_key "exports", "leagues"
   add_foreign_key "exports", "matches"
   add_foreign_key "leagues", "organizer_accounts"
+  add_foreign_key "match_lineup_members", "matches"
+  add_foreign_key "match_lineup_members", "participants"
+  add_foreign_key "match_lineup_members", "teams"
   add_foreign_key "match_results", "matches"
   add_foreign_key "match_results", "teams", column: "winner_team_id"
   add_foreign_key "matches", "blocks"

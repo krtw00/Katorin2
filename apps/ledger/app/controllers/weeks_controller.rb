@@ -44,7 +44,7 @@ class WeeksController < ApplicationController
   end
 
   def week_params
-    params.require(:week).permit(:number, :name, :kind, :position, :locked_at)
+    params.require(:week).permit(:number, :kind, :position, :locked_at)
   end
 
   def next_position

@@ -1,4 +1,9 @@
 <% page_title t("leagues.title_new") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(t("leagues.title_new"))
+]) %>
 
 <section class="page-header">
   <div>

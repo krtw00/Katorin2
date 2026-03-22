@@ -1,14 +1,18 @@
 class PhasesController < ApplicationController
   before_action :set_league
-  before_action :set_phase, only: %i[show edit update destroy]
+  before_action :set_phase, only: %i[show edit update destroy bracket]
 
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)
     @blocks = @phase.blocks.includes(:teams, :matches).order(:position)
   end
 
+  def bracket
+    @weeks = @phase.weeks.includes(matches: %i[home_team away_team match_result]).order(:position)
+    @bracket = Brackets::PhaseLayout.new(@phase, routes: view_context).build
+  end
+
   def new
-    current_organizer_account.ensure_default_stage_assets!
     @phase = @league.phases.new(position: next_position)
   end
 
@@ -24,7 +28,6 @@ class PhasesController < ApplicationController
   end
 
   def edit
-    current_organizer_account.ensure_default_stage_assets!
   end
 
   def update
@@ -55,7 +58,7 @@ class PhasesController < ApplicationController
   end
 
   def phase_params
-    params.require(:phase).permit(:name, :stage_asset_id)
+    params.require(:phase).permit(:name, :kind, :bracket_participant_count)
   end
 
   def next_position

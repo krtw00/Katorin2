@@ -1,17 +1,24 @@
 <%= render "shared/errors", record: match %>
 
-<% form_url = match.persisted? ? match_path(id: match) : week_matches_path(week_id: week) %>
+<% form_url = if match.persisted?
+                match_path(id: match)
+              else
+                week_matches_path(week_id: week, stage_key: match.stage_key, bracket_slot: match.bracket_slot)
+              end %>
 <% form_method = match.persisted? ? :patch : :post %>
 
 <%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
+  <%= form.hidden_field :stage_key if match.stage_key.present? %>
+  <%= form.hidden_field :bracket_slot if match.bracket_slot.present? %>
+
   <div class="field-grid">
     <div class="field">
-      <%= form.label :home_team_id, t("matches.form.home_team") %>
+      <%= form.label :home_team_id, t("matches.form.team_a") %>
       <%= form.collection_select :home_team_id, @team_options, :id, :display_name, prompt: t("matches.form.select_prompt") %>
     </div>
 
     <div class="field">
-      <%= form.label :away_team_id, t("matches.form.away_team") %>
+      <%= form.label :away_team_id, t("matches.form.team_b") %>
       <%= form.collection_select :away_team_id, @team_options, :id, :display_name, prompt: t("matches.form.select_prompt") %>
     </div>
   </div>
@@ -22,13 +29,6 @@
       <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
     </div>
 
-    <div class="field">
-      <%= form.label :stage_key, t("matches.form.stage_key") %>
-      <%= form.text_field :stage_key %>
-    </div>
-  </div>
-
-  <div class="field-grid">
     <div class="field">
       <%= form.label :scheduled_on, t("matches.form.scheduled_on") %>
       <%= form.date_field :scheduled_on %>
@@ -42,25 +42,13 @@
 
   <div class="field-grid">
     <div class="field">
+      <%= form.label :judge_name, t("matches.form.judge_name") %>
+      <%= form.select :judge_name, options_for_select(@judge_options, match.judge_name), { include_blank: t("matches.form.select_prompt") } %>
+    </div>
+
+    <div class="field">
       <%= form.label :status, t("matches.form.status") %>
       <%= form.select :status, enum_options("enums.match.status", Match::STATUSES.values) %>
-    </div>
-
-    <div class="field">
-      <%= form.label :export_status, t("matches.form.export_status") %>
-      <%= form.select :export_status, enum_options("enums.match.export_status", Match::EXPORT_STATUSES.values) %>
-    </div>
-  </div>
-
-  <div class="field-grid">
-    <div class="field">
-      <%= form.label :judge_name, t("matches.form.judge_name") %>
-      <%= form.text_field :judge_name %>
-    </div>
-
-    <div class="field">
-      <%= form.label :bracket_slot, t("matches.form.bracket_slot") %>
-      <%= form.text_field :bracket_slot %>
     </div>
   </div>
 

@@ -13,7 +13,31 @@
     <div class="field">
       <%= form.label :status, t("leagues.form.status") %>
       <%= form.select :status, enum_options("enums.league.status", ["draft", "active", "completed"]) %>
-      <p class="ghost-note"><%= t("leagues.form.stage_asset_hint") %></p>
+      <p class="ghost-note"><%= t("leagues.form.identifier_hint") %></p>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :roster_min_members, t("leagues.form.roster_min_members") %>
+      <%= form.number_field :roster_min_members, min: 0 %>
+    </div>
+
+    <div class="field">
+      <%= form.label :roster_max_members, t("leagues.form.roster_max_members") %>
+      <%= form.number_field :roster_max_members, min: 1 %>
+    </div>
+  </div>
+
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :lineup_size, t("leagues.form.lineup_size") %>
+      <%= form.number_field :lineup_size, min: 1 %>
+    </div>
+
+    <div class="field">
+      <%= form.label :substitute_size, t("leagues.form.substitute_size") %>
+      <%= form.number_field :substitute_size, min: 0 %>
     </div>
   </div>
 

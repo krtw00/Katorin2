@@ -12,9 +12,12 @@ class League < ApplicationRecord
 
   before_validation :assign_serial_number, on: :create
   before_validation :assign_slug
+  before_validation :assign_rule_module_key
   before_validation :sync_ruleset_snapshot
 
   validates :name, :slug, :rule_module_key, :serial_number, presence: true
+  validates :roster_min_members, :roster_max_members, :lineup_size, :substitute_size, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validate :roster_config_consistent
   validates :slug, uniqueness: true
   validates :serial_number, numericality: { only_integer: true, greater_than: 0 }, uniqueness: { scope: :organizer_account_id }
   validate :rule_module_key_must_exist
@@ -52,6 +55,10 @@ class League < ApplicationRecord
 
   private
 
+  def assign_rule_module_key
+    self.rule_module_key = "wmgp" if rule_module_key.blank?
+  end
+
   def assign_serial_number
     return if serial_number.present? || organizer_account.blank?
 
@@ -78,5 +85,15 @@ class League < ApplicationRecord
     RuleSets::Registry.fetch(rule_module_key, organizer_account:)
   rescue KeyError
     errors.add(:rule_module_key, :inclusion)
+  end
+
+  def roster_config_consistent
+    return if roster_min_members.blank? || roster_max_members.blank? || lineup_size.blank? || substitute_size.blank?
+
+    errors.add(:roster_max_members, :greater_than_or_equal_to, count: roster_min_members) if roster_max_members < roster_min_members
+    errors.add(:lineup_size, :greater_than, count: 0) if lineup_size <= 0
+    return unless lineup_size + substitute_size > roster_max_members
+
+    errors.add(:substitute_size, :less_than_or_equal_to, count: roster_max_members - lineup_size)
   end
 end

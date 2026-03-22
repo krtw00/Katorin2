@@ -11,12 +11,11 @@ class LeaguesController < ApplicationController
   end
 
   def new
-    @league = current_organizer_account.leagues.new(rule_module_key: RuleSets::Registry.default_key, status: "draft")
+    @league = current_organizer_account.leagues.new(status: "draft", roster_min_members: 6, roster_max_members: 15, lineup_size: 3, substitute_size: 1)
   end
 
   def create
     @league = current_organizer_account.leagues.new(league_params)
-    @league.rule_module_key ||= RuleSets::Registry.default_key
 
     if @league.save
       redirect_to league_path(id: @league), notice: t("flash.leagues.created")
@@ -52,6 +51,6 @@ class LeaguesController < ApplicationController
   end
 
   def league_params
-    params.require(:league).permit(:name, :status, :started_at, :ended_at, :header_image)
+    params.require(:league).permit(:name, :status, :started_at, :ended_at, :header_image, :roster_min_members, :roster_max_members, :lineup_size, :substitute_size)
   end
 end

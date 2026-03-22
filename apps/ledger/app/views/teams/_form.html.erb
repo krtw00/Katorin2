@@ -30,6 +30,6 @@
 
   <div class="page-actions">
     <%= link_to t("actions.back"), team.persisted? ? league_team_path(league_id: league, id: team) : league_teams_path(league_id: league), class: "button" %>
-    <%= form.submit class: "button button--primary" %>
+    <%= form.submit(team.persisted? ? t("teams.submit_update") : t("teams.submit_create"), class: "button button--primary") %>
   </div>
 <% end %>

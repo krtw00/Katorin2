@@ -210,6 +210,45 @@ ol {
   padding: 0;
 }
 
+.breadcrumbs {
+  margin: 0 0 1rem;
+}
+
+.breadcrumbs__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.breadcrumbs__link {
+  color: var(--stone-soft);
+}
+
+.breadcrumbs__link:hover {
+  color: var(--text);
+}
+
+.breadcrumbs__current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.breadcrumbs__separator {
+  color: var(--line-strong);
+}
+
 .hero,
 .page-header,
 .dashboard-grid,
@@ -242,6 +281,10 @@ ol {
 .panel--danger {
   background: var(--surface);
   border-color: var(--line);
+}
+
+.panel--bracket {
+  overflow: hidden;
 }
 
 .page-header {
@@ -631,6 +674,100 @@ h2 {
 .record-list li + li,
 .compact-list li + li {
   margin-top: 0.8rem;
+}
+
+.bracket-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.bracket-toolbar__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 14rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--bg-deep);
+}
+
+.bracket-canvas {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #f8fbfd;
+}
+
+.bracket-svg {
+  display: block;
+  min-width: 100%;
+}
+
+.bracket-svg__heading {
+  font-size: 18px;
+  font-weight: 700;
+  fill: #1f2937;
+}
+
+.bracket-svg__card {
+  fill: #ffffff;
+  stroke: #d5dde7;
+  stroke-width: 1.5;
+}
+
+.bracket-svg__card--empty {
+  fill: rgba(255, 255, 255, 0.55);
+  stroke-dasharray: 8 6;
+}
+
+.bracket-svg__team {
+  font-size: 16px;
+  font-weight: 700;
+  fill: #111827;
+}
+
+.bracket-svg__team--away {
+  fill: #1f2937;
+}
+
+.bracket-svg__vs {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  fill: #6b7280;
+}
+
+.bracket-svg__score {
+  font-size: 20px;
+  font-weight: 800;
+  fill: #0f172a;
+}
+
+.bracket-svg__meta {
+  font-size: 11px;
+  fill: #6b7280;
+}
+
+.bracket-svg__meta--empty {
+  font-size: 12px;
+  font-weight: 700;
+  fill: #0f766e;
+}
+
+.bracket-svg__pill {
+  fill: #edf7f5;
+  stroke: rgba(13, 148, 136, 0.16);
+  stroke-width: 1;
+}
+
+.bracket-svg__pill-text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #0f766e;
 }
 
 .panel-header,
