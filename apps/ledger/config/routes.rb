@@ -34,6 +34,9 @@ Rails.application.routes.draw do
     resources :organizer_members, only: %i[index new create edit update destroy]
 
     resources :leagues, only: %i[index show new create edit update destroy] do
+      resource :team_import, only: %i[new create], controller: "team_imports" do
+        get :template
+      end
       resources :teams, only: %i[index show new create edit update destroy] do
         resources :participants, only: %i[new create edit update destroy]
       end

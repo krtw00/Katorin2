@@ -22,6 +22,8 @@ ja:
     create_league: リーグ作成
     manage_teams: チーム管理
     create_team: チーム追加
+    import_teams_csv: CSV一括登録
+    download_csv_template: CSVテンプレート
     create_participant: メンバー追加
     create_organizer_member: メンバー追加
     create_phase: フェーズ作成
@@ -47,6 +49,8 @@ ja:
     score: スコア
     decision: 判定
     bracket: ブラケット
+    format: 形式
+    template: テンプレート
     kind: 種別
     number: 番号
     board: 卓
@@ -81,6 +85,8 @@ ja:
       updated: チームを更新しました。
       deleted: チームを削除しました。
       delete_blocked: このチームは対戦で使われているため削除できません。公開後の離脱は状態をドロップに変更してください。
+    team_imports:
+      created: "CSVを取り込みました。チーム %{created_teams}件追加 / %{updated_teams}件更新、メンバー %{created_participants}件追加 / %{updated_participants}件更新。"
     participants:
       created: メンバーを作成しました。
       updated: メンバーを更新しました。
@@ -210,6 +216,51 @@ ja:
       notes: メモ
     delete_confirm: このメンバーを削除します。よろしいですか？
     delete_hint: 試合結果で未使用のメンバーだけ削除できます。
+  team_imports:
+    eyebrow: CSV一括登録
+    lede: 1行=1メンバーのCSVで、チームとメンバーをまとめて作成または更新します。
+    title_new: "%{league} にCSVを取り込む"
+    form:
+      file: CSVファイル
+      file_hint: UTF-8 の CSV をアップロードしてください。同名チーム・同名メンバーは更新として扱います。
+      submit: CSVを取り込む
+    template:
+      title: テンプレート
+      description: テンプレートのヘッダーは表示中の言語に合わせて切り替わります。サンプル2行を残しているので、上書きしながら使えます。
+      headers:
+        team_name: チーム名
+        team_status: チーム状態
+        block_name: ブロック名
+        team_notes: チームメモ
+        member_name: メンバー名
+        member_position: メンバー順
+        member_status: メンバー状態
+        member_notes: メンバーメモ
+      columns:
+        team_name: 必須。チーム名です。
+        team_status: 任意。active / inactive / withdrawn、または 有効 / 非表示 / 辞退。
+        block_name: 任意。既存ブロック名をそのまま指定します。
+        team_notes: 任意。チームメモです。
+        member_name: 必須。メンバー名です。
+        member_position: 任意。並び順です。未入力なら末尾に自動採番します。
+        member_status: 任意。active / inactive、または 有効 / 非表示。
+        member_notes: 任意。メンバーメモです。
+    errors:
+      invalid_csv: CSVの読み込みに失敗しました。ファイル形式を確認してください。
+      missing_headers: "必須ヘッダーが不足しています: %{headers}"
+      unknown_headers: "不明なヘッダーがあります: %{headers}"
+      duplicate_headers: "同じ意味のヘッダーが重複しています: %{headers}"
+      blank_team_name: "%{line}行目: team_name は必須です。"
+      blank_member_name: "%{line}行目: member_name は必須です。"
+      invalid_team_status: "%{line}行目: team_status の値 `%{value}` は使えません。"
+      invalid_member_status: "%{line}行目: member_status の値 `%{value}` は使えません。"
+      invalid_member_position: "%{line}行目: member_position は 1 以上の整数で入力してください。"
+      unknown_block: "チーム `%{team_name}`: block_name `%{block_name}` に一致するブロックがありません。"
+      conflicting_team_field: "%{line}行目: 同じ team_name で `%{field}` の値が揃っていません。"
+      conflicting_member_field: "%{line}行目: チーム `%{team_name}` のメンバー `%{member_name}` で `%{field}` の値が揃っていません。"
+      ambiguous_team: "チーム `%{team_name}` は既存データで重複しているため、一括更新できません。"
+      ambiguous_member: "チーム `%{team_name}` のメンバー `%{member_name}` は既存データで重複しているため、一括更新できません。"
+      record_invalid: "保存に失敗しました: %{detail}"
   organizer_members:
     eyebrow: 運営メンバー
     lede: 運営チームの担当者一覧を管理します。
@@ -231,7 +282,7 @@ ja:
       not_configured: パス未設定
   stage_assets:
     eyebrow: ステージアセット
-    lede: 予選や決勝など、ステージ単位で使い回す設定を管理します。
+    lede: 大会フェーズごとに使い回す設定を管理します。
     title_index: ステージアセット
     title_new: ステージアセット作成
     title_edit: ステージアセット編集
@@ -313,16 +364,17 @@ ja:
     empty_bracket: ブラケット用の週がまだありません。
     empty_slot: "枠 %{number}"
     empty_slot_help: 空欄をクリックして対戦を作成
-    meta: "%{kind} / ブラケット: %{bracket}"
     weeks: 週一覧
     blocks: ブロック
     weeks_count: "対戦数 %{count}"
     form:
+      stage_asset: テンプレート
+      stage_asset_hint: フェーズの形式や既定設定をここで選びます。
       name: フェーズ名
-      name_placeholder: 未入力なら種別から自動で補います
+      name_placeholder: 未入力ならテンプレート名を使います
       name_hint: 固有の表示名が必要な場合だけ入力してください。
       bracket_participant_count: 参加数
-      bracket_participant_count_hint: playoff のときだけ使います。任意人数を入れると、表示側では必要な分だけ BYE を補います。
+      bracket_participant_count_hint: ブラケット形式のフェーズで使います。任意人数を入れると、表示側では必要な分だけ BYE を補います。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
@@ -350,7 +402,7 @@ ja:
     title_new: 週作成
     title_edit: 週編集
     reference: "Week %{number}"
-    meta: "番号: %{number} / 種別: %{kind}"
+    meta: "番号: %{number} / フェーズ: %{phase}"
     matches: 対戦カード
     unassigned_block: 未設定ブロック
     empty_matches: 対戦カードがまだありません。
@@ -359,7 +411,6 @@ ja:
     form:
       number: 週番号
       number_hint: Week 番号から自動表示します。
-      kind: 種別
       position: 並び順
       locked_at: ロック日時
   matches:
