@@ -9,6 +9,7 @@ en:
   nav:
     home: Home
     leagues: Leagues
+    stage_assets: Phase templates
     organizer_members: Members
     login: Log in
     logout: Log out
@@ -24,6 +25,7 @@ en:
     create_team: Add team
     import_teams_csv: Bulk import CSV
     download_csv_template: CSV template
+    create_stage_asset: Create phase template
     create_participant: Add member
     create_organizer_member: Add member
     create_phase: Create phase
@@ -97,6 +99,11 @@ en:
       updated: Phase updated.
       deleted: Phase deleted.
       delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
+    stage_assets:
+      created: Phase template created.
+      updated: Phase template updated.
+      deleted: Phase template deleted.
+      delete_blocked: Phase templates in use cannot be deleted.
     blocks:
       created: Block created.
       updated: Block updated.
@@ -286,6 +293,7 @@ en:
     title_index: Stage assets
     title_new: Create stage asset
     title_edit: Edit stage asset
+    delete_confirm: Delete this phase template?
     sections:
       basic: Basics
       structure: Stage structure
@@ -315,44 +323,6 @@ en:
       advancement_value: Advancement value
       ranking_rule_key: Ranking rule key
       match_rule_key: Match rule key
-  rule_templates:
-    eyebrow: Rulesets
-    lede: Create reusable competition rulesets for league setup.
-    title_index: Rulesets
-    title_new: Create ruleset
-    title_edit: Edit ruleset
-    sections:
-      basic: Basics
-      roster: Roster rules
-      stage: "Stage %{number}"
-      advanced: Advanced settings
-    form:
-      key: Key
-      name_ja: Name (Japanese)
-      name_en: Name (English)
-      name_hint: Use the Japanese name as the main label and add English as the support label for overseas volunteers. English can be left blank.
-      description_ja: Description (Japanese)
-      description_en: Description (English)
-      active: Active
-      roster_min_members: Minimum members
-      roster_max_members: Maximum members
-      roster_lineup_size: Lineup size
-      roster_substitute_size: Substitute size
-      roster_updates: Roster update rule
-      default_match_rule_key: Default match rule
-      stage2_enabled: Enable stage 2
-      stage_key: Stage key
-      stage_name_ja: Stage name (Japanese)
-      stage_name_en: Stage name (English)
-      stage_format: Format
-      stage_participant_scope: Participant scope
-      stage_group_count: Group count
-      stage_round_count: Round count
-      stage_bracket_size: Bracket size
-      stage_advancement_rule: Advancement rule
-      stage_advancement_value: Advancement value
-      stage_ranking_rule_key: Ranking rule key
-      stage_match_rule_key: Match rule key
   phases:
     eyebrow: Phase
     title_new: Create phase
@@ -374,7 +344,7 @@ en:
       name_placeholder: Leave blank to use the template name
       name_hint: Only enter this when you need a custom display name.
       bracket_participant_count: Participant count
-      bracket_participant_count_hint: Used for bracket-style phases. Any non-power-of-two count is shown with automatic byes.
+      bracket_participant_count_hint: Use this for tournament-style phases. Enter the number of teams, and any empty slots will be shown as automatic byes.
       position_hint: Order is assigned automatically on create. Reordering should be handled separately.
       kind: Kind
       position: Position
@@ -550,14 +520,12 @@ en:
       organizer_member: Organizer member
       phase: Phase
       stage_asset: Stage asset
-      rule_template: Ruleset
       week: Week
       match: Match
     attributes:
       league:
         name: League name
         serial_number: League number
-        rule_module_key: Ruleset
         status: Status
         started_at: Start date
         ended_at: End date
@@ -591,13 +559,6 @@ en:
         phase_kind: Phase kind
         participant_scope: Participant scope
         advancement_rule: Advancement rule
-      rule_template:
-        key: Key
-        name_ja: Name (Japanese)
-        name_en: Name (English)
-        description_ja: Description (Japanese)
-        description_en: Description (English)
-        active: Active
       week:
         number: Week number
         name: Name

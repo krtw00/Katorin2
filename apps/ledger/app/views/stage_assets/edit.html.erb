@@ -5,6 +5,12 @@
     <p class="eyebrow"><%= t("stage_assets.eyebrow") %></p>
     <h1><%= t("stage_assets.title_edit") %></h1>
   </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), stage_assets_path, class: "button" %>
+    <% if @stage_asset.destroyable? %>
+      <%= button_to t("actions.delete"), stage_asset_path(id: @stage_asset), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("stage_assets.delete_confirm") } } %>
+    <% end %>
+  </div>
 </section>
 
 <section class="panel">

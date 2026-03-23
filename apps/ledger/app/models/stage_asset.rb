@@ -28,6 +28,14 @@ class StageAsset < ApplicationRecord
     format == "single_elimination"
   end
 
+  def destroyable?
+    phases.none?
+  end
+
+  def destroy_for_management!
+    destroy!
+  end
+
   private
 
   def fill_defaults

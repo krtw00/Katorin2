@@ -3,10 +3,8 @@ class OrganizerAccount < ApplicationRecord
 
   has_many :leagues, dependent: :destroy
   has_many :organizer_members, dependent: :destroy
-  has_many :rule_templates, dependent: :destroy
   has_many :stage_assets, dependent: :destroy
 
-  after_create_commit :ensure_default_rule_templates!
   after_create_commit :ensure_default_stage_assets!
 
   normalizes :email, with: ->(email) { email.strip.downcase }
@@ -18,24 +16,6 @@ class OrganizerAccount < ApplicationRecord
 
   def setup_required?
     organizer_members.none?
-  end
-
-  def ensure_default_rule_templates!
-    return unless self.class.connection.data_source_exists?("rule_templates")
-
-    definition = RuleSets::Registry.fetch(RuleSets::Registry.default_key)
-    template = rule_templates.find_or_initialize_by(key: definition.fetch("key"))
-    return if template.persisted?
-
-    template.name_ja = definition.dig("name", "ja").to_s
-    template.name_en = definition.dig("name", "en").to_s
-    template.description_ja = definition.dig("description", "ja").to_s
-    template.description_en = definition.dig("description", "en").to_s
-    template.definition = definition.except("key", "name", "description")
-    template.active = true
-    template.save!
-  rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
-    nil
   end
 
   def ensure_default_stage_assets!

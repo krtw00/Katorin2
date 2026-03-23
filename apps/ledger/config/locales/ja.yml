@@ -9,6 +9,7 @@ ja:
   nav:
     home: ホーム
     leagues: リーグ
+    stage_assets: フェーズテンプレート
     organizer_members: 運営メンバー
     login: ログイン
     logout: ログアウト
@@ -24,6 +25,7 @@ ja:
     create_team: チーム追加
     import_teams_csv: CSV一括登録
     download_csv_template: CSVテンプレート
+    create_stage_asset: フェーズテンプレート作成
     create_participant: メンバー追加
     create_organizer_member: メンバー追加
     create_phase: フェーズ作成
@@ -97,6 +99,11 @@ ja:
       updated: フェーズを更新しました。
       deleted: フェーズを削除しました。
       delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
+    stage_assets:
+      created: フェーズテンプレートを作成しました。
+      updated: フェーズテンプレートを更新しました。
+      deleted: フェーズテンプレートを削除しました。
+      delete_blocked: 使用中のフェーズテンプレートは削除できません。
     blocks:
       created: ブロックを作成しました。
       updated: ブロックを更新しました。
@@ -286,6 +293,7 @@ ja:
     title_index: ステージアセット
     title_new: ステージアセット作成
     title_edit: ステージアセット編集
+    delete_confirm: このフェーズテンプレートを削除します。よろしいですか？
     sections:
       basic: 基本情報
       structure: ステージ構成
@@ -315,44 +323,6 @@ ja:
       advancement_value: 勝ち上がり人数
       ranking_rule_key: 順位ルールキー
       match_rule_key: 対戦ルールキー
-  rule_templates:
-    eyebrow: ルールセット
-    lede: 大会形式のテンプレートを作成し、リーグ作成時に再利用します。
-    title_index: ルールセット
-    title_new: ルールセット作成
-    title_edit: ルールセット編集
-    sections:
-      basic: 基本情報
-      roster: チーム編成
-      stage: "ステージ %{number}"
-      advanced: 詳細設定
-    form:
-      key: キー
-      name_ja: 名前（日本語）
-      name_en: 名前（英語）
-      name_hint: 日本語名を主に使い、英語名は海外ボランティア向けの補助表示として入れます。英語が未入力でも保存できます。
-      description_ja: 説明（日本語）
-      description_en: 説明（英語）
-      active: 有効化
-      roster_min_members: 最小人数
-      roster_max_members: 最大人数
-      roster_lineup_size: 出場人数
-      roster_substitute_size: サブ人数
-      roster_updates: ロスター更新ルール
-      default_match_rule_key: 既定の対戦ルール
-      stage2_enabled: 第2ステージを使う
-      stage_key: ステージキー
-      stage_name_ja: ステージ名（日本語）
-      stage_name_en: ステージ名（英語）
-      stage_format: 形式
-      stage_participant_scope: 参加対象
-      stage_group_count: ブロック数
-      stage_round_count: 回戦数
-      stage_bracket_size: ブラケット人数
-      stage_advancement_rule: 勝ち上がり
-      stage_advancement_value: 勝ち上がり人数
-      stage_ranking_rule_key: 順位ルールキー
-      stage_match_rule_key: 対戦ルールキー
   phases:
     eyebrow: フェーズ
     title_new: フェーズ作成
@@ -374,7 +344,7 @@ ja:
       name_placeholder: 未入力ならテンプレート名を使います
       name_hint: 固有の表示名が必要な場合だけ入力してください。
       bracket_participant_count: 参加数
-      bracket_participant_count_hint: ブラケット形式のフェーズで使います。任意人数を入れると、表示側では必要な分だけ BYE を補います。
+      bracket_participant_count_hint: トーナメント形式のフェーズで使います。参加チーム数を入れると、空いた枠は自動で不戦勝を入れて表示します。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
@@ -550,14 +520,12 @@ ja:
       organizer_member: 運営メンバー
       phase: フェーズ
       stage_asset: ステージアセット
-      rule_template: ルールセット
       week: 週
       match: 対戦カード
     attributes:
       league:
         name: リーグ名
         serial_number: 大会番号
-        rule_module_key: ルールセット
         status: 状態
         started_at: 開始日
         ended_at: 終了日
@@ -591,13 +559,6 @@ ja:
         phase_kind: フェーズ種別
         participant_scope: 参加対象
         advancement_rule: 勝ち上がり
-      rule_template:
-        key: キー
-        name_ja: 名前（日本語）
-        name_en: 名前（英語）
-        description_ja: 説明（日本語）
-        description_en: 説明（英語）
-        active: 有効化
       week:
         number: 週番号
         name: 表示名

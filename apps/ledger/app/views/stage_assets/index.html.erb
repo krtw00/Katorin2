@@ -23,6 +23,9 @@
           <%= status_badge translated_enum("rulesets.formats", stage_asset.format), "neutral" %>
           <%= status_badge stage_asset.active? ? t("labels.on") : t("labels.off"), stage_asset.active? ? "success" : "neutral" %>
           <%= link_to t("actions.edit"), edit_stage_asset_path(id: stage_asset), class: "button" %>
+          <% if stage_asset.destroyable? %>
+            <%= button_to t("actions.delete"), stage_asset_path(id: stage_asset), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("stage_assets.delete_confirm") } } %>
+          <% end %>
         </div>
       </div>
 
