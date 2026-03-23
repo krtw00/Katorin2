@@ -8,7 +8,7 @@
 <% form_method = match.persisted? ? :patch : :post %>
 <% show_block_field = @selected_block.present? || @block_options.any? || match.block.present? %>
 
-<%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
+<%= form_with model: match, url: form_url, method: form_method, class: "stack", data: { controller: "match-team-selector" } do |form| %>
   <%= form.hidden_field :stage_key if match.stage_key.present? %>
   <%= form.hidden_field :bracket_slot if match.bracket_slot.present? %>
   <%= hidden_field_tag :block_id, @selected_block.id if @selected_block.present? && !match.persisted? %>
@@ -16,12 +16,22 @@
   <div class="field-grid">
     <div class="field">
       <%= form.label :home_team_id, t("matches.form.team_a") %>
-      <%= form.collection_select :home_team_id, @team_options, :id, :display_name, prompt: t("matches.form.select_prompt") %>
+      <%= form.collection_select :home_team_id,
+                                 @team_options,
+                                 :id,
+                                 :display_name,
+                                 { prompt: t("matches.form.select_prompt") },
+                                 data: { match_team_selector_target: "home", action: "change->match-team-selector#sync" } %>
     </div>
 
     <div class="field">
       <%= form.label :away_team_id, t("matches.form.team_b") %>
-      <%= form.collection_select :away_team_id, @team_options, :id, :display_name, prompt: t("matches.form.select_prompt") %>
+      <%= form.collection_select :away_team_id,
+                                 @team_options,
+                                 :id,
+                                 :display_name,
+                                 { prompt: t("matches.form.select_prompt") },
+                                 data: { match_team_selector_target: "away", action: "change->match-team-selector#sync" } %>
     </div>
   </div>
 

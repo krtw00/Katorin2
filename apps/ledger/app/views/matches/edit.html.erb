@@ -2,10 +2,10 @@
 <% set_breadcrumbs([
   breadcrumb_item(t("nav.home"), dashboard_path),
   breadcrumb_item(t("leagues.title_index"), leagues_path),
-  breadcrumb_item(@week.league.name, league_path(id: @week.league)),
-  breadcrumb_item(@week.phase.name, league_phase_path(league_id: @week.league, id: @week.phase)),
-  breadcrumb_item(@week.display_name, phase_week_path(phase_id: @week.phase, id: @week)),
-  breadcrumb_item("#{@match.home_team.display_name} #{t("labels.vs")} #{@match.away_team.display_name}", match_path(id: @match)),
+  breadcrumb_item(@match.league.name, league_path(id: @match.league)),
+  breadcrumb_item(@match.phase.name, league_phase_path(league_id: @match.league, id: @match.phase)),
+  breadcrumb_item(match_parent_label(@match), match_parent_path(@match)),
+  breadcrumb_item(match_title_text(@match), match_path(id: @match)),
   breadcrumb_item(t("actions.edit"))
 ]) %>
 
@@ -16,8 +16,12 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
-    <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
-    <%= button_to t("actions.delete"), match_path(id: @match), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("matches.delete_confirm") } } %>
+    <% if @match.ready_for_result_entry? %>
+      <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
+    <% end %>
+    <% if @match.destroyable? %>
+      <%= button_to t("actions.delete"), match_path(id: @match), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("matches.delete_confirm") } } %>
+    <% end %>
   </div>
 </section>
 

@@ -122,7 +122,7 @@ module MatchExports
         #{player_strip_svg(264, left_players)}
         #{player_strip_svg(632, right_players)}
 
-        <text x="512" y="336" text-anchor="middle" class="base title">VS</text>
+        <text x="512" y="336" text-anchor="middle" class="base title">#{escape(I18n.t("labels.vs"))}</text>
       SVG
     end
 
@@ -230,7 +230,7 @@ module MatchExports
     end
 
     def week_label
-      match.week.display_name
+      match.bracket_match? ? match.bracket_slot_label : match.week.display_name
     end
 
     def scheduled_label

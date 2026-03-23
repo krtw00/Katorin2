@@ -6,10 +6,11 @@ class PhasesController < ApplicationController
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)
     @blocks = @phase.blocks.includes(:teams, :matches).order(:position)
+    @bracket_rounds = @phase.bracket_rounds.includes(:matches).order(:position)
   end
 
   def bracket
-    @weeks = @phase.weeks.includes(matches: %i[home_team away_team match_result]).order(:position)
+    @bracket_rounds = @phase.bracket_rounds.includes(matches: %i[home_team away_team match_result home_source_match away_source_match]).order(:position)
     @bracket = Brackets::PhaseLayout.new(@phase, routes: view_context).build
   end
 
@@ -44,10 +45,14 @@ class PhasesController < ApplicationController
 
   def update_bracket
     if @phase.update(bracket_phase_params)
+      Brackets::PhaseBuilder.new(@phase).rebuild!
       redirect_to league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.updated")
     else
       render :edit_bracket, status: :unprocessable_entity
     end
+  rescue Brackets::PhaseBuilder::LockedError => error
+    flash.now[:alert] = error.message
+    render :edit_bracket, status: :unprocessable_entity
   end
 
   def destroy
@@ -74,7 +79,7 @@ class PhasesController < ApplicationController
   end
 
   def bracket_phase_params
-    params.require(:phase).permit(:bracket_participant_count)
+    params.require(:phase).permit(:bracket_participant_count, :bracket_lane_count, :third_place_match_enabled)
   end
 
   def next_position

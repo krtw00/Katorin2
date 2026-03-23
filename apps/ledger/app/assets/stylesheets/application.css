@@ -728,15 +728,18 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 1rem;
   background: #f8fbfd;
+  padding: 1rem;
 }
 
 .bracket-svg {
   display: block;
-  min-width: 100%;
+  width: max-content;
+  min-width: auto;
+  height: auto;
 }
 
 .bracket-svg__heading {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   fill: #1f2937;
 }
@@ -753,7 +756,7 @@ h2 {
 }
 
 .bracket-svg__team {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
   fill: #111827;
 }
@@ -763,20 +766,20 @@ h2 {
 }
 
 .bracket-svg__vs {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   fill: #6b7280;
 }
 
 .bracket-svg__score {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
   fill: #0f172a;
 }
 
 .bracket-svg__meta {
-  font-size: 11px;
+  font-size: 13px;
   fill: #6b7280;
 }
 
@@ -793,7 +796,7 @@ h2 {
 }
 
 .bracket-svg__pill-text {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   fill: #0f766e;
 }

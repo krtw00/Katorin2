@@ -1,5 +1,6 @@
 class MatchLineupsController < ApplicationController
   before_action :set_match
+  before_action :ensure_match_ready!
 
   def edit
     set_lineup_state
@@ -24,7 +25,7 @@ class MatchLineupsController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:match_id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :home_team, :away_team, :match_lineup_members, home_team: :participants, away_team: :participants)
+      .includes(:league, :phase, :week, :bracket_round, :home_team, :away_team, :match_lineup_members, home_team: :participants, away_team: :participants)
       .first!
   end
 
@@ -69,5 +70,11 @@ class MatchLineupsController < ApplicationController
         slot_number: slot_payload.fetch("slot_number")
       )
     end
+  end
+
+  def ensure_match_ready!
+    return if @match.ready_for_result_entry?
+
+    redirect_to edit_match_path(id: @match), alert: t("flash.matches.assign_teams_first")
   end
 end

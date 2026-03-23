@@ -35,7 +35,7 @@ ja:
     view_bracket: ブラケット
   labels:
     locale: 言語
-    vs: vs
+    vs: 対
     win: 勝ち
     lose: 負け
     none: "-"
@@ -100,6 +100,8 @@ ja:
       deleted: フェーズを削除しました。
       delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
       bracket_not_available: このフェーズではトーナメント人数を設定できません。
+      bracket_structure_locked: 既存の週・ブロック・対戦があるためトーナメント構造を作り直せません。新しいフェーズで作成してください。
+      regular_management_only: このフェーズではブロック管理と週管理は使いません。
     stage_assets:
       created: フェーズテンプレートを作成しました。
       updated: フェーズテンプレートを更新しました。
@@ -120,6 +122,8 @@ ja:
       updated: 対戦カードを更新しました。
       deleted: 対戦カードを削除しました。
       delete_blocked: この対戦は結果が入っているため削除できません。削除できるのは下書きか未結果入力の対戦だけです。
+      assign_teams_first: 先に対戦チームを設定してください。
+      bracket_progress_locked: 次のカードに結果が入っているため、勝ち上がり先を更新できません。
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
@@ -334,12 +338,19 @@ ja:
     byes: BYE数
     bracket_summary: "参加 %{participants} / 枠 %{bracket_size} / BYE %{byes}"
     bracket_setup_hint: トーナメント人数はフェーズ作成後に設定します。未設定でも先にフェーズは作成できます。
-    empty_bracket: ブラケット用の週がまだありません。
+    empty_bracket: トーナメント表はまだありません。
     empty_slot: "枠 %{number}"
-    empty_slot_help: 空欄をクリックして対戦を作成
+    rounds: トーナメント進行
+    waiting_winner: "%{match} の勝者"
+    waiting_loser: "%{match} の敗者"
+    seed_placeholder: "枠 %{slot}"
+    round_region: "区画%{count}"
     weeks: 週一覧
     blocks: ブロック
     weeks_count: "対戦数 %{count}"
+    errors:
+      invalid_region_count: この人数では初期区画数を分けられません。1区画、2区画、4区画で収まる組み合わせにしてください。
+      third_place_requires_semifinal: 3位決定戦は4チーム以上のトーナメントで使ってください。
     form:
       stage_asset: テンプレート
       stage_asset_hint: フェーズの形式や既定設定をここで選びます。
@@ -348,7 +359,11 @@ ja:
       name_hint: 固有の表示名が必要な場合だけ入力してください。
       bracket_participant_count: 参加数
       bracket_participant_count_hint: トーナメント形式のフェーズで使います。参加チーム数を入れると、空いた枠は自動で不戦勝を入れて表示します。
+      bracket_region_count: 初期区画数
+      bracket_region_count_hint: 1 は通常のトーナメントです。2 や 4 にすると、初期区画ごとに勝ち上がって中央の決勝へ合流します。
       bracket_participant_count_later_hint: トーナメント人数は作成後に設定できます。
+      third_place_match_enabled: 3位決定戦を作る
+      third_place_match_enabled_hint: 準決勝の敗者同士で3位決定戦を自動生成します。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
@@ -405,6 +420,9 @@ ja:
     delete_hint: 結果が入っていない対戦だけ削除できます。下書きリーグではオーダーごと削除します。
     round_wins: ラウンド勝数
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
+    errors:
+      teams_required: 対戦チームを設定してください。
+      teams_locked_after_result: 結果が入っている対戦はチームを変更できません。
     lineup:
       title: オーダー登録
       short: オーダー
@@ -432,7 +450,7 @@ ja:
       away_member: "卓 %{number} アウェイ"
       winner: "卓 %{number} 勝者"
       no_winner: 未選択
-      board_summary: "卓 %{number}: %{home} vs %{away} / 勝者 %{winner}"
+      board_summary: "卓 %{number}: %{home} 対 %{away} / 勝者 %{winner}"
       board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
     form:
       home_team: ホームチーム
@@ -450,6 +468,12 @@ ja:
       room_id: ルームID
       spectator_room_id: 観戦ID
       notes: メモ
+  bracket_rounds:
+    final: 決勝
+    semifinal: 準決勝
+    quarterfinal: 準々決勝
+    third_place: 3位決定戦
+    top: "ベスト%{count}"
   sessions:
     title: ログイン
     lede: 運営アカウントでログインします。
@@ -585,6 +609,9 @@ ja:
         room_id: ルームID
         spectator_room_id: 観戦ID
     errors:
+      messages:
+        record_invalid: "保存に失敗しました: %{errors}"
+        taken: はすでに使われています。
       models:
         board_result:
           attributes:
