@@ -1,0 +1,12 @@
+{
+  "name": "ledger-manual-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture-ledger-manual.mjs",
+    "render:tex": "node render-ledger-manual.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}
