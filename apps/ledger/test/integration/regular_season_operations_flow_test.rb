@@ -1,3 +1,5 @@
+require "rack/test"
+require "stringio"
 require "test_helper"
 
 class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
@@ -7,16 +9,20 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       display_name: "E2E Organizer",
       login_id: "e2e-admin",
       email: "e2e-admin@example.com",
-      password: @password,
-      password_confirmation: @password,
-      initial_admin_password: "1234",
-      initial_admin_password_confirmation: "1234"
+      password: @password
+    )
+    @organizer_account.organizer_members.create!(
+      display_name: "Owner",
+      role: "owner",
+      active: true,
+      admin_password: "1234"
     )
     @judge = @organizer_account.organizer_members.create!(
       display_name: "Judge One",
       role: "staff",
       active: true
     )
+    @organizer_account.ensure_default_stage_assets!
   end
 
   test "organizer can run the regular season flow end to end" do
@@ -38,7 +44,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     post league_phases_path(locale: :ja, league_id: league), params: {
       phase: {
         name: "予選 1",
-        kind: "regular_season",
+        stage_asset_id: regular_stage_asset.id,
         bracket_participant_count: ""
       }
     }
@@ -60,7 +66,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     post phase_weeks_path(locale: :ja, phase_id: phase), params: {
       week: {
         number: 1,
-        kind: "regular",
         position: 1,
         locked_at: ""
       }
@@ -107,7 +112,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
     match.reload
     assert_equal "confirmed", match.status
-    assert_equal "pending", match.export_status
     assert_equal team_a, match.match_result.winner_team
     assert_equal [2, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
     assert_equal 3, match.rounds.count
@@ -117,6 +121,285 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "image/png", response.media_type
     assert_includes response.headers["Content-Disposition"], "attachment"
+  end
+
+  test "organizer can create a tournament phase before setting participant count" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Tournament League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+
+    assert_difference("Phase.count", 1) do
+      post league_phases_path(locale: :ja, league_id: league), params: {
+        phase: {
+          name: "決勝ステージ",
+          stage_asset_id: final_stage_asset.id,
+          bracket_participant_count: 0
+        }
+      }
+    end
+    phase = league.phases.order(:created_at).last
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_nil phase.bracket_participant_count
+    assert phase.bracket_enabled?
+  end
+
+  test "organizer can create another tournament phase with an auto-suffixed default name" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Tournament Naming League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+
+    assert_difference("Phase.count", 1) do
+      post league_phases_path(locale: :ja, league_id: league), params: {
+        phase: {
+          name: "",
+          stage_asset_id: final_stage_asset.id
+        }
+      }
+    end
+
+    phase = league.phases.order(:created_at).last
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_equal "決勝ステージ 2", phase.name
+  end
+
+  test "organizer can run a tournament bracket with manual seeding and automatic advancement" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Bracket League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Bracket Alpha")
+    team_b = create_team_record_with_members!(league:, name: "Bracket Beta")
+    team_c = create_team_record_with_members!(league:, name: "Bracket Gamma")
+
+    patch update_bracket_league_phase_path(locale: :ja, league_id: league, id: phase), params: {
+      phase: {
+        bracket_participant_count: 3
+      }
+    }
+
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    phase.reload
+    assert_equal 2, phase.bracket_rounds.count
+    assert_equal 3, phase.matches.where.not(bracket_round_id: nil).count
+
+    first_round = phase.bracket_rounds.order(:position).first
+    final_round = phase.bracket_rounds.order(:position).last
+    semifinal_one = first_round.matches.find_by!(slot_number: 1)
+    semifinal_two = first_round.matches.find_by!(slot_number: 2)
+    final_match = final_round.matches.find_by!(slot_number: 1)
+
+    patch match_path(locale: :ja, id: semifinal_one), params: {
+      match: {
+        home_team_id: team_a.id,
+        away_team_id: team_b.id,
+        status: "scheduled"
+      }
+    }
+    assert_redirected_to match_path(locale: :ja, id: semifinal_one)
+
+    patch match_path(locale: :ja, id: semifinal_two), params: {
+      match: {
+        home_team_id: team_c.id,
+        away_team_id: "",
+        status: "scheduled"
+      }
+    }
+    assert_redirected_to match_path(locale: :ja, id: semifinal_two)
+    semifinal_two.reload
+    assert_equal "confirmed", semifinal_two.status
+    assert_equal team_c, semifinal_two.match_result.winner_team
+    assert_equal team_c, final_match.reload.away_team
+
+    patch match_result_entry_path(locale: :ja, match_id: semifinal_one), params: {
+      result_entry: {
+        rounds: result_payload(semifinal_one.reload)
+      }
+    }
+
+    assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: semifinal_one)
+    semifinal_one.reload
+    final_match.reload
+    assert_equal team_a, semifinal_one.match_result.winner_team
+    assert_equal team_a, final_match.home_team
+
+    get bracket_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_includes response.body, "Bracket Alpha"
+    assert_includes response.body, "Bracket Gamma"
+  end
+
+  test "organizer can delete a draft tournament phase with generated bracket matches" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Tournament Delete League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1, bracket_participant_count: 4)
+    Brackets::PhaseBuilder.new(phase).rebuild!
+
+    assert_difference("Phase.count", -1) do
+      delete league_phase_path(locale: :ja, league_id: league, id: phase)
+    end
+
+    assert_redirected_to league_path(locale: :ja, id: league)
+    assert_equal 0, league.matches.count
+    assert_equal 0, league.reload.phases.count
+  end
+
+  test "organizer edits tournament size from dedicated bracket settings" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Bracket Settings League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+
+    get edit_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_no_match(/name="phase\[bracket_participant_count\]"/, response.body)
+
+    get edit_bracket_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_match(/name="phase\[bracket_participant_count\]"/, response.body)
+    assert_match(/name="phase\[bracket_lane_count\]"/, response.body)
+    assert_match(/name="phase\[third_place_match_enabled\]"/, response.body)
+    assert_no_match(/name="phase\[stage_asset_id\]"/, response.body)
+
+    patch update_bracket_league_phase_path(locale: :ja, league_id: league, id: phase), params: {
+      phase: {
+        bracket_participant_count: 8,
+        bracket_lane_count: 4,
+        third_place_match_enabled: "1"
+      }
+    }
+
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_equal 8, phase.reload.bracket_participant_count
+    assert_equal 4, phase.bracket_lane_count
+    assert phase.third_place_match_enabled?
+  end
+
+  test "organizer can run a four region bracket with a third place match" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "WMGP Final League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+    teams = Array.new(8) { |index| create_team_record_with_members!(league:, name: "Final Seed #{index + 1}") }
+
+    patch update_bracket_league_phase_path(locale: :ja, league_id: league, id: phase), params: {
+      phase: {
+        bracket_participant_count: 8,
+        bracket_lane_count: 4,
+        third_place_match_enabled: "1"
+      }
+    }
+
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    phase.reload
+    assert_equal 7, phase.bracket_rounds.count
+    assert_equal 8, phase.matches.where.not(bracket_round_id: nil).count
+
+    region_rounds = (1..4).map do |region_number|
+      phase.bracket_rounds.find_by!(round_kind: "lane", lane_number: region_number, position: 1)
+    end
+    semifinal_round = phase.bracket_rounds.find_by!(round_kind: "championship", position: 2)
+    final_round = phase.bracket_rounds.find_by!(round_kind: "championship", position: 3)
+    third_place_round = phase.bracket_rounds.find_by!(round_kind: "third_place")
+
+    region_matches = region_rounds.map { |round| round.matches.first }
+    semifinal_matches = semifinal_round.matches.order(:slot_number).to_a
+    final_match = final_round.matches.first
+    third_place_match = third_place_round.matches.first
+
+    [
+      [region_matches[0], teams[0], teams[7]],
+      [region_matches[1], teams[3], teams[4]],
+      [region_matches[2], teams[1], teams[6]],
+      [region_matches[3], teams[2], teams[5]],
+    ].each do |match, home_team, away_team|
+      patch match_path(locale: :ja, id: match), params: {
+        match: {
+          home_team_id: home_team.id,
+          away_team_id: away_team.id,
+          status: "scheduled"
+        }
+      }
+      assert_redirected_to match_path(locale: :ja, id: match)
+    end
+
+    region_matches.each do |match|
+      patch match_result_entry_path(locale: :ja, match_id: match), params: {
+        result_entry: {
+          rounds: result_payload(match.reload)
+        }
+      }
+      assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+    end
+
+    semifinal_matches.each(&:reload)
+    assert_equal teams[0], semifinal_matches[0].home_team
+    assert_equal teams[3], semifinal_matches[0].away_team
+    assert_equal teams[1], semifinal_matches[1].home_team
+    assert_equal teams[2], semifinal_matches[1].away_team
+
+    semifinal_matches.each do |match|
+      patch match_result_entry_path(locale: :ja, match_id: match), params: {
+        result_entry: {
+          rounds: result_payload(match.reload)
+        }
+      }
+      assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+    end
+
+    assert_equal teams[0], final_match.reload.home_team
+    assert_equal teams[1], final_match.away_team
+    assert_equal teams[3], third_place_match.reload.home_team
+    assert_equal teams[2], third_place_match.away_team
+
+    get bracket_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_includes response.body, "3位決定戦"
+    assert_includes response.body, "区画1"
+    assert_includes response.body, "区画4"
   end
 
   test "organizer can delete draft management data but cannot delete the last privileged member" do
@@ -130,19 +413,18 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       lineup_size: 3,
       substitute_size: 1
     )
-    phase = league.phases.create!(name: "予選 1", kind: "regular_season", position: 1)
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
     block = phase.blocks.create!(league:, name: "Block A", position: 1)
     team = league.teams.create!(display_name: "Delete Team", block:, status: "active")
     participant = team.participants.create!(league:, display_name: "Delete Member", status: "active")
-    week = phase.weeks.create!(league:, number: 1, kind: "regular", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
     match = week.matches.create!(
       league:,
       phase:,
       block:,
       home_team: team,
       away_team: league.teams.create!(display_name: "Delete Team 2", block:, status: "active"),
-      status: "draft",
-      export_status: "pending"
+      status: "draft"
     )
     staff = @organizer_account.organizer_members.create!(display_name: "Delete Staff", role: "staff", active: true)
 
@@ -193,6 +475,162 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to leagues_path(locale: :ja)
   end
 
+  test "organizer can import teams and members from csv and download the template" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "CSV Import League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+
+    get new_league_team_import_path(locale: :ja, league_id: league)
+    assert_response :success
+
+    get template_league_team_import_path(locale: :ja, league_id: league)
+    assert_response :success
+    assert_equal "text/csv", response.media_type
+    assert_includes response.body, "チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ"
+    assert_includes response.body, "サンプルチームA,有効,Block A,テンプレート例,山田 太郎,1,有効,リーダー"
+
+    get template_league_team_import_path(locale: :en, league_id: league)
+    assert_response :success
+    assert_includes response.body, "Team name,Team status,Block name,Team notes,Member name,Member order,Member status,Member notes"
+    assert_includes response.body, "Sample Team A,active,Block A,template example,Taro Yamada,1,active,captain"
+
+    csv = <<~CSV
+      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,active,Block A,Alpha memo,Alice,1,active,Captain
+      Team Alpha,active,Block A,Alpha memo,Bob,2,active,
+      Team Beta,withdrawn,,Beta memo,Carol,1,inactive,Reserve
+    CSV
+
+    assert_difference("Team.count", 2) do
+      assert_difference("Participant.count", 3) do
+        post league_team_import_path(locale: :ja, league_id: league), params: {
+          team_import: {
+            file: uploaded_csv(csv)
+          }
+        }
+      end
+    end
+    assert_redirected_to league_teams_path(locale: :ja, league_id: league)
+
+    team_alpha = league.teams.find_by!(display_name: "Team Alpha")
+    team_beta = league.teams.find_by!(display_name: "Team Beta")
+    assert_equal block, team_alpha.block
+    assert_equal "withdrawn", team_beta.status
+    assert_equal "Alpha memo", team_alpha.notes
+    assert_equal "Beta memo", team_beta.notes
+    assert_equal [1, 2], team_alpha.participants.order(:position).pluck(:position)
+    assert_equal %w[Alice Bob], team_alpha.participants.order(:position).pluck(:display_name)
+    assert_equal "inactive", team_beta.participants.find_by!(display_name: "Carol").status
+
+    update_csv = <<~CSV
+      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,inactive,Block A,Alpha updated,Alice,3,inactive,Updated captain
+      Team Gamma,active,,Gamma memo,Dave,1,active,New member
+    CSV
+
+    assert_difference("Team.count", 1) do
+      assert_difference("Participant.count", 1) do
+        post league_team_import_path(locale: :ja, league_id: league), params: {
+          team_import: {
+            file: uploaded_csv(update_csv)
+          }
+        }
+      end
+    end
+    assert_redirected_to league_teams_path(locale: :ja, league_id: league)
+
+    team_alpha.reload
+    alice = team_alpha.participants.find_by!(display_name: "Alice")
+    assert_equal "inactive", team_alpha.status
+    assert_equal "Alpha updated", team_alpha.notes
+    assert_equal 3, alice.position
+    assert_equal "inactive", alice.status
+    assert_equal "Updated captain", alice.notes
+    assert_equal "Gamma memo", league.teams.find_by!(display_name: "Team Gamma").notes
+  end
+
+  test "organizer can open shared template management screens" do
+    login_as!(@organizer_account, password: @password)
+
+    get stage_assets_path(locale: :ja)
+    assert_response :success
+  end
+
+  test "organizer can delete phase templates even after a phase is created from them" do
+    login_as!(@organizer_account, password: @password)
+
+    custom_stage_asset = @organizer_account.stage_assets.create!(
+      key: "custom_stage",
+      name_ja: "カスタムフェーズ",
+      name_en: "Custom Phase",
+      format: "round_robin",
+      participant_scope: "all_teams",
+      advancement_rule: "none",
+      active: true
+    )
+
+    assert_difference("StageAsset.count", -1) do
+      delete stage_asset_path(locale: :ja, id: custom_stage_asset)
+    end
+    assert_redirected_to stage_assets_path(locale: :ja)
+
+    league = @organizer_account.leagues.create!(
+      name: "In Use League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+
+    assert_difference("StageAsset.count", -1) do
+      delete stage_asset_path(locale: :ja, id: phase.stage_asset)
+    end
+    assert_redirected_to stage_assets_path(locale: :ja)
+    phase.reload
+    assert_nil phase.stage_asset
+  end
+
+  test "registration redirects to initial organizer setup and creates first owner" do
+    post registration_path(locale: :ja), params: {
+      organizer_account: {
+        display_name: "New Organizer",
+        login_id: "new-organizer",
+        email: "new-organizer@example.com",
+        password: "password"
+      }
+    }
+
+    organizer_account = OrganizerAccount.find_by!(login_id: "new-organizer")
+    assert_redirected_to new_organizer_setup_path(locale: :ja)
+    assert_equal 0, organizer_account.organizer_members.count
+
+    follow_redirect!
+    assert_response :success
+
+    post organizer_setup_path(locale: :ja), params: {
+      organizer_member: {
+        display_name: "root",
+        admin_password: "1234"
+      }
+    }
+
+    assert_redirected_to dashboard_path(locale: :ja)
+    organizer_account.reload
+    assert_equal 1, organizer_account.organizer_members.count
+    assert_equal "owner", organizer_account.organizer_members.first.role
+  end
+
   private
 
   def create_team_with_members!(league:, block:, name:)
@@ -220,6 +658,21 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     end
 
     team.reload
+  end
+
+  def create_team_record_with_members!(league:, name:)
+    team = league.teams.create!(display_name: name, status: "active")
+
+    4.times do |index|
+      team.participants.create!(
+        league: league,
+        display_name: "#{name} Player #{index + 1}",
+        position: index + 1,
+        status: "active"
+      )
+    end
+
+    team
   end
 
   def lineup_slots_payload(participants)
@@ -261,5 +714,22 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       "home_game_wins" => score[0],
       "away_game_wins" => score[1]
     }
+  end
+
+  def uploaded_csv(content, filename: "team-import.csv")
+    Rack::Test::UploadedFile.new(
+      StringIO.new(content),
+      "text/csv",
+      false,
+      original_filename: filename
+    )
+  end
+
+  def regular_stage_asset
+    @organizer_account.stage_assets.find_by!(format: "round_robin")
+  end
+
+  def final_stage_asset
+    @organizer_account.stage_assets.find_by!(format: "single_elimination")
   end
 end

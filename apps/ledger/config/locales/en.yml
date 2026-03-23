@@ -9,6 +9,7 @@ en:
   nav:
     home: Home
     leagues: Leagues
+    stage_assets: Phase templates
     organizer_members: Members
     login: Log in
     logout: Log out
@@ -22,6 +23,9 @@ en:
     create_league: Create league
     manage_teams: Manage teams
     create_team: Add team
+    import_teams_csv: Bulk import CSV
+    download_csv_template: CSV template
+    create_stage_asset: Create phase template
     create_participant: Add member
     create_organizer_member: Add member
     create_phase: Create phase
@@ -47,6 +51,8 @@ en:
     score: Score
     decision: Decision
     bracket: Bracket
+    format: Format
+    template: Template
     kind: Kind
     number: Number
     board: Board
@@ -62,6 +68,10 @@ en:
     registrations:
       created: Account created.
       invalid: Please review the registration details.
+    organizer_setup:
+      required: Please finish the initial setup first.
+      completed: Initial admin user created.
+      invalid: Please review the setup details.
     organizer_members:
       created: Organizer member created.
       updated: Organizer member updated.
@@ -77,6 +87,8 @@ en:
       updated: Team updated.
       deleted: Team deleted.
       delete_blocked: This team cannot be deleted because it is already used in matches. Use the dropped status after publishing.
+    team_imports:
+      created: "CSV imported. Teams: %{created_teams} added / %{updated_teams} updated. Members: %{created_participants} added / %{updated_participants} updated."
     participants:
       created: Member created.
       updated: Member updated.
@@ -87,6 +99,14 @@ en:
       updated: Phase updated.
       deleted: Phase deleted.
       delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
+      bracket_not_available: Tournament size is not available for this phase.
+      bracket_structure_locked: The tournament structure cannot be rebuilt because this phase already has legacy weeks, blocks, or matches. Create a new phase instead.
+      regular_management_only: Blocks and weeks are not used in this phase.
+    stage_assets:
+      created: Phase template created.
+      updated: Phase template updated.
+      deleted: Phase template deleted.
+      delete_blocked: Phase templates in use cannot be deleted.
     blocks:
       created: Block created.
       updated: Block updated.
@@ -102,6 +122,8 @@ en:
       updated: Match updated.
       deleted: Match deleted.
       delete_blocked: This match cannot be deleted because it already has results. Only draft or result-empty matches can be deleted.
+      assign_teams_first: Set both teams before entering results.
+      bracket_progress_locked: The next bracket card already has a result, so advancement cannot be updated.
       lineup_updated: Order updated.
       results_updated: Match result updated.
       export_failed: "Failed to generate match image: %{message}"
@@ -125,16 +147,13 @@ en:
     metrics:
       today_matches: Today's matches
       result_pending: Result pending
-      stale_exports: Export refresh needed
     sections:
       today_matches: Today's matches
       result_pending: Result pending
-      stale_exports: Export refresh queue
       leagues: Leagues
     empty:
       today_matches: No matches scheduled for today.
       result_pending: No pending results.
-      stale_exports: No exports waiting for refresh.
       leagues: No leagues yet.
   leagues:
     eyebrow: League
@@ -209,6 +228,51 @@ en:
       notes: Notes
     delete_confirm: Delete this member?
     delete_hint: Only members not used in results can be deleted.
+  team_imports:
+    eyebrow: Bulk import
+    lede: Create or update teams and members from a one-row-per-member CSV.
+    title_new: "Import CSV into %{league}"
+    form:
+      file: CSV file
+      file_hint: Upload a UTF-8 CSV file. Existing teams and members with the same names are updated.
+      submit: Import CSV
+    template:
+      title: Template
+      description: Template headers follow the current UI language. Two sample rows are included so you can overwrite them directly.
+      headers:
+        team_name: Team name
+        team_status: Team status
+        block_name: Block name
+        team_notes: Team notes
+        member_name: Member name
+        member_position: Member order
+        member_status: Member status
+        member_notes: Member notes
+      columns:
+        team_name: Required. Team display name.
+        team_status: Optional. active / inactive / withdrawn, or the localized labels.
+        block_name: Optional. Existing block name.
+        team_notes: Optional. Team notes.
+        member_name: Required. Member display name.
+        member_position: Optional. Display order. If blank, the next available position is assigned.
+        member_status: Optional. active / inactive, or the localized labels.
+        member_notes: Optional. Member notes.
+    errors:
+      invalid_csv: Could not read the CSV file. Check the file format.
+      missing_headers: "Missing required headers: %{headers}"
+      unknown_headers: "Unknown headers found: %{headers}"
+      duplicate_headers: "Duplicate logical headers found: %{headers}"
+      blank_team_name: "Line %{line}: team_name is required."
+      blank_member_name: "Line %{line}: member_name is required."
+      invalid_team_status: "Line %{line}: `%{value}` is not a valid team_status."
+      invalid_member_status: "Line %{line}: `%{value}` is not a valid member_status."
+      invalid_member_position: "Line %{line}: member_position must be an integer greater than or equal to 1."
+      unknown_block: "Team `%{team_name}`: no block matches `%{block_name}`."
+      conflicting_team_field: "Line %{line}: `%{field}` does not match other rows with the same team_name."
+      conflicting_member_field: "Line %{line}: `%{field}` does not match other rows for member `%{member_name}` in team `%{team_name}`."
+      ambiguous_team: "Team `%{team_name}` exists multiple times, so bulk update cannot continue."
+      ambiguous_member: "Member `%{member_name}` in team `%{team_name}` exists multiple times, so bulk update cannot continue."
+      record_invalid: "Save failed: %{detail}"
   organizer_members:
     eyebrow: Organizer members
     lede: Manage the operators who run this organizer account.
@@ -224,17 +288,17 @@ en:
       active: Active
       notes: Notes
       admin_password: Admin password
-      admin_password_confirmation: Confirm admin password
       admin_password_hint: Owner and admin members need an admin password for privileged actions. Staff can leave this blank.
     password_status:
       configured: Password set
       not_configured: Password missing
   stage_assets:
     eyebrow: Stage assets
-    lede: Manage reusable settings for each stage such as regular season or finals.
+    lede: Manage reusable settings for each competition phase.
     title_index: Stage assets
     title_new: Create stage asset
     title_edit: Edit stage asset
+    delete_confirm: Delete this phase template?
     sections:
       basic: Basics
       structure: Stage structure
@@ -264,65 +328,42 @@ en:
       advancement_value: Advancement value
       ranking_rule_key: Ranking rule key
       match_rule_key: Match rule key
-  rule_templates:
-    eyebrow: Rulesets
-    lede: Create reusable competition rulesets for league setup.
-    title_index: Rulesets
-    title_new: Create ruleset
-    title_edit: Edit ruleset
-    sections:
-      basic: Basics
-      roster: Roster rules
-      stage: "Stage %{number}"
-      advanced: Advanced settings
-    form:
-      key: Key
-      name_ja: Name (Japanese)
-      name_en: Name (English)
-      name_hint: Use the Japanese name as the main label and add English as the support label for overseas volunteers. English can be left blank.
-      description_ja: Description (Japanese)
-      description_en: Description (English)
-      active: Active
-      roster_min_members: Minimum members
-      roster_max_members: Maximum members
-      roster_lineup_size: Lineup size
-      roster_substitute_size: Substitute size
-      roster_updates: Roster update rule
-      default_match_rule_key: Default match rule
-      stage2_enabled: Enable stage 2
-      stage_key: Stage key
-      stage_name_ja: Stage name (Japanese)
-      stage_name_en: Stage name (English)
-      stage_format: Format
-      stage_participant_scope: Participant scope
-      stage_group_count: Group count
-      stage_round_count: Round count
-      stage_bracket_size: Bracket size
-      stage_advancement_rule: Advancement rule
-      stage_advancement_value: Advancement value
-      stage_ranking_rule_key: Ranking rule key
-      stage_match_rule_key: Match rule key
   phases:
     eyebrow: Phase
     title_new: Create phase
     title_edit: Edit phase
+    title_edit_bracket: Set tournament size
     bracket: Bracket
     bracket_size: Bracket size
     byes: Byes
     bracket_summary: "Participants %{participants} / size %{bracket_size} / byes %{byes}"
-    empty_bracket: No bracket weeks yet.
+    bracket_setup_hint: Set the tournament size after creating the phase. You can create the phase first and configure it afterward.
+    empty_bracket: No tournament bracket yet.
     empty_slot: "Slot %{number}"
-    empty_slot_help: Click an empty slot to create a match
-    meta: "%{kind} / bracket: %{bracket}"
+    rounds: Tournament progress
+    waiting_winner: "Winner of %{match}"
+    waiting_loser: "Loser of %{match}"
+    seed_placeholder: "Slot %{slot}"
+    round_region: "Region %{count}"
     weeks: Weeks
     blocks: Blocks
     weeks_count: "Matches: %{count}"
+    errors:
+      invalid_region_count: This participant count cannot be split into the selected initial region count.
+      third_place_requires_semifinal: Third-place matches require a tournament with at least four participants.
     form:
+      stage_asset: Template
+      stage_asset_hint: Choose the phase format and its default settings here.
       name: Phase name
-      name_placeholder: Leave blank to generate it from the phase kind
+      name_placeholder: Leave blank to use the template name
       name_hint: Only enter this when you need a custom display name.
       bracket_participant_count: Participant count
-      bracket_participant_count_hint: Used only for playoff phases. Any non-power-of-two count is shown with automatic byes.
+      bracket_participant_count_hint: Use this for tournament-style phases. Enter the number of teams, and any empty slots will be shown as automatic byes.
+      bracket_region_count: Initial region count
+      bracket_region_count_hint: 1 is a standard bracket. 2 or 4 split the opening bracket into regions that merge into the final.
+      bracket_participant_count_later_hint: You can set the tournament size after creating the phase.
+      third_place_match_enabled: Create a third-place match
+      third_place_match_enabled_hint: Automatically creates a third-place match between the semifinal losers.
       position_hint: Order is assigned automatically on create. Reordering should be handled separately.
       kind: Kind
       position: Position
@@ -334,6 +375,9 @@ en:
       playoff: Playoff
     delete_confirm: Delete this phase?
     delete_hint: Only phases without weeks or matches can be deleted.
+    actions:
+      configure_bracket: Set tournament size
+      save_bracket: Save tournament size
   blocks:
     eyebrow: Block
     title_new: Create block
@@ -350,7 +394,7 @@ en:
     title_new: Create week
     title_edit: Edit week
     reference: "Week %{number}"
-    meta: "Number: %{number} / Kind: %{kind}"
+    meta: "Number: %{number} / Phase: %{phase}"
     matches: Matches
     unassigned_block: Unassigned block
     empty_matches: No matches yet.
@@ -359,7 +403,6 @@ en:
     form:
       number: Week number
       number_hint: The label is generated automatically from the week number.
-      kind: Kind
       position: Position
       locked_at: Locked at
   matches:
@@ -377,8 +420,9 @@ en:
     delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
     rounds_count: "Round %{number} / %{status} / Boards: %{count}"
-    export_stale: Export stale
-    export_pending: Export pending
+    errors:
+      teams_required: Set both teams for this match.
+      teams_locked_after_result: Teams cannot be changed after a result has been recorded.
     lineup:
       title: Order
       short: Order
@@ -419,12 +463,17 @@ en:
       scheduled_on: Match date
       scheduled_time: Start time
       status: Match status
-      export_status: Export status
       judge_name: Judge name
       bracket_slot: Bracket slot
       room_id: Room ID
       spectator_room_id: Spectator ID
       notes: Notes
+  bracket_rounds:
+    final: Final
+    semifinal: Semifinal
+    quarterfinal: Quarterfinal
+    third_place: Third-place match
+    top: "Top %{count}"
   sessions:
     title: Log in
     lede: Sign in with your organizer account.
@@ -435,17 +484,20 @@ en:
     register: Sign up
   registrations:
     title: Sign up
-    lede: Create a new organizer account.
+    lede: Create a new organizer account. Add the first admin user after the first login.
     display_name: Organization name
     login_id: Account ID
     email: Email
     password: Password
-    password_confirmation: Confirm password
-    initial_admin_password: Initial admin password
-    initial_admin_password_confirmation: Confirm initial admin password
     submit: Create account
     have_account: Already have an account?
     back_to_login: Back to log in
+  organizer_setup:
+    title: Initial setup
+    lede: Create the first admin user for this organizer account.
+    display_name: Admin member name
+    admin_password: Admin password
+    submit: Complete setup
   enums:
     league:
       status:
@@ -473,11 +525,6 @@ en:
         result_pending: Result pending
         confirmed: Confirmed
         cancelled: Cancelled
-      export_status:
-        not_required: Not required
-        pending: Pending
-        generated: Generated
-        stale: Stale
     match_result:
       result_status:
         partial: Partial
@@ -504,14 +551,12 @@ en:
       organizer_member: Organizer member
       phase: Phase
       stage_asset: Stage asset
-      rule_template: Ruleset
       week: Week
       match: Match
     attributes:
       league:
         name: League name
         serial_number: League number
-        rule_module_key: Ruleset
         status: Status
         started_at: Start date
         ended_at: End date
@@ -530,7 +575,6 @@ en:
         active: Active
         notes: Notes
         admin_password: Admin password
-        admin_password_confirmation: Confirm admin password
       phase:
         name: Phase name
         kind: Kind
@@ -546,13 +590,6 @@ en:
         phase_kind: Phase kind
         participant_scope: Participant scope
         advancement_rule: Advancement rule
-      rule_template:
-        key: Key
-        name_ja: Name (Japanese)
-        name_en: Name (English)
-        description_ja: Description (Japanese)
-        description_en: Description (English)
-        active: Active
       week:
         number: Week number
         name: Name
@@ -567,12 +604,14 @@ en:
         scheduled_on: Match date
         scheduled_time: Start time
         status: Match status
-        export_status: Export status
         judge_name: Judge name
         bracket_slot: Bracket slot
         room_id: Room ID
         spectator_room_id: Spectator ID
     errors:
+      messages:
+        record_invalid: "Validation failed: %{errors}"
+        taken: has already been taken.
       models:
         board_result:
           attributes:

@@ -2,7 +2,7 @@ module Authentication
   extend ActiveSupport::Concern
 
   included do
-    helper_method :current_organizer_account, :organizer_signed_in?
+    helper_method :current_organizer_account, :organizer_signed_in?, :organizer_setup_required?
     before_action :resume_session
   end
 
@@ -33,6 +33,10 @@ module Authentication
 
   def organizer_signed_in?
     current_organizer_account.present?
+  end
+
+  def organizer_setup_required?
+    organizer_signed_in? && current_organizer_account.setup_required?
   end
 
   def start_session!(organizer_account)

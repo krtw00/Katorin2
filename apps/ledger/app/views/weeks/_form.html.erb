@@ -13,11 +13,6 @@
 
   <div class="field-grid">
     <div class="field">
-      <%= form.label :kind, t("weeks.form.kind") %>
-      <%= form.select :kind, enum_options("enums.week.kind", Week::KINDS.values) %>
-    </div>
-
-    <div class="field">
       <%= form.label :position, t("weeks.form.position") %>
       <%= form.number_field :position, min: 1, required: true %>
     </div>

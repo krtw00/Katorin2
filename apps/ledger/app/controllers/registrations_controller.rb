@@ -2,7 +2,7 @@ class RegistrationsController < ApplicationController
   allow_unauthenticated_access only: %i[new create]
 
   def new
-    return redirect_to dashboard_path if organizer_signed_in?
+    return redirect_to(post_auth_redirect_path) if organizer_signed_in?
 
     @organizer_account = OrganizerAccount.new
   end
@@ -12,7 +12,7 @@ class RegistrationsController < ApplicationController
 
     if @organizer_account.save
       start_session!(@organizer_account)
-      redirect_to dashboard_path, notice: t("flash.registrations.created")
+      redirect_to new_organizer_setup_path, notice: t("flash.registrations.created")
     else
       flash.now[:alert] = t("flash.registrations.invalid")
       render :new, status: :unprocessable_entity
@@ -26,10 +26,7 @@ class RegistrationsController < ApplicationController
       :display_name,
       :login_id,
       :email,
-      :password,
-      :password_confirmation,
-      :initial_admin_password,
-      :initial_admin_password_confirmation
+      :password
     )
   end
 end
