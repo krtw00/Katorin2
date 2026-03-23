@@ -1,0 +1,16 @@
+<%= render "shared/errors", record: phase %>
+
+<%= form_with model: phase, url: update_bracket_league_phase_path(league_id: league, id: phase), method: :patch, class: "stack" do |form| %>
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :bracket_participant_count, t("phases.form.bracket_participant_count") %>
+      <%= form.number_field :bracket_participant_count, min: 0, step: 1 %>
+      <p class="ghost-note"><%= t("phases.form.bracket_participant_count_hint") %></p>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: league, id: phase), class: "button" %>
+    <%= form.submit t("phases.actions.save_bracket"), class: "button button--primary" %>
+  </div>
+<% end %>

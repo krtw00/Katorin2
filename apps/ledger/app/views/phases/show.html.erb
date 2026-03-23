@@ -29,12 +29,16 @@
   <% if @phase.bracket_enabled? %>
     <article class="panel">
       <h2><%= t("phases.bracket") %></h2>
+      <% if @phase.bracket_participant_count.blank? %>
+        <p class="ghost-note"><%= t("phases.bracket_setup_hint") %></p>
+      <% end %>
       <div class="kv-list">
         <div><span><%= t("phases.form.bracket_participant_count") %></span><strong><%= @phase.bracket_participant_count_effective || t("labels.none") %></strong></div>
         <div><span><%= t("phases.bracket_size") %></span><strong><%= @phase.bracket_size_effective || t("labels.none") %></strong></div>
         <div><span><%= t("phases.byes") %></span><strong><%= @phase.bracket_bye_count || 0 %></strong></div>
       </div>
       <div class="page-actions">
+        <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
         <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button button--primary" %>
       </div>
     </article>

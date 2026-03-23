@@ -81,7 +81,7 @@ class MatchesController < ApplicationController
   def set_form_collections
     league = @week&.league || @match.league
     phase = @week&.phase || @match.phase
-    @selected_block = selected_block || @match.block
+    @selected_block = selected_block || @match&.block
     @team_options = if @selected_block.present?
                       @selected_block.teams.order(:display_name)
                     else

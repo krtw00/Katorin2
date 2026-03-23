@@ -99,6 +99,7 @@ en:
       updated: Phase updated.
       deleted: Phase deleted.
       delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
+      bracket_not_available: Tournament size is not available for this phase.
     stage_assets:
       created: Phase template created.
       updated: Phase template updated.
@@ -327,10 +328,12 @@ en:
     eyebrow: Phase
     title_new: Create phase
     title_edit: Edit phase
+    title_edit_bracket: Set tournament size
     bracket: Bracket
     bracket_size: Bracket size
     byes: Byes
     bracket_summary: "Participants %{participants} / size %{bracket_size} / byes %{byes}"
+    bracket_setup_hint: Set the tournament size after creating the phase. You can create the phase first and configure it afterward.
     empty_bracket: No bracket weeks yet.
     empty_slot: "Slot %{number}"
     empty_slot_help: Click an empty slot to create a match
@@ -345,6 +348,7 @@ en:
       name_hint: Only enter this when you need a custom display name.
       bracket_participant_count: Participant count
       bracket_participant_count_hint: Use this for tournament-style phases. Enter the number of teams, and any empty slots will be shown as automatic byes.
+      bracket_participant_count_later_hint: You can set the tournament size after creating the phase.
       position_hint: Order is assigned automatically on create. Reordering should be handled separately.
       kind: Kind
       position: Position
@@ -356,6 +360,9 @@ en:
       playoff: Playoff
     delete_confirm: Delete this phase?
     delete_hint: Only phases without weeks or matches can be deleted.
+    actions:
+      configure_bracket: Set tournament size
+      save_bracket: Save tournament size
   blocks:
     eyebrow: Block
     title_new: Create block

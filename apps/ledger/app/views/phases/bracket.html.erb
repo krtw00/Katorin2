@@ -20,7 +20,7 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
-    <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
   </div>
 </section>
 

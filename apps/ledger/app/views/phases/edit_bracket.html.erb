@@ -1,0 +1,24 @@
+<% page_title t("phases.title_edit_bracket") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name, league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("phases.bracket")),
+  breadcrumb_item(t("phases.title_edit_bracket"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("phases.eyebrow") %></p>
+    <h1><%= t("phases.title_edit_bracket") %></h1>
+    <p class="muted"><%= @phase.name %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
+  </div>
+</section>
+
+<section class="panel">
+  <%= render "bracket_form", league: @league, phase: @phase %>
+</section>

@@ -7,7 +7,7 @@ class StageAssetsController < ApplicationController
   end
 
   def new
-    @stage_asset = current_organizer_account.stage_assets.new(active: true, participant_scope: "all_teams", advancement_rule: "none")
+    @stage_asset = current_organizer_account.stage_assets.new(active: true, participant_scope: "all_teams")
   end
 
   def create
@@ -59,13 +59,6 @@ class StageAssetsController < ApplicationController
       :description_en,
       :format,
       :participant_scope,
-      :group_count,
-      :round_count,
-      :bracket_size,
-      :advancement_rule,
-      :advancement_value,
-      :ranking_rule_key,
-      :match_rule_key,
       :active
     )
   end

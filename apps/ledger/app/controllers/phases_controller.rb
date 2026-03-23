@@ -1,6 +1,7 @@
 class PhasesController < ApplicationController
   before_action :set_league
-  before_action :set_phase, only: %i[show edit update destroy bracket]
+  before_action :set_phase, only: %i[show edit update destroy bracket edit_bracket update_bracket]
+  before_action :ensure_bracket_phase, only: %i[edit_bracket update_bracket]
 
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)
@@ -30,11 +31,22 @@ class PhasesController < ApplicationController
   def edit
   end
 
+  def edit_bracket
+  end
+
   def update
     if @phase.update(phase_params)
       redirect_to league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.updated")
     else
       render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def update_bracket
+    if @phase.update(bracket_phase_params)
+      redirect_to league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.updated")
+    else
+      render :edit_bracket, status: :unprocessable_entity
     end
   end
 
@@ -58,7 +70,11 @@ class PhasesController < ApplicationController
   end
 
   def phase_params
-    params.require(:phase).permit(:name, :stage_asset_id, :bracket_participant_count)
+    params.require(:phase).permit(:name, :stage_asset_id)
+  end
+
+  def bracket_phase_params
+    params.require(:phase).permit(:bracket_participant_count)
   end
 
   def next_position
@@ -68,5 +84,11 @@ class PhasesController < ApplicationController
   def default_stage_asset
     current_organizer_account.ensure_default_stage_assets!
     current_organizer_account.stage_assets.where(active: true).order(:created_at).first
+  end
+
+  def ensure_bracket_phase
+    return if @phase.bracket_enabled?
+
+    redirect_to league_phase_path(league_id: @league, id: @phase), alert: t("flash.phases.bracket_not_available")
   end
 end
