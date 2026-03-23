@@ -8,7 +8,6 @@
     <div class="hero-metrics">
       <span class="metric-chip"><strong><%= @today_matches.count %></strong><span><%= t("dashboard.metrics.today_matches") %></span></span>
       <span class="metric-chip"><strong><%= @result_pending_matches.count %></strong><span><%= t("dashboard.metrics.result_pending") %></span></span>
-      <span class="metric-chip"><strong><%= @stale_exports.count %></strong><span><%= t("dashboard.metrics.stale_exports") %></span></span>
     </div>
   </div>
   <div class="page-actions">
@@ -42,19 +41,6 @@
       </ul>
     <% else %>
       <p class="empty-copy"><%= t("dashboard.empty.result_pending") %></p>
-    <% end %>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("dashboard.sections.stale_exports") %></h2>
-    <% if @stale_exports.any? %>
-      <ul class="record-list">
-        <% @stale_exports.each do |match| %>
-          <li><%= render "matches/row", match: match %></li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="empty-copy"><%= t("dashboard.empty.stale_exports") %></p>
     <% end %>
   </article>
 

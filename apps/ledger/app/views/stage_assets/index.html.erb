@@ -23,6 +23,7 @@
           <%= status_badge translated_enum("rulesets.formats", stage_asset.format), "neutral" %>
           <%= status_badge stage_asset.active? ? t("labels.on") : t("labels.off"), stage_asset.active? ? "success" : "neutral" %>
           <%= link_to t("actions.edit"), edit_stage_asset_path(id: stage_asset), class: "button" %>
+          <%= button_to t("actions.delete"), stage_asset_path(id: stage_asset), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("stage_assets.delete_confirm") } } %>
         </div>
       </div>
 
@@ -34,18 +35,7 @@
       <% end %>
 
       <ul class="compact-list">
-        <li><strong><%= t("stage_assets.labels.phase_kind") %>:</strong> <%= translated_enum("enums.phase.kind", stage_asset.phase_kind) %></li>
         <li><strong><%= t("stage_assets.labels.participant_scope") %>:</strong> <%= translated_enum("rulesets.participant_scopes", stage_asset.participant_scope) %></li>
-        <% if stage_asset.group_count.present? %>
-          <li><strong><%= t("stage_assets.labels.group_count") %>:</strong> <%= stage_asset.group_count %></li>
-        <% end %>
-        <% if stage_asset.round_count.present? %>
-          <li><strong><%= t("stage_assets.labels.round_count") %>:</strong> <%= stage_asset.round_count %></li>
-        <% end %>
-        <% if stage_asset.bracket_size.present? %>
-          <li><strong><%= t("stage_assets.labels.bracket_size") %>:</strong> <%= stage_asset.bracket_size %></li>
-        <% end %>
-        <li><strong><%= t("stage_assets.labels.advancement") %>:</strong> <%= translated_enum("rulesets.advancement_rules", stage_asset.advancement_rule) %><%= ": #{stage_asset.advancement_value}" if stage_asset.advancement_value.present? %></li>
       </ul>
     </article>
   <% end %>

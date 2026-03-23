@@ -1,5 +1,6 @@
 class MatchesController < ApplicationController
   before_action :set_week
+  before_action :ensure_regular_week!, only: %i[new create]
   before_action :set_match, only: %i[show edit update destroy]
   before_action :set_form_collections, only: %i[new create edit update]
 
@@ -15,8 +16,7 @@ class MatchesController < ApplicationController
       block: selected_block,
       stage_key: params[:stage_key],
       bracket_slot: params[:bracket_slot],
-      status: "draft",
-      export_status: "pending"
+      status: "draft"
     )
   end
 
@@ -43,10 +43,14 @@ class MatchesController < ApplicationController
 
   def update
     if @match.update(match_params)
+      Brackets::ProgressionSync.new(@match).sync!
       redirect_to match_path(id: @match), notice: t("flash.matches.updated")
     else
       render :edit, status: :unprocessable_entity
     end
+  rescue Brackets::ProgressionSync::LockedError => error
+    flash.now[:alert] = error.message
+    render :edit, status: :unprocessable_entity
   end
 
   def destroy
@@ -57,7 +61,7 @@ class MatchesController < ApplicationController
     week = @match.week
     phase = @match.phase
     @match.destroy_for_management!
-    redirect_to phase_week_path(phase_id: phase, id: week), notice: t("flash.matches.deleted")
+    redirect_to(match_redirect_path(phase, week), notice: t("flash.matches.deleted"))
   end
 
   private
@@ -73,7 +77,7 @@ class MatchesController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :phase, :week, :block, :home_team, :away_team, :exports, match_lineup_members: :participant)
+      .includes(:league, :phase, :week, :bracket_round, :block, :home_team, :away_team, :exports, match_lineup_members: :participant)
       .first!
 
     @week ||= @match.week
@@ -82,7 +86,7 @@ class MatchesController < ApplicationController
   def set_form_collections
     league = @week&.league || @match.league
     phase = @week&.phase || @match.phase
-    @selected_block = selected_block || @match.block
+    @selected_block = selected_block || @match&.block
     @team_options = if @selected_block.present?
                       @selected_block.teams.order(:display_name)
                     else
@@ -115,5 +119,17 @@ class MatchesController < ApplicationController
 
     phase = @week&.phase || @match&.phase
     @selected_block = phase&.blocks&.find_by(id: params[:block_id])
+  end
+
+  def match_redirect_path(phase, week)
+    return bracket_league_phase_path(league_id: phase.league, id: phase) if week.blank?
+
+    phase_week_path(phase_id: phase, id: week)
+  end
+
+  def ensure_regular_week!
+    return unless @week&.phase&.bracket_phase?
+
+    redirect_to bracket_league_phase_path(league_id: @week.phase.league, id: @week.phase), alert: t("flash.phases.regular_management_only")
   end
 end

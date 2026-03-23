@@ -1,0 +1,30 @@
+<% page_title t("organizer_setup.title") %>
+
+<section class="login-screen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <p class="login-brand__name">Katorin2</p>
+    </div>
+
+    <p class="login-copy"><%= t("organizer_setup.lede") %></p>
+
+    <%= render "shared/errors", record: @organizer_member %>
+
+    <%= form_with model: @organizer_member, url: organizer_setup_path, class: "login-form" do |form| %>
+      <div class="login-form__row">
+        <%= form.label :display_name, t("organizer_setup.display_name"), class: "login-form__label" %>
+        <%= form.text_field :display_name, required: true, autofocus: true, class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__row">
+        <%= form.label :admin_password, t("organizer_setup.admin_password"), class: "login-form__label" %>
+        <%= form.password_field :admin_password, required: true, autocomplete: "new-password", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__actions">
+        <%= form.submit t("organizer_setup.submit"), class: "button button--auth" %>
+      </div>
+    <% end %>
+  </div>
+</section>

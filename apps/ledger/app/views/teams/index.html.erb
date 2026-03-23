@@ -14,6 +14,8 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
+    <%= link_to t("actions.download_csv_template"), template_league_team_import_path(league_id: @league), class: "button" %>
+    <%= link_to t("actions.import_teams_csv"), new_league_team_import_path(league_id: @league), class: "button" %>
     <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
   </div>
 </section>

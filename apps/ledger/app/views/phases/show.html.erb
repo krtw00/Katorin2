@@ -10,16 +10,19 @@
   <div>
     <p class="eyebrow"><%= t("phases.eyebrow") %></p>
     <h1><%= @phase.name %></h1>
-    <p class="muted"><%= t("phases.meta", kind: translated_enum("enums.phase.kind", @phase.kind), bracket: @phase.bracket_enabled? ? t("labels.on") : t("labels.off")) %></p>
+    <% if phase_structure_summary(@phase).present? %>
+      <p class="muted"><%= phase_structure_summary(@phase) %></p>
+    <% end %>
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
     <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
     <% if @phase.bracket_enabled? %>
-      <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+      <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button button--primary" %>
+    <% else %>
+      <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
+      <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
     <% end %>
-    <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
-    <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
   </div>
 </section>
 
@@ -27,42 +30,62 @@
   <% if @phase.bracket_enabled? %>
     <article class="panel">
       <h2><%= t("phases.bracket") %></h2>
+      <% if @phase.bracket_participant_count.blank? %>
+        <p class="ghost-note"><%= t("phases.bracket_setup_hint") %></p>
+      <% end %>
       <div class="kv-list">
         <div><span><%= t("phases.form.bracket_participant_count") %></span><strong><%= @phase.bracket_participant_count_effective || t("labels.none") %></strong></div>
+        <div><span><%= t("phases.form.bracket_region_count") %></span><strong><%= @phase.effective_bracket_region_count %></strong></div>
+        <div><span><%= t("phases.form.third_place_match_enabled") %></span><strong><%= @phase.third_place_match_enabled? ? t("labels.on") : t("labels.off") %></strong></div>
         <div><span><%= t("phases.bracket_size") %></span><strong><%= @phase.bracket_size_effective || t("labels.none") %></strong></div>
         <div><span><%= t("phases.byes") %></span><strong><%= @phase.bracket_bye_count || 0 %></strong></div>
       </div>
       <div class="page-actions">
-        <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button button--primary" %>
+        <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
       </div>
     </article>
-  <% end %>
-
-  <article class="panel">
-    <h2><%= t("phases.weeks") %></h2>
-    <ul class="compact-list">
-        <% @weeks.each do |week| %>
-          <li>
-          <%= link_to week.display_name, phase_week_path(phase_id: @phase, id: week) %>
-          <span class="muted">/ <%= t("phases.weeks_count", count: week.matches.size) %></span>
-        </li>
+    <article class="panel">
+      <h2><%= t("phases.rounds") %></h2>
+      <% if @bracket_rounds.any? %>
+        <ul class="compact-list">
+          <% @bracket_rounds.each do |round| %>
+            <li>
+              <%= [round.display_name, (round.region? ? t("phases.round_region", count: round.lane_number) : nil)].compact.join(" / ") %>
+              <span class="muted">/ <%= t("phases.weeks_count", count: round.matches.size) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-copy"><%= t("phases.empty_bracket") %></p>
       <% end %>
-    </ul>
-  </article>
-
-  <article class="panel">
-    <h2><%= t("phases.blocks") %></h2>
-    <% if @blocks.any? %>
+    </article>
+  <% else %>
+    <article class="panel">
+      <h2><%= t("phases.weeks") %></h2>
       <ul class="compact-list">
-        <% @blocks.each do |block| %>
-          <li>
-            <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
-            <span class="muted">/ <%= t("blocks.usage", teams: block.teams.count, matches: block.matches.count) %></span>
+          <% @weeks.each do |week| %>
+            <li>
+            <%= link_to week.display_name, phase_week_path(phase_id: @phase, id: week) %>
+            <span class="muted">/ <%= t("phases.weeks_count", count: week.matches.size) %></span>
           </li>
         <% end %>
       </ul>
-    <% else %>
-      <p class="empty-copy"><%= t("blocks.empty") %></p>
-    <% end %>
-  </article>
+    </article>
+
+    <article class="panel">
+      <h2><%= t("phases.blocks") %></h2>
+      <% if @blocks.any? %>
+        <ul class="compact-list">
+          <% @blocks.each do |block| %>
+            <li>
+              <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
+              <span class="muted">/ <%= t("blocks.usage", teams: block.teams.count, matches: block.matches.count) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-copy"><%= t("blocks.empty") %></p>
+      <% end %>
+    </article>
+  <% end %>
 </section>

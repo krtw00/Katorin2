@@ -9,6 +9,7 @@ ja:
   nav:
     home: ホーム
     leagues: リーグ
+    stage_assets: フェーズテンプレート
     organizer_members: 運営メンバー
     login: ログイン
     logout: ログアウト
@@ -22,6 +23,9 @@ ja:
     create_league: リーグ作成
     manage_teams: チーム管理
     create_team: チーム追加
+    import_teams_csv: CSV一括登録
+    download_csv_template: CSVテンプレート
+    create_stage_asset: フェーズテンプレート作成
     create_participant: メンバー追加
     create_organizer_member: メンバー追加
     create_phase: フェーズ作成
@@ -31,7 +35,7 @@ ja:
     view_bracket: ブラケット
   labels:
     locale: 言語
-    vs: vs
+    vs: 対
     win: 勝ち
     lose: 負け
     none: "-"
@@ -47,6 +51,8 @@ ja:
     score: スコア
     decision: 判定
     bracket: ブラケット
+    format: 形式
+    template: テンプレート
     kind: 種別
     number: 番号
     board: 卓
@@ -62,6 +68,10 @@ ja:
     registrations:
       created: アカウントを作成しました。
       invalid: 入力内容を確認してください。
+    organizer_setup:
+      required: 初回セットアップを完了してください。
+      completed: 初期管理ユーザーを作成しました。
+      invalid: セットアップ内容を確認してください。
     organizer_members:
       created: 運営メンバーを登録しました。
       updated: 運営メンバーを更新しました。
@@ -77,6 +87,8 @@ ja:
       updated: チームを更新しました。
       deleted: チームを削除しました。
       delete_blocked: このチームは対戦で使われているため削除できません。公開後の離脱は状態をドロップに変更してください。
+    team_imports:
+      created: "CSVを取り込みました。チーム %{created_teams}件追加 / %{updated_teams}件更新、メンバー %{created_participants}件追加 / %{updated_participants}件更新。"
     participants:
       created: メンバーを作成しました。
       updated: メンバーを更新しました。
@@ -87,6 +99,14 @@ ja:
       updated: フェーズを更新しました。
       deleted: フェーズを削除しました。
       delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
+      bracket_not_available: このフェーズではトーナメント人数を設定できません。
+      bracket_structure_locked: 既存の週・ブロック・対戦があるためトーナメント構造を作り直せません。新しいフェーズで作成してください。
+      regular_management_only: このフェーズではブロック管理と週管理は使いません。
+    stage_assets:
+      created: フェーズテンプレートを作成しました。
+      updated: フェーズテンプレートを更新しました。
+      deleted: フェーズテンプレートを削除しました。
+      delete_blocked: 使用中のフェーズテンプレートは削除できません。
     blocks:
       created: ブロックを作成しました。
       updated: ブロックを更新しました。
@@ -102,6 +122,8 @@ ja:
       updated: 対戦カードを更新しました。
       deleted: 対戦カードを削除しました。
       delete_blocked: この対戦は結果が入っているため削除できません。削除できるのは下書きか未結果入力の対戦だけです。
+      assign_teams_first: 先に対戦チームを設定してください。
+      bracket_progress_locked: 次のカードに結果が入っているため、勝ち上がり先を更新できません。
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
@@ -125,16 +147,13 @@ ja:
     metrics:
       today_matches: 今日の対戦
       result_pending: 結果未確定
-      stale_exports: 再出力待ち
     sections:
       today_matches: 今日の対戦
       result_pending: 結果未確定
-      stale_exports: 画像再出力待ち
       leagues: リーグ
     empty:
       today_matches: 本日の対戦はありません。
       result_pending: 未確定の対戦はありません。
-      stale_exports: 再出力待ちはありません。
       leagues: リーグがまだありません。
   leagues:
     eyebrow: リーグ
@@ -209,6 +228,51 @@ ja:
       notes: メモ
     delete_confirm: このメンバーを削除します。よろしいですか？
     delete_hint: 試合結果で未使用のメンバーだけ削除できます。
+  team_imports:
+    eyebrow: CSV一括登録
+    lede: 1行=1メンバーのCSVで、チームとメンバーをまとめて作成または更新します。
+    title_new: "%{league} にCSVを取り込む"
+    form:
+      file: CSVファイル
+      file_hint: UTF-8 の CSV をアップロードしてください。同名チーム・同名メンバーは更新として扱います。
+      submit: CSVを取り込む
+    template:
+      title: テンプレート
+      description: テンプレートのヘッダーは表示中の言語に合わせて切り替わります。サンプル2行を残しているので、上書きしながら使えます。
+      headers:
+        team_name: チーム名
+        team_status: チーム状態
+        block_name: ブロック名
+        team_notes: チームメモ
+        member_name: メンバー名
+        member_position: メンバー順
+        member_status: メンバー状態
+        member_notes: メンバーメモ
+      columns:
+        team_name: 必須。チーム名です。
+        team_status: 任意。active / inactive / withdrawn、または 有効 / 非表示 / 辞退。
+        block_name: 任意。既存ブロック名をそのまま指定します。
+        team_notes: 任意。チームメモです。
+        member_name: 必須。メンバー名です。
+        member_position: 任意。並び順です。未入力なら末尾に自動採番します。
+        member_status: 任意。active / inactive、または 有効 / 非表示。
+        member_notes: 任意。メンバーメモです。
+    errors:
+      invalid_csv: CSVの読み込みに失敗しました。ファイル形式を確認してください。
+      missing_headers: "必須ヘッダーが不足しています: %{headers}"
+      unknown_headers: "不明なヘッダーがあります: %{headers}"
+      duplicate_headers: "同じ意味のヘッダーが重複しています: %{headers}"
+      blank_team_name: "%{line}行目: team_name は必須です。"
+      blank_member_name: "%{line}行目: member_name は必須です。"
+      invalid_team_status: "%{line}行目: team_status の値 `%{value}` は使えません。"
+      invalid_member_status: "%{line}行目: member_status の値 `%{value}` は使えません。"
+      invalid_member_position: "%{line}行目: member_position は 1 以上の整数で入力してください。"
+      unknown_block: "チーム `%{team_name}`: block_name `%{block_name}` に一致するブロックがありません。"
+      conflicting_team_field: "%{line}行目: 同じ team_name で `%{field}` の値が揃っていません。"
+      conflicting_member_field: "%{line}行目: チーム `%{team_name}` のメンバー `%{member_name}` で `%{field}` の値が揃っていません。"
+      ambiguous_team: "チーム `%{team_name}` は既存データで重複しているため、一括更新できません。"
+      ambiguous_member: "チーム `%{team_name}` のメンバー `%{member_name}` は既存データで重複しているため、一括更新できません。"
+      record_invalid: "保存に失敗しました: %{detail}"
   organizer_members:
     eyebrow: 運営メンバー
     lede: 運営チームの担当者一覧を管理します。
@@ -224,17 +288,17 @@ ja:
       active: 有効化
       notes: メモ
       admin_password: 管理パス
-      admin_password_confirmation: 管理パス確認
       admin_password_hint: owner と admin は管理操作用のパスが必要です。staff は未入力のままで構いません。
     password_status:
       configured: パス設定済み
       not_configured: パス未設定
   stage_assets:
     eyebrow: ステージアセット
-    lede: 予選や決勝など、ステージ単位で使い回す設定を管理します。
+    lede: 大会フェーズごとに使い回す設定を管理します。
     title_index: ステージアセット
     title_new: ステージアセット作成
     title_edit: ステージアセット編集
+    delete_confirm: このフェーズテンプレートを削除します。よろしいですか？
     sections:
       basic: 基本情報
       structure: ステージ構成
@@ -264,65 +328,42 @@ ja:
       advancement_value: 勝ち上がり人数
       ranking_rule_key: 順位ルールキー
       match_rule_key: 対戦ルールキー
-  rule_templates:
-    eyebrow: ルールセット
-    lede: 大会形式のテンプレートを作成し、リーグ作成時に再利用します。
-    title_index: ルールセット
-    title_new: ルールセット作成
-    title_edit: ルールセット編集
-    sections:
-      basic: 基本情報
-      roster: チーム編成
-      stage: "ステージ %{number}"
-      advanced: 詳細設定
-    form:
-      key: キー
-      name_ja: 名前（日本語）
-      name_en: 名前（英語）
-      name_hint: 日本語名を主に使い、英語名は海外ボランティア向けの補助表示として入れます。英語が未入力でも保存できます。
-      description_ja: 説明（日本語）
-      description_en: 説明（英語）
-      active: 有効化
-      roster_min_members: 最小人数
-      roster_max_members: 最大人数
-      roster_lineup_size: 出場人数
-      roster_substitute_size: サブ人数
-      roster_updates: ロスター更新ルール
-      default_match_rule_key: 既定の対戦ルール
-      stage2_enabled: 第2ステージを使う
-      stage_key: ステージキー
-      stage_name_ja: ステージ名（日本語）
-      stage_name_en: ステージ名（英語）
-      stage_format: 形式
-      stage_participant_scope: 参加対象
-      stage_group_count: ブロック数
-      stage_round_count: 回戦数
-      stage_bracket_size: ブラケット人数
-      stage_advancement_rule: 勝ち上がり
-      stage_advancement_value: 勝ち上がり人数
-      stage_ranking_rule_key: 順位ルールキー
-      stage_match_rule_key: 対戦ルールキー
   phases:
     eyebrow: フェーズ
     title_new: フェーズ作成
     title_edit: フェーズ編集
+    title_edit_bracket: トーナメント人数設定
     bracket: ブラケット
     bracket_size: 枠数
     byes: BYE数
     bracket_summary: "参加 %{participants} / 枠 %{bracket_size} / BYE %{byes}"
-    empty_bracket: ブラケット用の週がまだありません。
+    bracket_setup_hint: トーナメント人数はフェーズ作成後に設定します。未設定でも先にフェーズは作成できます。
+    empty_bracket: トーナメント表はまだありません。
     empty_slot: "枠 %{number}"
-    empty_slot_help: 空欄をクリックして対戦を作成
-    meta: "%{kind} / ブラケット: %{bracket}"
+    rounds: トーナメント進行
+    waiting_winner: "%{match} の勝者"
+    waiting_loser: "%{match} の敗者"
+    seed_placeholder: "枠 %{slot}"
+    round_region: "区画%{count}"
     weeks: 週一覧
     blocks: ブロック
     weeks_count: "対戦数 %{count}"
+    errors:
+      invalid_region_count: この人数では初期区画数を分けられません。1区画、2区画、4区画で収まる組み合わせにしてください。
+      third_place_requires_semifinal: 3位決定戦は4チーム以上のトーナメントで使ってください。
     form:
+      stage_asset: テンプレート
+      stage_asset_hint: フェーズの形式や既定設定をここで選びます。
       name: フェーズ名
-      name_placeholder: 未入力なら種別から自動で補います
+      name_placeholder: 未入力ならテンプレート名を使います
       name_hint: 固有の表示名が必要な場合だけ入力してください。
       bracket_participant_count: 参加数
-      bracket_participant_count_hint: playoff のときだけ使います。任意人数を入れると、表示側では必要な分だけ BYE を補います。
+      bracket_participant_count_hint: トーナメント形式のフェーズで使います。参加チーム数を入れると、空いた枠は自動で不戦勝を入れて表示します。
+      bracket_region_count: 初期区画数
+      bracket_region_count_hint: 1 は通常のトーナメントです。2 や 4 にすると、初期区画ごとに勝ち上がって中央の決勝へ合流します。
+      bracket_participant_count_later_hint: トーナメント人数は作成後に設定できます。
+      third_place_match_enabled: 3位決定戦を作る
+      third_place_match_enabled_hint: 準決勝の敗者同士で3位決定戦を自動生成します。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
@@ -334,6 +375,9 @@ ja:
       playoff: 決勝
     delete_confirm: このフェーズを削除します。よろしいですか？
     delete_hint: 週や対戦を持たないフェーズだけ削除できます。
+    actions:
+      configure_bracket: トーナメント人数を設定
+      save_bracket: トーナメント人数を保存
   blocks:
     eyebrow: ブロック
     title_new: ブロック作成
@@ -350,7 +394,7 @@ ja:
     title_new: 週作成
     title_edit: 週編集
     reference: "Week %{number}"
-    meta: "番号: %{number} / 種別: %{kind}"
+    meta: "番号: %{number} / フェーズ: %{phase}"
     matches: 対戦カード
     unassigned_block: 未設定ブロック
     empty_matches: 対戦カードがまだありません。
@@ -359,7 +403,6 @@ ja:
     form:
       number: 週番号
       number_hint: Week 番号から自動表示します。
-      kind: 種別
       position: 並び順
       locked_at: ロック日時
   matches:
@@ -377,8 +420,9 @@ ja:
     delete_hint: 結果が入っていない対戦だけ削除できます。下書きリーグではオーダーごと削除します。
     round_wins: ラウンド勝数
     rounds_count: "ラウンド %{number} / %{status} / 卓数 %{count}"
-    export_stale: 再出力が必要
-    export_pending: 出力待ち
+    errors:
+      teams_required: 対戦チームを設定してください。
+      teams_locked_after_result: 結果が入っている対戦はチームを変更できません。
     lineup:
       title: オーダー登録
       short: オーダー
@@ -406,7 +450,7 @@ ja:
       away_member: "卓 %{number} アウェイ"
       winner: "卓 %{number} 勝者"
       no_winner: 未選択
-      board_summary: "卓 %{number}: %{home} vs %{away} / 勝者 %{winner}"
+      board_summary: "卓 %{number}: %{home} 対 %{away} / 勝者 %{winner}"
       board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
     form:
       home_team: ホームチーム
@@ -419,12 +463,17 @@ ja:
       scheduled_on: 対戦日
       scheduled_time: 開始時刻
       status: 進行状態
-      export_status: 画像状態
       judge_name: 審判名
       bracket_slot: ブラケット位置
       room_id: ルームID
       spectator_room_id: 観戦ID
       notes: メモ
+  bracket_rounds:
+    final: 決勝
+    semifinal: 準決勝
+    quarterfinal: 準々決勝
+    third_place: 3位決定戦
+    top: "ベスト%{count}"
   sessions:
     title: ログイン
     lede: 運営アカウントでログインします。
@@ -435,17 +484,20 @@ ja:
     register: 新規登録
   registrations:
     title: 新規登録
-    lede: 運営アカウントを新しく作成します。
+    lede: 運営アカウントを新しく作成します。管理ユーザーは初回ログイン後に登録します。
     display_name: 団体名
     login_id: アカウントID
     email: メール
     password: パスワード
-    password_confirmation: パスワード確認
-    initial_admin_password: 初期管理パス
-    initial_admin_password_confirmation: 初期管理パス確認
     submit: 登録する
     have_account: すでにアカウントをお持ちの場合
     back_to_login: ログインへ戻る
+  organizer_setup:
+    title: 初期セットアップ
+    lede: 最初の管理ユーザーを登録します。
+    display_name: 管理ユーザー名
+    admin_password: 管理パス
+    submit: セットアップを完了
   enums:
     league:
       status:
@@ -473,11 +525,6 @@ ja:
         result_pending: 結果確認中
         confirmed: 確定
         cancelled: 中止
-      export_status:
-        not_required: 不要
-        pending: 未出力
-        generated: 出力済み
-        stale: 再出力待ち
     match_result:
       result_status:
         partial: 入力中
@@ -504,14 +551,12 @@ ja:
       organizer_member: 運営メンバー
       phase: フェーズ
       stage_asset: ステージアセット
-      rule_template: ルールセット
       week: 週
       match: 対戦カード
     attributes:
       league:
         name: リーグ名
         serial_number: 大会番号
-        rule_module_key: ルールセット
         status: 状態
         started_at: 開始日
         ended_at: 終了日
@@ -530,7 +575,6 @@ ja:
         active: 有効化
         notes: メモ
         admin_password: 管理パス
-        admin_password_confirmation: 管理パス確認
       phase:
         name: フェーズ名
         kind: 種別
@@ -546,13 +590,6 @@ ja:
         phase_kind: フェーズ種別
         participant_scope: 参加対象
         advancement_rule: 勝ち上がり
-      rule_template:
-        key: キー
-        name_ja: 名前（日本語）
-        name_en: 名前（英語）
-        description_ja: 説明（日本語）
-        description_en: 説明（英語）
-        active: 有効化
       week:
         number: 週番号
         name: 表示名
@@ -567,12 +604,14 @@ ja:
         scheduled_on: 対戦日
         scheduled_time: 開始時刻
         status: 進行状態
-        export_status: 画像状態
         judge_name: 審判名
         bracket_slot: ブラケット位置
         room_id: ルームID
         spectator_room_id: 観戦ID
     errors:
+      messages:
+        record_invalid: "保存に失敗しました: %{errors}"
+        taken: はすでに使われています。
       models:
         board_result:
           attributes:

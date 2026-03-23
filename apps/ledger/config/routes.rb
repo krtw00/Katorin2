@@ -28,16 +28,25 @@ Rails.application.routes.draw do
 
     resource :session, only: %i[new create destroy]
     resource :registration, only: %i[new create], controller: "registrations"
+    resource :organizer_setup, only: %i[new create]
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
     resources :organizer_members, only: %i[index new create edit update destroy]
+    resources :stage_assets, only: %i[index new create edit update destroy]
 
     resources :leagues, only: %i[index show new create edit update destroy] do
+      resource :team_import, only: %i[new create], controller: "team_imports" do
+        get :template
+      end
       resources :teams, only: %i[index show new create edit update destroy] do
         resources :participants, only: %i[new create edit update destroy]
       end
       resources :phases, only: %i[show new create edit update destroy] do
-        get :bracket, on: :member
+        member do
+          get :bracket
+          get :edit_bracket
+          patch :update_bracket
+        end
       end
     end
 

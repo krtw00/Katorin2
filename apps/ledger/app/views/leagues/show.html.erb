@@ -58,7 +58,9 @@
       <% @phases.each do |phase| %>
         <li>
           <%= link_to phase.name, league_phase_path(league_id: @league, id: phase) %>
-          <span class="muted">(<%= translated_enum("enums.phase.kind", phase.kind) %>)</span>
+          <% if phase_structure_summary(phase).present? %>
+            <span class="muted">(<%= phase_structure_summary(phase) %>)</span>
+          <% end %>
         </li>
       <% end %>
     </ul>

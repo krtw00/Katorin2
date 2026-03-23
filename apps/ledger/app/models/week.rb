@@ -11,6 +11,7 @@ class Week < ApplicationRecord
 
   enum :kind, KINDS, validate: true
 
+  before_validation :assign_kind
   before_validation :assign_name
 
   validates :number, :name, :position, presence: true
@@ -30,6 +31,10 @@ class Week < ApplicationRecord
   end
 
   private
+
+  def assign_kind
+    self.kind = phase&.bracket_phase? ? "playoff" : "regular" if kind.blank?
+  end
 
   def assign_name
     return if number.blank?

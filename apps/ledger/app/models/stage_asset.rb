@@ -24,8 +24,16 @@ class StageAsset < ApplicationRecord
     name_en.presence || name_ja
   end
 
-  def format_playoff?
+  def bracket_format?
     format == "single_elimination"
+  end
+
+  def destroyable?
+    true
+  end
+
+  def destroy_for_management!
+    destroy!
   end
 
   private
@@ -34,7 +42,7 @@ class StageAsset < ApplicationRecord
     self.name_en = name_ja if name_en.blank?
     self.key = name_en.to_s.parameterize(separator: "_") if key.blank?
     self.key = "stage_asset_#{SecureRandom.hex(4)}" if key.blank?
-    self.phase_kind = format_playoff? ? "playoff" : "regular_season" if phase_kind.blank?
+    self.phase_kind = bracket_format? ? "playoff" : "regular_season"
     self.participant_scope = "all_teams" if participant_scope.blank?
     self.advancement_rule = "none" if advancement_rule.blank?
   end

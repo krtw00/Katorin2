@@ -6,7 +6,7 @@
   },
   "description": {
     "ja": "Master Duel の Discord リーグ運営を想定したサンプル ruleset です。予選総当たりから決勝トーナメントへ進みます。",
-    "en": "A sample ruleset for Master Duel leagues operated through Discord. It moves from a round-robin regular stage into a playoff bracket."
+    "en": "A sample ruleset for Master Duel leagues operated through Discord. It moves from a round-robin regular stage into a final bracket."
   },
   "roster_rules": {
     "min_members": 6,

@@ -1,5 +1,6 @@
 class WeeksController < ApplicationController
   before_action :set_phase
+  before_action :ensure_regular_phase
   before_action :set_week, only: %i[show edit update destroy]
 
   def show
@@ -12,7 +13,7 @@ class WeeksController < ApplicationController
   end
 
   def new
-    @week = @phase.weeks.new(position: next_position, number: next_number, kind: default_kind)
+    @week = @phase.weeks.new(position: next_position, number: next_number)
   end
 
   def create
@@ -58,7 +59,7 @@ class WeeksController < ApplicationController
   end
 
   def week_params
-    params.require(:week).permit(:number, :kind, :position, :locked_at)
+    params.require(:week).permit(:number, :position, :locked_at)
   end
 
   def next_position
@@ -69,7 +70,9 @@ class WeeksController < ApplicationController
     @phase.weeks.maximum(:number).to_i + 1
   end
 
-  def default_kind
-    @phase.playoff? ? "playoff" : "regular"
+  def ensure_regular_phase
+    return unless @phase.bracket_phase?
+
+    redirect_to bracket_league_phase_path(league_id: @phase.league, id: @phase), alert: t("flash.phases.regular_management_only")
   end
 end

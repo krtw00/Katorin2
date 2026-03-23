@@ -34,10 +34,12 @@ def seed_bootstrap_organizer!
   organizer.email = email
   organizer.display_name = display_name
   organizer.password = password
-  organizer.password_confirmation = password
-  organizer.initial_admin_password = password
-  organizer.initial_admin_password_confirmation = password
   organizer.save!
+  organizer.organizer_members.find_or_create_by!(display_name: display_name) do |member|
+    member.role = "owner"
+    member.active = true
+    member.admin_password = password
+  end
   organizer.ensure_default_rule_templates!
 
   organizer
@@ -59,10 +61,12 @@ def seed_demo_organizer!
   organizer.email = email
   organizer.display_name = display_name
   organizer.password = password
-  organizer.password_confirmation = password
-  organizer.initial_admin_password = password if organizer.new_record?
-  organizer.initial_admin_password_confirmation = password if organizer.new_record?
   organizer.save!
+  organizer.organizer_members.find_or_create_by!(display_name: display_name) do |member|
+    member.role = "owner"
+    member.active = true
+    member.admin_password = password
+  end
   organizer.ensure_default_rule_templates!
 
   organizer
@@ -200,7 +204,6 @@ def create_completed_match!(week:, home_team:, away_team:, random:, block: nil, 
     scheduled_on:,
     scheduled_time:,
     status: "confirmed",
-    export_status: "generated",
     judge_name:,
     room_id: "#{week.league.slug}-#{home_team.short_name}-#{away_team.short_name}",
     spectator_room_id: "watch-#{home_team.short_name}-#{away_team.short_name}",

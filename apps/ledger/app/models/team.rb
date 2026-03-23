@@ -46,6 +46,7 @@ class Team < ApplicationRecord
   def assign_short_name
     return if short_name.present? || display_name.blank?
 
-    self.short_name = display_name.to_s.gsub(/\s+/, " ").strip.mb_chars.limit(12).to_s
+    normalized_name = display_name.to_s.gsub(/\s+/, " ").strip
+    self.short_name = normalized_name.scan(/\X/).first(12).join
   end
 end

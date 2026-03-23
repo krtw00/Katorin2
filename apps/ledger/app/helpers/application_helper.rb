@@ -33,25 +33,30 @@ module ApplicationHelper
     t("#{scope}.#{value}", default: value.to_s.humanize)
   end
 
-  def ruleset_options
-    current_organizer_account.ensure_default_rule_templates!
-    current_organizer_account.rule_templates.order(:created_at).map do |rule_template|
-      definition = rule_template.definition_for_registry
-      ["#{definition.dig("name", "ja")} / #{definition.dig("name", "en")}", rule_template.key]
-    end
-  end
-
   def stage_asset_options
     current_organizer_account.ensure_default_stage_assets!
     current_organizer_account.stage_assets.where(active: true).order(:created_at).map do |stage_asset|
-      ["#{stage_asset.name_ja} / #{stage_asset.display_name_en}", stage_asset.id]
+      ["#{localized_stage_asset_name(stage_asset)} / #{translated_enum('rulesets.formats', stage_asset.format)}", stage_asset.id]
     end
   end
 
-  def localized_ruleset_text(value)
-    return value.to_s unless value.is_a?(Hash)
+  def localized_stage_asset_name(stage_asset)
+    return if stage_asset.blank?
 
-    value[I18n.locale.to_s].presence || value[I18n.default_locale.to_s].presence || value.values.compact.first.to_s
+    I18n.locale == :en ? stage_asset.display_name_en : stage_asset.name_ja.presence || stage_asset.display_name_en
+  end
+
+  def phase_structure_summary(phase)
+    parts = []
+
+    if phase.stage_asset
+      parts << localized_stage_asset_name(phase.stage_asset)
+      parts << translated_enum("rulesets.formats", phase.stage_asset.format)
+    elsif phase.kind.present?
+      parts << translated_enum("enums.phase.kind", phase.kind)
+    end
+
+    parts.compact_blank.join(" / ")
   end
 
   def league_reference_text(league)
@@ -59,7 +64,8 @@ module ApplicationHelper
   end
 
   def match_side_name(match, side)
-    side.to_s == "home" ? match.home_team.display_name : match.away_team.display_name
+    team = side.to_s == "home" ? match.home_team : match.away_team
+    team&.display_name || t("labels.none")
   end
 
   def board_winner_text(match, winner_side)
@@ -72,32 +78,20 @@ module ApplicationHelper
     [[t("matches.result_entry.no_score"), ""], [0, 0], [1, 1], [2, 2]]
   end
 
-  def ruleset_stage_summary(stage)
-    parts = [translated_enum("rulesets.formats", stage["format"])]
+  def match_title_text(match)
+    "#{match_side_name(match, 'home')} #{t('labels.vs')} #{match_side_name(match, 'away')}"
+  end
 
-    if stage["participant_scope"].present?
-      parts << translated_enum("rulesets.participant_scopes", stage["participant_scope"])
-    end
+  def match_parent_path(match)
+    return bracket_league_phase_path(league_id: match.league, id: match.phase) if match.bracket_match?
 
-    if stage["group_count"].present?
-      parts << t("rulesets.summary.group_count", count: stage["group_count"])
-    end
+    phase_week_path(phase_id: match.phase, id: match.week)
+  end
 
-    if stage["round_count"].present?
-      parts << t("rulesets.summary.round_count", count: stage["round_count"])
-    end
+  def match_parent_label(match)
+    return t("phases.bracket") if match.bracket_match?
 
-    if stage["bracket_size"].present?
-      parts << t("rulesets.summary.bracket_size", count: stage["bracket_size"])
-    end
-
-    if stage["advancement_rule"].present? && stage["advancement_rule"] != "none"
-      advancement = translated_enum("rulesets.advancement_rules", stage["advancement_rule"])
-      value = stage["advancement_value"]
-      parts << [advancement, value].compact.join(": ")
-    end
-
-    parts.join(" / ")
+    match.week.display_name
   end
 
   def locale_switcher_path(locale)
