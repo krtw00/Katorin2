@@ -14,6 +14,7 @@ class Phase < ApplicationRecord
   enum :kind, KINDS, validate: true
 
   before_validation :apply_stage_asset_defaults
+  before_validation :assign_internal_kind
   before_validation :assign_default_rule_module_key
   before_validation :assign_default_name
 
@@ -49,16 +50,24 @@ class Phase < ApplicationRecord
     bracket_size_effective - bracket_participant_count_effective
   end
 
+  def bracket_phase?
+    stage_asset&.bracket_format? || bracket_enabled?
+  end
+
   private
+
+  def assign_internal_kind
+    self.kind = bracket_phase? ? "playoff" : "regular_season" if kind.blank?
+  end
 
   def assign_default_rule_module_key
     self.rule_module_key = league&.rule_module_key || "wmgp" if rule_module_key.blank?
   end
 
   def assign_default_name
-    return if name.present? || kind.blank?
+    return if name.present?
 
-    base_name = kind == "playoff" ? I18n.t("phases.default_names.playoff") : I18n.t("phases.default_names.regular")
+    base_name = bracket_phase? ? I18n.t("phases.default_names.playoff") : I18n.t("phases.default_names.regular")
     suffix = position.presence || league&.phases&.maximum(:position).to_i + 1
     self.name = "#{base_name} #{suffix}"
   end
@@ -73,7 +82,7 @@ class Phase < ApplicationRecord
     self.kind = stage_asset.phase_kind
     self.rule_module_key = stage_asset.match_rule_key.presence || stage_asset.key
     self.ranking_rule_key = stage_asset.ranking_rule_key
-    self.bracket_enabled = stage_asset.format_playoff?
+    self.bracket_enabled = stage_asset.bracket_format?
     self.name = stage_asset.name_ja if name.blank?
   end
 end

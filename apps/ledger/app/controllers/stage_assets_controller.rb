@@ -49,7 +49,6 @@ class StageAssetsController < ApplicationController
       :description_ja,
       :description_en,
       :format,
-      :phase_kind,
       :participant_scope,
       :group_count,
       :round_count,

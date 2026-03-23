@@ -44,8 +44,27 @@ module ApplicationHelper
   def stage_asset_options
     current_organizer_account.ensure_default_stage_assets!
     current_organizer_account.stage_assets.where(active: true).order(:created_at).map do |stage_asset|
-      ["#{stage_asset.name_ja} / #{stage_asset.display_name_en}", stage_asset.id]
+      ["#{localized_stage_asset_name(stage_asset)} / #{translated_enum('rulesets.formats', stage_asset.format)}", stage_asset.id]
     end
+  end
+
+  def localized_stage_asset_name(stage_asset)
+    return if stage_asset.blank?
+
+    I18n.locale == :en ? stage_asset.display_name_en : stage_asset.name_ja.presence || stage_asset.display_name_en
+  end
+
+  def phase_structure_summary(phase)
+    parts = []
+
+    if phase.stage_asset
+      parts << localized_stage_asset_name(phase.stage_asset)
+      parts << translated_enum("rulesets.formats", phase.stage_asset.format)
+    elsif phase.kind.present?
+      parts << translated_enum("enums.phase.kind", phase.kind)
+    end
+
+    parts.compact_blank.join(" / ")
   end
 
   def localized_ruleset_text(value)

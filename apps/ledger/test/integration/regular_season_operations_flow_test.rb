@@ -1,3 +1,5 @@
+require "rack/test"
+require "stringio"
 require "test_helper"
 
 class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
@@ -20,6 +22,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       role: "staff",
       active: true
     )
+    @organizer_account.ensure_default_stage_assets!
   end
 
   test "organizer can run the regular season flow end to end" do
@@ -41,7 +44,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     post league_phases_path(locale: :ja, league_id: league), params: {
       phase: {
         name: "予選 1",
-        kind: "regular_season",
+        stage_asset_id: regular_stage_asset.id,
         bracket_participant_count: ""
       }
     }
@@ -63,7 +66,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     post phase_weeks_path(locale: :ja, phase_id: phase), params: {
       week: {
         number: 1,
-        kind: "regular",
         position: 1,
         locked_at: ""
       }
@@ -132,11 +134,11 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       lineup_size: 3,
       substitute_size: 1
     )
-    phase = league.phases.create!(name: "予選 1", kind: "regular_season", position: 1)
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
     block = phase.blocks.create!(league:, name: "Block A", position: 1)
     team = league.teams.create!(display_name: "Delete Team", block:, status: "active")
     participant = team.participants.create!(league:, display_name: "Delete Member", status: "active")
-    week = phase.weeks.create!(league:, number: 1, kind: "regular", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
     match = week.matches.create!(
       league:,
       phase:,
@@ -192,6 +194,89 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       delete league_path(locale: :ja, id: league)
     end
     assert_redirected_to leagues_path(locale: :ja)
+  end
+
+  test "organizer can import teams and members from csv and download the template" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "CSV Import League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+
+    get new_league_team_import_path(locale: :ja, league_id: league)
+    assert_response :success
+
+    get template_league_team_import_path(locale: :ja, league_id: league)
+    assert_response :success
+    assert_equal "text/csv", response.media_type
+    assert_includes response.body, "チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ"
+    assert_includes response.body, "サンプルチームA,有効,Block A,テンプレート例,山田 太郎,1,有効,リーダー"
+
+    get template_league_team_import_path(locale: :en, league_id: league)
+    assert_response :success
+    assert_includes response.body, "Team name,Team status,Block name,Team notes,Member name,Member order,Member status,Member notes"
+    assert_includes response.body, "Sample Team A,active,Block A,template example,Taro Yamada,1,active,captain"
+
+    csv = <<~CSV
+      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,active,Block A,Alpha memo,Alice,1,active,Captain
+      Team Alpha,active,Block A,Alpha memo,Bob,2,active,
+      Team Beta,withdrawn,,Beta memo,Carol,1,inactive,Reserve
+    CSV
+
+    assert_difference("Team.count", 2) do
+      assert_difference("Participant.count", 3) do
+        post league_team_import_path(locale: :ja, league_id: league), params: {
+          team_import: {
+            file: uploaded_csv(csv)
+          }
+        }
+      end
+    end
+    assert_redirected_to league_teams_path(locale: :ja, league_id: league)
+
+    team_alpha = league.teams.find_by!(display_name: "Team Alpha")
+    team_beta = league.teams.find_by!(display_name: "Team Beta")
+    assert_equal block, team_alpha.block
+    assert_equal "withdrawn", team_beta.status
+    assert_equal "Alpha memo", team_alpha.notes
+    assert_equal "Beta memo", team_beta.notes
+    assert_equal [1, 2], team_alpha.participants.order(:position).pluck(:position)
+    assert_equal %w[Alice Bob], team_alpha.participants.order(:position).pluck(:display_name)
+    assert_equal "inactive", team_beta.participants.find_by!(display_name: "Carol").status
+
+    update_csv = <<~CSV
+      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,inactive,Block A,Alpha updated,Alice,3,inactive,Updated captain
+      Team Gamma,active,,Gamma memo,Dave,1,active,New member
+    CSV
+
+    assert_difference("Team.count", 1) do
+      assert_difference("Participant.count", 1) do
+        post league_team_import_path(locale: :ja, league_id: league), params: {
+          team_import: {
+            file: uploaded_csv(update_csv)
+          }
+        }
+      end
+    end
+    assert_redirected_to league_teams_path(locale: :ja, league_id: league)
+
+    team_alpha.reload
+    alice = team_alpha.participants.find_by!(display_name: "Alice")
+    assert_equal "inactive", team_alpha.status
+    assert_equal "Alpha updated", team_alpha.notes
+    assert_equal 3, alice.position
+    assert_equal "inactive", alice.status
+    assert_equal "Updated captain", alice.notes
+    assert_equal "Gamma memo", league.teams.find_by!(display_name: "Team Gamma").notes
   end
 
   test "registration redirects to initial organizer setup and creates first owner" do
@@ -292,5 +377,18 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       "home_game_wins" => score[0],
       "away_game_wins" => score[1]
     }
+  end
+
+  def uploaded_csv(content, filename: "team-import.csv")
+    Rack::Test::UploadedFile.new(
+      StringIO.new(content),
+      "text/csv",
+      false,
+      original_filename: filename
+    )
+  end
+
+  def regular_stage_asset
+    @organizer_account.stage_assets.find_by!(format: "round_robin")
   end
 end

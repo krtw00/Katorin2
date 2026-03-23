@@ -53,7 +53,6 @@ class OrganizerAccount < ApplicationRecord
       template.description_ja = definition.dig("description", "ja").to_s
       template.description_en = definition.dig("description", "en").to_s
       template.format = stage.fetch("format")
-      template.phase_kind = stage.fetch("format") == "single_elimination" ? "playoff" : "regular_season"
       template.participant_scope = stage.fetch("participant_scope", "all_teams")
       template.group_count = stage["group_count"]
       template.round_count = stage["round_count"]

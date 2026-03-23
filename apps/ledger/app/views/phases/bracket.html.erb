@@ -12,7 +12,7 @@
     <p class="eyebrow"><%= t("phases.eyebrow") %></p>
     <h1><%= @phase.name %> / <%= t("phases.bracket") %></h1>
     <p class="muted">
-      <%= translated_enum("enums.phase.kind", @phase.kind) %>
+      <%= phase_structure_summary(@phase) %>
       <% if @bracket[:participant_count].present? %>
         / <%= t("phases.bracket_summary", participants: @bracket[:participant_count], bracket_size: @bracket[:bracket_size], byes: @bracket[:bye_count]) %>
       <% end %>
