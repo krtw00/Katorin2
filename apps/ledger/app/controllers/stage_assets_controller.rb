@@ -1,6 +1,6 @@
 class StageAssetsController < ApplicationController
   before_action :ensure_stage_assets_seeded
-  before_action :set_stage_asset, only: %i[edit update]
+  before_action :set_stage_asset, only: %i[edit update destroy]
 
   def index
     @stage_assets = current_organizer_account.stage_assets.order(:created_at)
@@ -29,6 +29,15 @@ class StageAssetsController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    unless @stage_asset.destroyable?
+      return redirect_to stage_assets_path, alert: t("flash.stage_assets.delete_blocked")
+    end
+
+    @stage_asset.destroy_for_management!
+    redirect_to stage_assets_path, notice: t("flash.stage_assets.deleted")
   end
 
   private

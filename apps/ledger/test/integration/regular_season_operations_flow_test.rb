@@ -279,6 +279,47 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal "Gamma memo", league.teams.find_by!(display_name: "Team Gamma").notes
   end
 
+  test "organizer can open shared template management screens" do
+    login_as!(@organizer_account, password: @password)
+
+    get stage_assets_path(locale: :ja)
+    assert_response :success
+  end
+
+  test "organizer can delete unused phase templates but not in-use ones" do
+    login_as!(@organizer_account, password: @password)
+
+    custom_stage_asset = @organizer_account.stage_assets.create!(
+      key: "custom_stage",
+      name_ja: "カスタムフェーズ",
+      name_en: "Custom Phase",
+      format: "round_robin",
+      participant_scope: "all_teams",
+      advancement_rule: "none",
+      active: true
+    )
+
+    assert_difference("StageAsset.count", -1) do
+      delete stage_asset_path(locale: :ja, id: custom_stage_asset)
+    end
+    assert_redirected_to stage_assets_path(locale: :ja)
+
+    league = @organizer_account.leagues.create!(
+      name: "In Use League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+
+    assert_no_difference("StageAsset.count") do
+      delete stage_asset_path(locale: :ja, id: phase.stage_asset)
+    end
+    assert_redirected_to stage_assets_path(locale: :ja)
+  end
+
   test "registration redirects to initial organizer setup and creates first owner" do
     post registration_path(locale: :ja), params: {
       organizer_account: {

@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
     resources :organizer_members, only: %i[index new create edit update destroy]
+    resources :stage_assets, only: %i[index new create edit update destroy]
 
     resources :leagues, only: %i[index show new create edit update destroy] do
       resource :team_import, only: %i[new create], controller: "team_imports" do
