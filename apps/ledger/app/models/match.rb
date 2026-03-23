@@ -10,10 +10,15 @@ class Match < ApplicationRecord
 
   belongs_to :league
   belongs_to :phase
-  belongs_to :week
+  belongs_to :week, optional: true
+  belongs_to :bracket_round, optional: true
   belongs_to :block, optional: true
-  belongs_to :home_team, class_name: "Team"
-  belongs_to :away_team, class_name: "Team"
+  belongs_to :home_team, class_name: "Team", optional: true
+  belongs_to :away_team, class_name: "Team", optional: true
+  belongs_to :home_source_match, class_name: "Match", optional: true
+  belongs_to :away_source_match, class_name: "Match", optional: true
+  belongs_to :home_loser_source_match, class_name: "Match", optional: true
+  belongs_to :away_loser_source_match, class_name: "Match", optional: true
 
   has_one :match_result, dependent: :destroy
   has_many :rounds, -> { order(:number) }, dependent: :destroy
@@ -22,10 +27,14 @@ class Match < ApplicationRecord
 
   enum :status, STATUSES, validate: true
 
-  validates :home_team, :away_team, presence: true
+  validates :slot_number, presence: true, uniqueness: { scope: :bracket_round_id }, if: :bracket_match?
+  validate :teams_present_for_regular_match
+  validate :teams_locked_after_result, if: :teams_changed?
   validate :distinct_teams
 
   def destroyable?
+    return false if bracket_match?
+
     league.draft_status? || (match_result.blank? && rounds.none?)
   end
 
@@ -57,10 +66,49 @@ class Match < ApplicationRecord
     lineup_participants = lineup_participants_for(side)
     return lineup_participants if lineup_participants.any?
 
-    (side.to_s == "home" ? home_team : away_team).participants.order(:position, :created_at)
+    team = side.to_s == "home" ? home_team : away_team
+    return Participant.none if team.blank?
+
+    team.participants.order(:position, :created_at)
+  end
+
+  def bracket_match?
+    bracket_round_id.present?
+  end
+
+  def bracket_slot_label
+    return I18n.t("bracket_rounds.third_place") if bracket_round&.third_place?
+
+    bracket_slot.presence || "R#{bracket_round&.position}-#{slot_number}"
+  end
+
+  def display_name
+    [home_team&.display_name, away_team&.display_name].compact.join(" #{I18n.t('labels.vs')} ").presence || bracket_slot_label
+  end
+
+  def ready_for_result_entry?
+    home_team.present? && away_team.present?
   end
 
   private
+
+  def teams_present_for_regular_match
+    return if bracket_match?
+    return if home_team.present? && away_team.present?
+
+    errors.add(:base, I18n.t("matches.errors.teams_required"))
+  end
+
+  def teams_locked_after_result
+    return unless match_result.present?
+    return if match_result.decision_type == "bye"
+
+    errors.add(:base, I18n.t("matches.errors.teams_locked_after_result"))
+  end
+
+  def teams_changed?
+    will_save_change_to_home_team_id? || will_save_change_to_away_team_id?
+  end
 
   def distinct_teams
     return if home_team_id.blank? || away_team_id.blank?

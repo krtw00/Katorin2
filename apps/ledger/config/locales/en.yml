@@ -100,6 +100,8 @@ en:
       deleted: Phase deleted.
       delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
       bracket_not_available: Tournament size is not available for this phase.
+      bracket_structure_locked: The tournament structure cannot be rebuilt because this phase already has legacy weeks, blocks, or matches. Create a new phase instead.
+      regular_management_only: Blocks and weeks are not used in this phase.
     stage_assets:
       created: Phase template created.
       updated: Phase template updated.
@@ -120,6 +122,8 @@ en:
       updated: Match updated.
       deleted: Match deleted.
       delete_blocked: This match cannot be deleted because it already has results. Only draft or result-empty matches can be deleted.
+      assign_teams_first: Set both teams before entering results.
+      bracket_progress_locked: The next bracket card already has a result, so advancement cannot be updated.
       lineup_updated: Order updated.
       results_updated: Match result updated.
       export_failed: "Failed to generate match image: %{message}"
@@ -334,12 +338,19 @@ en:
     byes: Byes
     bracket_summary: "Participants %{participants} / size %{bracket_size} / byes %{byes}"
     bracket_setup_hint: Set the tournament size after creating the phase. You can create the phase first and configure it afterward.
-    empty_bracket: No bracket weeks yet.
+    empty_bracket: No tournament bracket yet.
     empty_slot: "Slot %{number}"
-    empty_slot_help: Click an empty slot to create a match
+    rounds: Tournament progress
+    waiting_winner: "Winner of %{match}"
+    waiting_loser: "Loser of %{match}"
+    seed_placeholder: "Slot %{slot}"
+    round_region: "Region %{count}"
     weeks: Weeks
     blocks: Blocks
     weeks_count: "Matches: %{count}"
+    errors:
+      invalid_region_count: This participant count cannot be split into the selected initial region count.
+      third_place_requires_semifinal: Third-place matches require a tournament with at least four participants.
     form:
       stage_asset: Template
       stage_asset_hint: Choose the phase format and its default settings here.
@@ -348,7 +359,11 @@ en:
       name_hint: Only enter this when you need a custom display name.
       bracket_participant_count: Participant count
       bracket_participant_count_hint: Use this for tournament-style phases. Enter the number of teams, and any empty slots will be shown as automatic byes.
+      bracket_region_count: Initial region count
+      bracket_region_count_hint: 1 is a standard bracket. 2 or 4 split the opening bracket into regions that merge into the final.
       bracket_participant_count_later_hint: You can set the tournament size after creating the phase.
+      third_place_match_enabled: Create a third-place match
+      third_place_match_enabled_hint: Automatically creates a third-place match between the semifinal losers.
       position_hint: Order is assigned automatically on create. Reordering should be handled separately.
       kind: Kind
       position: Position
@@ -405,6 +420,9 @@ en:
     delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
     rounds_count: "Round %{number} / %{status} / Boards: %{count}"
+    errors:
+      teams_required: Set both teams for this match.
+      teams_locked_after_result: Teams cannot be changed after a result has been recorded.
     lineup:
       title: Order
       short: Order
@@ -450,6 +468,12 @@ en:
       room_id: Room ID
       spectator_room_id: Spectator ID
       notes: Notes
+  bracket_rounds:
+    final: Final
+    semifinal: Semifinal
+    quarterfinal: Quarterfinal
+    third_place: Third-place match
+    top: "Top %{count}"
   sessions:
     title: Log in
     lede: Sign in with your organizer account.
@@ -585,6 +609,9 @@ en:
         room_id: Room ID
         spectator_room_id: Spectator ID
     errors:
+      messages:
+        record_invalid: "Validation failed: %{errors}"
+        taken: has already been taken.
       models:
         board_result:
           attributes:

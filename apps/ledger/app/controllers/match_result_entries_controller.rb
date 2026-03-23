@@ -1,5 +1,6 @@
 class MatchResultEntriesController < ApplicationController
   before_action :set_match
+  before_action :ensure_match_ready!
   before_action :set_result_form_state
 
   def edit
@@ -7,7 +8,12 @@ class MatchResultEntriesController < ApplicationController
 
   def update
     MatchResults::Recorder.new(@match, result_entry_params).save!
+    Brackets::ProgressionSync.new(@match).sync!
     redirect_to edit_match_result_entry_path(match_id: @match), notice: t("flash.matches.results_updated")
+  rescue Brackets::ProgressionSync::LockedError => error
+    flash.now[:alert] = error.message
+    set_result_form_state
+    render :edit, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => error
     flash.now[:alert] = error.record.errors.full_messages.to_sentence
     set_result_form_state
@@ -19,8 +25,14 @@ class MatchResultEntriesController < ApplicationController
   def set_match
     @match = Match.joins(:league)
       .where(id: params[:match_id], leagues: { organizer_account_id: current_organizer_account.id })
-      .includes(:league, :phase, :week, :home_team, :away_team, :match_lineup_members, rounds: :board_results)
+      .includes(:league, :phase, :week, :bracket_round, :home_team, :away_team, :match_lineup_members, rounds: :board_results)
       .first!
+  end
+
+  def ensure_match_ready!
+    return if @match.ready_for_result_entry?
+
+    redirect_to edit_match_path(id: @match), alert: t("flash.matches.assign_teams_first")
   end
 
   def set_result_form_state

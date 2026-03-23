@@ -64,7 +64,8 @@ module ApplicationHelper
   end
 
   def match_side_name(match, side)
-    side.to_s == "home" ? match.home_team.display_name : match.away_team.display_name
+    team = side.to_s == "home" ? match.home_team : match.away_team
+    team&.display_name || t("labels.none")
   end
 
   def board_winner_text(match, winner_side)
@@ -75,6 +76,22 @@ module ApplicationHelper
 
   def game_win_options
     [[t("matches.result_entry.no_score"), ""], [0, 0], [1, 1], [2, 2]]
+  end
+
+  def match_title_text(match)
+    "#{match_side_name(match, 'home')} #{t('labels.vs')} #{match_side_name(match, 'away')}"
+  end
+
+  def match_parent_path(match)
+    return bracket_league_phase_path(league_id: match.league, id: match.phase) if match.bracket_match?
+
+    phase_week_path(phase_id: match.phase, id: match.week)
+  end
+
+  def match_parent_label(match)
+    return t("phases.bracket") if match.bracket_match?
+
+    match.week.display_name
   end
 
   def locale_switcher_path(locale)

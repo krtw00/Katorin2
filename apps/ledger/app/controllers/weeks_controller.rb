@@ -1,5 +1,6 @@
 class WeeksController < ApplicationController
   before_action :set_phase
+  before_action :ensure_regular_phase
   before_action :set_week, only: %i[show edit update destroy]
 
   def show
@@ -67,5 +68,11 @@ class WeeksController < ApplicationController
 
   def next_number
     @phase.weeks.maximum(:number).to_i + 1
+  end
+
+  def ensure_regular_phase
+    return unless @phase.bracket_phase?
+
+    redirect_to bracket_league_phase_path(league_id: @phase.league, id: @phase), alert: t("flash.phases.regular_management_only")
   end
 end

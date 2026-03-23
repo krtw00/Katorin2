@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_23_202000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -76,6 +76,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
     t.index ["round_id"], name: "index_board_results_on_round_id"
     t.check_constraint "result_status::text = ANY (ARRAY['partial'::character varying::text, 'confirmed'::character varying::text, 'void'::character varying::text])", name: "board_results_result_status_inclusion"
     t.check_constraint "winner_side IS NULL OR (winner_side::text = ANY (ARRAY['home'::character varying::text, 'away'::character varying::text]))", name: "board_results_winner_side_inclusion"
+  end
+
+  create_table "bracket_rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "lane_number"
+    t.uuid "phase_id", null: false
+    t.integer "position", null: false
+    t.string "round_kind", default: "championship", null: false
+    t.datetime "updated_at", null: false
+    t.index ["phase_id", "round_kind", "lane_number", "position"], name: "index_bracket_rounds_on_phase_kind_lane_position", unique: true
+    t.index ["phase_id"], name: "index_bracket_rounds_on_phase_id"
   end
 
   create_table "exports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -146,11 +157,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
   end
 
   create_table "matches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "away_team_id", null: false
+    t.uuid "away_loser_source_match_id"
+    t.uuid "away_source_match_id"
+    t.uuid "away_team_id"
     t.uuid "block_id"
+    t.uuid "bracket_round_id"
     t.string "bracket_slot"
     t.datetime "created_at", null: false
-    t.uuid "home_team_id", null: false
+    t.uuid "home_loser_source_match_id"
+    t.uuid "home_source_match_id"
+    t.uuid "home_team_id"
     t.string "judge_name"
     t.uuid "league_id", null: false
     t.text "notes"
@@ -158,13 +174,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
     t.string "room_id"
     t.date "scheduled_on"
     t.time "scheduled_time"
+    t.integer "slot_number"
     t.string "spectator_room_id"
     t.string "stage_key"
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
-    t.uuid "week_id", null: false
+    t.uuid "week_id"
+    t.index ["away_loser_source_match_id"], name: "index_matches_on_away_loser_source_match_id"
+    t.index ["away_source_match_id"], name: "index_matches_on_away_source_match_id"
     t.index ["away_team_id"], name: "index_matches_on_away_team_id"
     t.index ["block_id"], name: "index_matches_on_block_id"
+    t.index ["bracket_round_id", "slot_number"], name: "index_matches_on_bracket_round_id_and_slot_number", unique: true
+    t.index ["bracket_round_id"], name: "index_matches_on_bracket_round_id"
+    t.index ["home_loser_source_match_id"], name: "index_matches_on_home_loser_source_match_id"
+    t.index ["home_source_match_id"], name: "index_matches_on_home_source_match_id"
     t.index ["home_team_id"], name: "index_matches_on_home_team_id"
     t.index ["league_id"], name: "index_matches_on_league_id"
     t.index ["phase_id", "stage_key"], name: "index_matches_on_phase_id_and_stage_key"
@@ -217,6 +240,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
 
   create_table "phases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "bracket_enabled", default: false, null: false
+    t.integer "bracket_lane_count", default: 1, null: false
     t.integer "bracket_participant_count"
     t.datetime "created_at", null: false
     t.string "kind", null: false
@@ -226,6 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
     t.string "ranking_rule_key"
     t.string "rule_module_key", default: "wmgp", null: false
     t.uuid "stage_asset_id"
+    t.boolean "third_place_match_enabled", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["league_id", "name"], name: "index_phases_on_league_id_and_name", unique: true
     t.index ["league_id", "position"], name: "index_phases_on_league_id_and_position", unique: true
@@ -319,6 +344,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
   add_foreign_key "board_results", "participants", column: "away_participant_id"
   add_foreign_key "board_results", "participants", column: "home_participant_id"
   add_foreign_key "board_results", "rounds"
+  add_foreign_key "bracket_rounds", "phases"
   add_foreign_key "exports", "leagues"
   add_foreign_key "exports", "matches"
   add_foreign_key "leagues", "organizer_accounts"
@@ -328,7 +354,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_180000) do
   add_foreign_key "match_results", "matches"
   add_foreign_key "match_results", "teams", column: "winner_team_id"
   add_foreign_key "matches", "blocks"
+  add_foreign_key "matches", "bracket_rounds"
   add_foreign_key "matches", "leagues"
+  add_foreign_key "matches", "matches", column: "away_loser_source_match_id"
+  add_foreign_key "matches", "matches", column: "away_source_match_id"
+  add_foreign_key "matches", "matches", column: "home_loser_source_match_id"
+  add_foreign_key "matches", "matches", column: "home_source_match_id"
   add_foreign_key "matches", "phases"
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
