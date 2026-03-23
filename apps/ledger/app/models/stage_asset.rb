@@ -29,7 +29,7 @@ class StageAsset < ApplicationRecord
   end
 
   def destroyable?
-    phases.none?
+    true
   end
 
   def destroy_for_management!

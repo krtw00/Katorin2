@@ -17,6 +17,7 @@ class Phase < ApplicationRecord
   before_validation :assign_internal_kind
   before_validation :assign_default_rule_module_key
   before_validation :assign_default_name
+  before_validation :normalize_bracket_participant_count
 
   validates :name, :position, :rule_module_key, presence: true
   validates :name, uniqueness: { scope: :league_id }
@@ -32,7 +33,7 @@ class Phase < ApplicationRecord
   end
 
   def bracket_participant_count_effective
-    bracket_participant_count.presence || stage_asset&.bracket_size.presence || inferred_bracket_participant_count
+    bracket_participant_count.presence || inferred_bracket_participant_count
   end
 
   def bracket_size_effective
@@ -55,6 +56,10 @@ class Phase < ApplicationRecord
   end
 
   private
+
+  def normalize_bracket_participant_count
+    self.bracket_participant_count = nil if bracket_participant_count.to_i <= 0
+  end
 
   def assign_internal_kind
     self.kind = bracket_phase? ? "playoff" : "regular_season" if kind.blank?

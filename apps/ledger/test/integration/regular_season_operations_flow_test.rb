@@ -123,6 +123,94 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "attachment"
   end
 
+  test "organizer can create a tournament phase before setting participant count" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Tournament League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+
+    assert_difference("Phase.count", 1) do
+      post league_phases_path(locale: :ja, league_id: league), params: {
+        phase: {
+          name: "決勝ステージ",
+          stage_asset_id: final_stage_asset.id,
+          bracket_participant_count: 0
+        }
+      }
+    end
+    phase = league.phases.order(:created_at).last
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_nil phase.bracket_participant_count
+    assert phase.bracket_enabled?
+  end
+
+  test "organizer can open new match form for a tournament week without blocks" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Bracket League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+
+    team_a = league.teams.create!(display_name: "Bracket Alpha", status: "active")
+    team_b = league.teams.create!(display_name: "Bracket Beta", status: "active")
+
+    4.times do |index|
+      team_a.participants.create!(league:, display_name: "Alpha Player #{index + 1}", position: index + 1, status: "active")
+      team_b.participants.create!(league:, display_name: "Beta Player #{index + 1}", position: index + 1, status: "active")
+    end
+
+    get new_week_match_path(locale: :ja, week_id: week)
+
+    assert_response :success
+    assert_includes response.body, "Bracket Alpha"
+    assert_includes response.body, "Bracket Beta"
+  end
+
+  test "organizer edits tournament size from dedicated bracket settings" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Bracket Settings League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "決勝ステージ", stage_asset: final_stage_asset, position: 1)
+
+    get edit_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_no_match(/name="phase\[bracket_participant_count\]"/, response.body)
+
+    get edit_bracket_league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_response :success
+    assert_match(/name="phase\[bracket_participant_count\]"/, response.body)
+    assert_no_match(/name="phase\[stage_asset_id\]"/, response.body)
+
+    patch update_bracket_league_phase_path(locale: :ja, league_id: league, id: phase), params: {
+      phase: {
+        bracket_participant_count: 8
+      }
+    }
+
+    assert_redirected_to league_phase_path(locale: :ja, league_id: league, id: phase)
+    assert_equal 8, phase.reload.bracket_participant_count
+  end
+
   test "organizer can delete draft management data but cannot delete the last privileged member" do
     login_as!(@organizer_account, password: @password)
 
@@ -286,7 +374,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "organizer can delete unused phase templates but not in-use ones" do
+  test "organizer can delete phase templates even after a phase is created from them" do
     login_as!(@organizer_account, password: @password)
 
     custom_stage_asset = @organizer_account.stage_assets.create!(
@@ -314,10 +402,12 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     )
     phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
 
-    assert_no_difference("StageAsset.count") do
+    assert_difference("StageAsset.count", -1) do
       delete stage_asset_path(locale: :ja, id: phase.stage_asset)
     end
     assert_redirected_to stage_assets_path(locale: :ja)
+    phase.reload
+    assert_nil phase.stage_asset
   end
 
   test "registration redirects to initial organizer setup and creates first owner" do
@@ -431,5 +521,9 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
   def regular_stage_asset
     @organizer_account.stage_assets.find_by!(format: "round_robin")
+  end
+
+  def final_stage_asset
+    @organizer_account.stage_assets.find_by!(format: "single_elimination")
   end
 end

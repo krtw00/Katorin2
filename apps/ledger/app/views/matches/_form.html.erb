@@ -6,6 +6,7 @@
                 week_matches_path(week_id: week, stage_key: match.stage_key, bracket_slot: match.bracket_slot)
               end %>
 <% form_method = match.persisted? ? :patch : :post %>
+<% show_block_field = @selected_block.present? || @block_options.any? || match.block.present? %>
 
 <%= form_with model: match, url: form_url, method: form_method, class: "stack" do |form| %>
   <%= form.hidden_field :stage_key if match.stage_key.present? %>
@@ -25,16 +26,18 @@
   </div>
 
   <div class="field-grid">
-    <% if @selected_block.present? && !match.persisted? %>
-      <div class="field">
-        <label><%= t("matches.form.block") %></label>
-        <div class="field-static"><%= @selected_block.name %></div>
-      </div>
-    <% else %>
-      <div class="field">
-        <%= form.label :block_id, t("matches.form.block") %>
-        <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
-      </div>
+    <% if show_block_field %>
+      <% if @selected_block.present? && !match.persisted? %>
+        <div class="field">
+          <label><%= t("matches.form.block") %></label>
+          <div class="field-static"><%= @selected_block.name %></div>
+        </div>
+      <% else %>
+        <div class="field">
+          <%= form.label :block_id, t("matches.form.block") %>
+          <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: true %>
+        </div>
+      <% end %>
     <% end %>
 
     <div class="field">

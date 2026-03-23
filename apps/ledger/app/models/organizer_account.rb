@@ -34,11 +34,6 @@ class OrganizerAccount < ApplicationRecord
       template.description_en = definition.dig("description", "en").to_s
       template.format = stage.fetch("format")
       template.participant_scope = stage.fetch("participant_scope", "all_teams")
-      template.group_count = stage["group_count"]
-      template.round_count = stage["round_count"]
-      template.bracket_size = stage["bracket_size"]
-      template.advancement_rule = stage.fetch("advancement_rule", "none")
-      template.advancement_value = stage["advancement_value"]
       template.ranking_rule_key = stage["ranking_rule_key"]
       template.match_rule_key = stage["match_rule_key"]
       template.active = true

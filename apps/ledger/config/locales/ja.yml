@@ -99,6 +99,7 @@ ja:
       updated: フェーズを更新しました。
       deleted: フェーズを削除しました。
       delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
+      bracket_not_available: このフェーズではトーナメント人数を設定できません。
     stage_assets:
       created: フェーズテンプレートを作成しました。
       updated: フェーズテンプレートを更新しました。
@@ -327,10 +328,12 @@ ja:
     eyebrow: フェーズ
     title_new: フェーズ作成
     title_edit: フェーズ編集
+    title_edit_bracket: トーナメント人数設定
     bracket: ブラケット
     bracket_size: 枠数
     byes: BYE数
     bracket_summary: "参加 %{participants} / 枠 %{bracket_size} / BYE %{byes}"
+    bracket_setup_hint: トーナメント人数はフェーズ作成後に設定します。未設定でも先にフェーズは作成できます。
     empty_bracket: ブラケット用の週がまだありません。
     empty_slot: "枠 %{number}"
     empty_slot_help: 空欄をクリックして対戦を作成
@@ -345,6 +348,7 @@ ja:
       name_hint: 固有の表示名が必要な場合だけ入力してください。
       bracket_participant_count: 参加数
       bracket_participant_count_hint: トーナメント形式のフェーズで使います。参加チーム数を入れると、空いた枠は自動で不戦勝を入れて表示します。
+      bracket_participant_count_later_hint: トーナメント人数は作成後に設定できます。
       position_hint: 並び順は作成順で自動設定します。並び替えは別導線で扱います。
       kind: 種別
       position: 並び順
@@ -356,6 +360,9 @@ ja:
       playoff: 決勝
     delete_confirm: このフェーズを削除します。よろしいですか？
     delete_hint: 週や対戦を持たないフェーズだけ削除できます。
+    actions:
+      configure_bracket: トーナメント人数を設定
+      save_bracket: トーナメント人数を保存
   blocks:
     eyebrow: ブロック
     title_new: ブロック作成

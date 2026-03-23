@@ -42,7 +42,11 @@ Rails.application.routes.draw do
         resources :participants, only: %i[new create edit update destroy]
       end
       resources :phases, only: %i[show new create edit update destroy] do
-        get :bracket, on: :member
+        member do
+          get :bracket
+          get :edit_bracket
+          patch :update_bracket
+        end
       end
     end
 

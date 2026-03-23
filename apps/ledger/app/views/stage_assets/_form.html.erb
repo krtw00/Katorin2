@@ -50,56 +50,8 @@
         <%= form.label :participant_scope, t("stage_assets.form.participant_scope") %>
         <%= form.select :participant_scope, enum_options("rulesets.participant_scopes", StageAsset::PARTICIPANT_SCOPES), {}, required: true %>
       </div>
-
-      <div class="field">
-        <%= form.label :advancement_rule, t("stage_assets.form.advancement_rule") %>
-        <%= form.select :advancement_rule, enum_options("rulesets.advancement_rules", StageAsset::ADVANCEMENT_RULES), {}, required: true %>
-      </div>
     </div>
 
-    <div class="field-grid field-grid--quad">
-      <div class="field">
-        <%= form.label :group_count, t("stage_assets.form.group_count") %>
-        <%= form.number_field :group_count, min: 0 %>
-      </div>
-
-      <div class="field">
-        <%= form.label :round_count, t("stage_assets.form.round_count") %>
-        <%= form.number_field :round_count, min: 0 %>
-      </div>
-
-      <div class="field">
-        <%= form.label :bracket_size, t("stage_assets.form.bracket_size") %>
-        <%= form.number_field :bracket_size, min: 0 %>
-      </div>
-
-      <div class="field">
-        <%= form.label :advancement_value, t("stage_assets.form.advancement_value") %>
-        <%= form.number_field :advancement_value, min: 0 %>
-      </div>
-    </div>
-
-    <details class="details-block">
-      <summary><%= t("stage_assets.sections.advanced") %></summary>
-      <div class="details-block__body stack">
-        <div class="field-grid field-grid--quad">
-          <div class="field">
-            <%= form.label :key, t("stage_assets.form.key") %>
-            <%= form.text_field :key %>
-          </div>
-
-          <div class="field">
-            <%= form.label :ranking_rule_key, t("stage_assets.form.ranking_rule_key") %>
-            <%= form.text_field :ranking_rule_key %>
-          </div>
-
-          <div class="field">
-            <%= form.label :match_rule_key, t("stage_assets.form.match_rule_key") %>
-            <%= form.text_field :match_rule_key %>
-          </div>
-        </div>
-      </div>
-    </details>
   </div>
 
   <div class="page-actions">
