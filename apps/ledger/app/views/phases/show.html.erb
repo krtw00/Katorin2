@@ -10,7 +10,9 @@
   <div>
     <p class="eyebrow"><%= t("phases.eyebrow") %></p>
     <h1><%= @phase.name %></h1>
-    <p class="muted"><%= t("phases.meta", kind: translated_enum("enums.phase.kind", @phase.kind), bracket: @phase.bracket_enabled? ? t("labels.on") : t("labels.off")) %></p>
+    <% if phase_structure_summary(@phase).present? %>
+      <p class="muted"><%= phase_structure_summary(@phase) %></p>
+    <% end %>
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>

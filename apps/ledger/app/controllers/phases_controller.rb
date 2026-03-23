@@ -13,7 +13,7 @@ class PhasesController < ApplicationController
   end
 
   def new
-    @phase = @league.phases.new(position: next_position)
+    @phase = @league.phases.new(position: next_position, stage_asset: default_stage_asset)
   end
 
   def create
@@ -58,10 +58,15 @@ class PhasesController < ApplicationController
   end
 
   def phase_params
-    params.require(:phase).permit(:name, :kind, :bracket_participant_count)
+    params.require(:phase).permit(:name, :stage_asset_id, :bracket_participant_count)
   end
 
   def next_position
     @league.phases.maximum(:position).to_i + 1
+  end
+
+  def default_stage_asset
+    current_organizer_account.ensure_default_stage_assets!
+    current_organizer_account.stage_assets.where(active: true).order(:created_at).first
   end
 end

@@ -47,11 +47,6 @@
       </div>
 
       <div class="field">
-        <%= form.label :phase_kind, t("stage_assets.form.phase_kind") %>
-        <%= form.select :phase_kind, enum_options("enums.phase.kind", StageAsset::PHASE_KINDS), {}, required: true %>
-      </div>
-
-      <div class="field">
         <%= form.label :participant_scope, t("stage_assets.form.participant_scope") %>
         <%= form.select :participant_scope, enum_options("rulesets.participant_scopes", StageAsset::PARTICIPANT_SCOPES), {}, required: true %>
       </div>

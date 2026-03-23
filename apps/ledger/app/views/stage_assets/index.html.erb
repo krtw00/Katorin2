@@ -34,7 +34,6 @@
       <% end %>
 
       <ul class="compact-list">
-        <li><strong><%= t("stage_assets.labels.phase_kind") %>:</strong> <%= translated_enum("enums.phase.kind", stage_asset.phase_kind) %></li>
         <li><strong><%= t("stage_assets.labels.participant_scope") %>:</strong> <%= translated_enum("rulesets.participant_scopes", stage_asset.participant_scope) %></li>
         <% if stage_asset.group_count.present? %>
           <li><strong><%= t("stage_assets.labels.group_count") %>:</strong> <%= stage_asset.group_count %></li>

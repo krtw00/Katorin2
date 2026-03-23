@@ -12,7 +12,7 @@ class WeeksController < ApplicationController
   end
 
   def new
-    @week = @phase.weeks.new(position: next_position, number: next_number, kind: default_kind)
+    @week = @phase.weeks.new(position: next_position, number: next_number)
   end
 
   def create
@@ -58,7 +58,7 @@ class WeeksController < ApplicationController
   end
 
   def week_params
-    params.require(:week).permit(:number, :kind, :position, :locked_at)
+    params.require(:week).permit(:number, :position, :locked_at)
   end
 
   def next_position
@@ -67,9 +67,5 @@ class WeeksController < ApplicationController
 
   def next_number
     @phase.weeks.maximum(:number).to_i + 1
-  end
-
-  def default_kind
-    @phase.playoff? ? "playoff" : "regular"
   end
 end
