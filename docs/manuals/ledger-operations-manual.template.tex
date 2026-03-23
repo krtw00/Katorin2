@@ -1,0 +1,145 @@
+\documentclass[11pt]{ltjsarticle}
+\usepackage[a4paper,margin=18mm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=teal,
+  urlcolor=teal
+}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.8em}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Katorin2 Ledger 機能説明書}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\titleformat{\section}{\Large\bfseries\color{black}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{black}}{\thesubsection.}{0.5em}{}
+
+\newcommand{\manualimage}[2]{
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{images/#1}
+    \caption{#2}
+  \end{figure}
+}
+
+\title{Katorin2 Ledger 機能説明書}
+\author{}
+\date{__GENERATED_AT__}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\section{概要}
+この文書は \texttt{Katorin2 Ledger} の主要機能を説明する汎用マニュアルです。対象は、リーグ管理、チーム管理、CSV 一括登録、通常フェーズ運用、トーナメント運用、対戦カード編集、結果入力、フェーズテンプレート管理、運営メンバー管理です。大会固有の名称や運用手順は別紙で補足し、この文書では機能そのものの使い方に絞って整理します。
+
+\begin{longtable}{p{0.28\linewidth} p{0.64\linewidth}}
+\toprule
+項目 & 値 \\
+\midrule
+画面例の URL & \url{__BASE_URL__} \\
+画面例のログイン ID & \texttt{__LOGIN_ID__} \\
+画面例のパスワード & \texttt{__PASSWORD__} \\
+\bottomrule
+\end{longtable}
+
+\section{アカウント作成}
+\manualimage{01-registration.png}{新規登録画面}
+新しい運営アカウントは新規登録画面から作成します。表示名、ログイン ID、メールアドレス、パスワードを入力して登録すると、続けて初期設定画面へ移動します。
+
+\section{初期設定}
+\manualimage{02-organizer-setup.png}{運営初期設定画面}
+新規登録直後は、owner 権限の運営メンバーを 1 名作成します。ここで入力する表示名と管理パスは、以後の運営管理で使う基準情報になります。
+
+\section{ログイン}
+\manualimage{03-login.png}{ログイン画面}
+ログイン画面でログイン ID とパスワードを入力するとホームへ移動します。この文書では \texttt{/ja} 配下の日本語 UI を基準に説明します。
+
+\section{ホーム}
+\manualimage{04-dashboard.png}{ホーム画面}
+ホームでは当日の対戦、結果未確定の対戦、リーグ一覧への入口を確認できます。運用開始時の確認画面として使います。
+
+\section{リーグ一覧}
+\manualimage{05-leagues.png}{リーグ一覧}
+リーグ一覧では運用対象リーグへの移動、新規リーグ作成、ステータス確認を行います。ここから対象リーグを選び、フェーズやチーム管理へ進みます。
+
+\section{フェーズテンプレート}
+\manualimage{06-stage-assets.png}{フェーズテンプレート一覧}
+フェーズテンプレートでは、通常フェーズやトーナメントフェーズを作るときの共通設定を管理します。形式や参加対象の初期値をここで整えておくと、リーグ内でのフェーズ作成が安定します。
+
+\section{リーグ詳細}
+\manualimage{07-league-overview.png}{リーグ詳細}
+リーグ詳細は、フェーズ一覧、最近の対戦、チーム管理への導線をまとめた入口画面です。リーグ単位の運用ではこの画面を起点に各機能へ進みます。
+
+\section{チーム一覧}
+\manualimage{08-team-list.png}{チーム一覧}
+チーム一覧では、チーム名、所属ブロック、人数、状態を確認できます。チーム詳細からは個別メンバー編集も可能です。
+
+\section{CSV 一括登録}
+\manualimage{09-csv-import.png}{CSV 一括登録}
+定型入力は CSV 一括登録を使います。テンプレートをダウンロードし、1 行 1 メンバーの形式でアップロードします。同名チーム・同名メンバーは更新扱いになります。
+
+\section{通常フェーズ}
+\manualimage{10-regular-phase.png}{通常フェーズ詳細}
+通常フェーズでは、ブロック、週、対戦数を確認します。総当たりやリーグ進行ではこの画面が主導線です。
+
+\section{週画面}
+\manualimage{11-week-view.png}{週画面}
+週画面では、その週に行う対戦カードを管理します。対戦カード行から、カード編集や結果入力へ移動できます。
+
+\section{結果入力}
+\manualimage{12-result-entry.png}{結果入力画面}
+結果入力画面では卓ごとの勝敗、デッキ名、勝者を入力します。入力対象チームが確定していれば、そのまま結果確定まで進められます。
+
+\section{トーナメントフェーズ}
+\manualimage{13-tournament-phase.png}{トーナメントフェーズ詳細}
+トーナメントフェーズでは、参加人数、初期区画数、3 位決定戦の有無を設定します。大会ごとの構成差分はここで調整します。
+
+\section{ブラケット}
+\manualimage{14-bracket.png}{ブラケット画面}
+ブラケット画面では、カード単位で対戦を管理します。カードを開いてチーム割当や結果入力を行うと、勝者は次カードへ自動反映されます。
+
+\section{トーナメントカード編集}
+\manualimage{15-tournament-match-edit.png}{トーナメントカード編集}
+トーナメントカード編集では、ホーム／アウェイのチーム、開始日時、審判、ルーム ID などを管理します。同じチームを両側で選べないように UI 側で制御しています。
+
+\section{運営メンバー}
+\manualimage{16-organizer-members.png}{運営メンバー管理}
+運営メンバー画面では、owner / admin / staff の役割と有効状態を管理します。owner と admin には管理パスを設定できます。
+
+\section{代表的な利用フロー}
+\begin{enumerate}
+  \item 新規利用時はアカウント作成と初期設定を完了する
+  \item ホームで当日の対戦と結果未確定対戦を確認する
+  \item リーグ詳細から対象フェーズへ進む
+  \item 通常フェーズでは週画面で対戦カードを管理する
+  \item トーナメントではブラケット画面を主導線にする
+  \item 対戦カード編集と結果入力を進める
+  \item チームやメンバーの定型入力は CSV 一括登録を使う
+\end{enumerate}
+
+\section{補足}
+\begin{itemize}
+  \item この文書は機能説明を目的とした汎用マニュアルです。
+  \item 大会固有の名称、進行順、シード方針は個別マニュアルで補足してください。
+  \item 画像は説明しやすいよう主要コンテンツを中心に切り出しています。
+\end{itemize}
+
+\end{document}

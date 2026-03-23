@@ -1,0 +1,11 @@
+node_modules/
+images/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.toc
+ledger-operations-manual.tex
+ledger-production-manual.tex
