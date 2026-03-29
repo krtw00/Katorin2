@@ -1,5 +1,6 @@
 class LeaguesController < ApplicationController
   before_action :set_league, only: %i[show edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def index
     @leagues = current_organizer_account.leagues.order(created_at: :desc)

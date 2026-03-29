@@ -5,9 +5,10 @@ module TeamImports
     HEADERS = %w[
       team_name
       team_status
-      block_name
       team_notes
       member_name
+      member_id
+      member_role
       member_position
       member_status
       member_notes
@@ -38,6 +39,15 @@ module TeamImports
       "非表示" => "inactive"
     }.freeze
 
+    PARTICIPANT_ROLE_ALIASES = {
+      "leader" => "leader",
+      "sub_leader" => "sub_leader",
+      "member" => "member",
+      "リーダー" => "leader",
+      "サブリーダー" => "sub_leader",
+      "メンバー" => "member"
+    }.freeze
+
     Result = Struct.new(
       :success?,
       :messages,
@@ -48,8 +58,8 @@ module TeamImports
       keyword_init: true
     )
 
-    TeamSpec = Struct.new(:display_name, :status, :block_name, :notes, :members, keyword_init: true)
-    MemberSpec = Struct.new(:display_name, :position, :status, :notes, keyword_init: true)
+    TeamSpec = Struct.new(:display_name, :status, :notes, :members, keyword_init: true)
+    MemberSpec = Struct.new(:display_name, :member_id, :member_role, :position, :status, :notes, keyword_init: true)
 
     def self.headers_for(locale: I18n.locale)
       I18n.with_locale(locale) do
@@ -116,14 +126,16 @@ module TeamImports
 
         team_status = normalize_status(attributes.fetch("team_status"), TEAM_STATUS_ALIASES, :invalid_team_status, line_number)
         member_status = normalize_status(attributes.fetch("member_status"), PARTICIPANT_STATUS_ALIASES, :invalid_member_status, line_number)
+        member_role = normalize_status(attributes.fetch("member_role"), PARTICIPANT_ROLE_ALIASES, :invalid_member_role, line_number)
         member_position = normalize_position(attributes.fetch("member_position"), line_number)
 
         team_spec = team_specs[team_name] ||= TeamSpec.new(display_name: team_name, members: {})
         merge_value(team_spec, :status, team_status, :conflicting_team_field, line_number, field: "team_status")
-        merge_value(team_spec, :block_name, attributes.fetch("block_name"), :conflicting_team_field, line_number, field: "block_name")
         merge_value(team_spec, :notes, attributes.fetch("team_notes"), :conflicting_team_field, line_number, field: "team_notes")
 
         member_spec = team_spec.members[member_name] ||= MemberSpec.new(display_name: member_name)
+        merge_value(member_spec, :member_id, attributes.fetch("member_id"), :conflicting_member_field, line_number, field: "member_id", member_name:, team_name:)
+        merge_value(member_spec, :member_role, member_role, :conflicting_member_field, line_number, field: "member_role", member_name:, team_name:)
         merge_value(member_spec, :position, member_position, :conflicting_member_field, line_number, field: "member_position", member_name:, team_name:)
         merge_value(member_spec, :status, member_status, :conflicting_member_field, line_number, field: "member_status", member_name:, team_name:)
         merge_value(member_spec, :notes, attributes.fetch("member_notes"), :conflicting_member_field, line_number, field: "member_notes", member_name:, team_name:)
@@ -133,8 +145,6 @@ module TeamImports
     end
 
     def upsert_team_specs(team_specs)
-      block_map = league.blocks.index_by { |block| normalize_name(block.name) }
-
       team_specs.each_value do |team_spec|
         duplicate_teams = league.teams.where(display_name: team_spec.display_name)
         if duplicate_teams.count > 1
@@ -151,19 +161,6 @@ module TeamImports
           team_changed = true
         elsif created && team.status.blank?
           team.status = "active"
-        end
-
-        if team_spec.block_name.present?
-          block = block_map[team_spec.block_name]
-          unless block
-            messages << error_message(:unknown_block, team_name: team_spec.display_name, block_name: team_spec.block_name)
-            next
-          end
-
-          if team.block_id != block.id
-            team.block = block
-            team_changed = true
-          end
         end
 
         if team_spec.notes.present? && team.notes != team_spec.notes
@@ -189,6 +186,16 @@ module TeamImports
 
           if member_spec.position.present? && participant.position != member_spec.position
             participant.position = member_spec.position
+            participant_changed = true
+          end
+
+          if member_spec.member_id.present? && participant.member_id != member_spec.member_id
+            participant.member_id = member_spec.member_id
+            participant_changed = true
+          end
+
+          if member_spec.member_role.present? && participant.participant_role != member_spec.member_role
+            participant.participant_role = member_spec.member_role
             participant_changed = true
           end
 
@@ -349,15 +356,15 @@ module TeamImports
 
     def self.sample_rows_ja
       [
-        ["サンプルチームA", "有効", "Block A", "テンプレート例", "山田 太郎", 1, "有効", "リーダー"],
-        ["サンプルチームA", "有効", "Block A", "テンプレート例", "佐藤 花子", 2, "非表示", "欠席予定"]
+        ["サンプルチームA", "有効", "テンプレート例", "山田 太郎", nil, "リーダー", 1, "有効", "主将"],
+        ["サンプルチームA", "有効", "テンプレート例", "佐藤 花子", nil, "メンバー", 2, "非表示", "欠席予定"]
       ]
     end
 
     def self.sample_rows_en
       [
-        ["Sample Team A", "active", "Block A", "template example", "Taro Yamada", 1, "active", "captain"],
-        ["Sample Team A", "active", "Block A", "template example", "Hanako Sato", 2, "inactive", "absent"]
+        ["Sample Team A", "active", "template example", "Taro Yamada", nil, "leader", 1, "active", "captain"],
+        ["Sample Team A", "active", "template example", "Hanako Sato", nil, "member", 2, "inactive", "absent"]
       ]
     end
   end

@@ -1,5 +1,6 @@
 class TeamImportsController < ApplicationController
   before_action :set_league
+  before_action :admin_or_above!
 
   def new
     @team_import = TeamImport.new(league: @league)

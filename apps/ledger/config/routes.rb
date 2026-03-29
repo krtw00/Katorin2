@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     resource :session, only: %i[new create destroy]
     resource :registration, only: %i[new create], controller: "registrations"
     resource :organizer_setup, only: %i[new create]
+    resource :member_selection, only: %i[new create]
     root "sessions#new"
     resource :dashboard, only: :show, controller: "dashboard"
     resources :organizer_members, only: %i[index new create edit update destroy]
@@ -51,7 +52,12 @@ Rails.application.routes.draw do
     end
 
     resources :phases, only: [] do
-      resources :blocks, only: %i[new create edit update destroy]
+      resources :blocks, only: %i[show new create edit update destroy] do
+        member do
+          post :assign_team
+          delete :unassign_team
+        end
+      end
       resources :weeks, only: %i[show new create edit update destroy]
     end
 

@@ -9,6 +9,7 @@ class OrganizerMember < ApplicationRecord
   has_secure_password :admin_password, validations: false
 
   enum :role, ROLES, validate: true
+  scope :active, -> { where(active: true) }
 
   normalizes :display_name, with: ->(value) { value.strip }
 

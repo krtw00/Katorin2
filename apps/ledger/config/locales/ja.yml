@@ -11,6 +11,7 @@ ja:
     leagues: リーグ
     stage_assets: フェーズテンプレート
     organizer_members: 運営メンバー
+    switch_member: メンバー切替
     login: ログイン
     logout: ログアウト
   actions:
@@ -33,6 +34,8 @@ ja:
     create_week: 週作成
     create_match: 対戦作成
     view_bracket: ブラケット
+    unassign_team: 除外
+    assign_team: 追加
   labels:
     locale: 言語
     vs: 対
@@ -55,16 +58,21 @@ ja:
     template: テンプレート
     kind: 種別
     number: 番号
+    member_id: ID
     board: 卓
     participants_count: "メンバー %{count}"
     scheduled_at: 対戦日時
   flash:
     auth:
       required: ログインしてください。
+    authorization:
+      denied: この操作を行う権限がありません。
     sessions:
       created: ログインしました。
       destroyed: ログアウトしました。
       invalid: ログインIDまたはパスワードが違います。
+    member_selections:
+      selected: メンバーを選択しました。
     registrations:
       created: アカウントを作成しました。
       invalid: 入力内容を確認してください。
@@ -111,6 +119,8 @@ ja:
       created: ブロックを作成しました。
       updated: ブロックを更新しました。
       deleted: ブロックを削除しました。
+      team_assigned: チームをブロックに追加しました。
+      team_unassigned: チームをブロックから除外しました。
       delete_blocked: このブロックにはチームまたは対戦があるため削除できません。下書きリーグのみ整理削除できます。
     weeks:
       created: 週を作成しました。
@@ -223,6 +233,8 @@ ja:
     submit_update: メンバーを更新
     form:
       display_name: メンバー名
+      member_id: メンバーID
+      participant_role: ロール
       position: 並び順
       status: 状態
       notes: メモ
@@ -242,18 +254,20 @@ ja:
       headers:
         team_name: チーム名
         team_status: チーム状態
-        block_name: ブロック名
         team_notes: チームメモ
         member_name: メンバー名
+        member_id: メンバーID
+        member_role: メンバーロール
         member_position: メンバー順
         member_status: メンバー状態
         member_notes: メンバーメモ
       columns:
         team_name: 必須。チーム名です。
         team_status: 任意。active / inactive / withdrawn、または 有効 / 非表示 / 辞退。
-        block_name: 任意。既存ブロック名をそのまま指定します。
         team_notes: 任意。チームメモです。
         member_name: 必須。メンバー名です。
+        member_id: 任意。メンバーIDです。
+        member_role: 任意。leader / sub_leader / member、またはリーダー / サブリーダー / メンバー。
         member_position: 任意。並び順です。未入力なら末尾に自動採番します。
         member_status: 任意。active / inactive、または 有効 / 非表示。
         member_notes: 任意。メンバーメモです。
@@ -266,13 +280,23 @@ ja:
       blank_member_name: "%{line}行目: member_name は必須です。"
       invalid_team_status: "%{line}行目: team_status の値 `%{value}` は使えません。"
       invalid_member_status: "%{line}行目: member_status の値 `%{value}` は使えません。"
+      invalid_member_role: "%{line}行目: member_role の値 `%{value}` は使えません。"
       invalid_member_position: "%{line}行目: member_position は 1 以上の整数で入力してください。"
-      unknown_block: "チーム `%{team_name}`: block_name `%{block_name}` に一致するブロックがありません。"
       conflicting_team_field: "%{line}行目: 同じ team_name で `%{field}` の値が揃っていません。"
       conflicting_member_field: "%{line}行目: チーム `%{team_name}` のメンバー `%{member_name}` で `%{field}` の値が揃っていません。"
       ambiguous_team: "チーム `%{team_name}` は既存データで重複しているため、一括更新できません。"
       ambiguous_member: "チーム `%{team_name}` のメンバー `%{member_name}` は既存データで重複しているため、一括更新できません。"
       record_invalid: "保存に失敗しました: %{detail}"
+  member_selections:
+    title: 操作メンバー選択
+    lede: どのメンバーとして操作しますか？
+    member_label: メンバー
+    select_prompt: 選択してください
+    admin_password: 管理パス
+    admin_password_placeholder: 管理パスを入力
+    submit: このメンバーで操作
+    invalid_password: 管理パスが違います。
+    member_not_found: メンバーが見つかりません。
   organizer_members:
     eyebrow: 運営メンバー
     lede: 運営チームの担当者一覧を管理します。
@@ -382,10 +406,16 @@ ja:
     eyebrow: ブロック
     title_new: ブロック作成
     title_edit: ブロック編集
+    title_show: "%{block} のチーム"
     empty: ブロックがまだありません。
     usage: "チーム %{teams} / 対戦 %{matches}"
+    assign_prompt: チームを選択
+    empty_teams: このブロックにチームはまだありません。
     delete_confirm: このブロックを削除します。よろしいですか？
     delete_hint: チームや対戦を持たないブロックだけ削除できます。
+    sections:
+      teams: 所属チーム
+      assign_team: チームを追加
     form:
       name: ブロック名
       position: 並び順
@@ -545,6 +575,10 @@ ja:
       status:
         active: 有効
         inactive: 非表示
+      participant_role:
+        leader: リーダー
+        sub_leader: サブリーダー
+        member: メンバー
   activerecord:
     models:
       league: リーグ
@@ -566,6 +600,8 @@ ja:
         notes: メモ
       participant:
         display_name: メンバー名
+        member_id: メンバーID
+        participant_role: ロール
         position: 並び順
         status: 状態
         notes: メモ

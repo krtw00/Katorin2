@@ -13,14 +13,12 @@
       <%= form.select :bracket_lane_count, options_for_select([[1, 1], [2, 2], [4, 4]], phase.effective_bracket_region_count) %>
       <p class="ghost-note"><%= t("phases.form.bracket_region_count_hint") %></p>
     </div>
-  </div>
 
-  <div class="field">
-    <label class="checkbox">
-      <%= form.check_box :third_place_match_enabled %>
-      <span><%= t("phases.form.third_place_match_enabled") %></span>
-    </label>
-    <p class="ghost-note"><%= t("phases.form.third_place_match_enabled_hint") %></p>
+    <div class="field">
+      <%= form.label :third_place_match_enabled, t("phases.form.third_place_match_enabled") %>
+      <div><%= form.check_box :third_place_match_enabled, class: "checkbox-input" %></div>
+      <p class="ghost-note"><%= t("phases.form.third_place_match_enabled_hint") %></p>
+    </div>
   </div>
 
   <div class="page-actions">

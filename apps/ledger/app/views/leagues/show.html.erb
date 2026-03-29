@@ -12,9 +12,13 @@
     <p class="muted"><%= t("leagues.meta", number: @league.display_number, status: translated_enum("enums.league.status", @league.status)) %></p>
   </div>
   <div class="page-actions">
-    <%= link_to t("actions.edit"), edit_league_path(id: @league), class: "button" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_league_path(id: @league), class: "button" %>
+    <% end %>
     <%= link_to t("actions.manage_teams"), league_teams_path(league_id: @league), class: "button" %>
-    <%= link_to t("actions.create_phase"), new_league_phase_path(league_id: @league), class: "button button--primary" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.create_phase"), new_league_phase_path(league_id: @league), class: "button button--primary" %>
+    <% end %>
   </div>
 </section>
 
@@ -24,7 +28,9 @@
     <p class="muted"><%= t("leagues.team_management.lede") %></p>
     <div class="page-actions">
       <%= link_to t("actions.manage_teams"), league_teams_path(league_id: @league), class: "button" %>
-      <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+      <% if can_manage? %>
+        <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+      <% end %>
     </div>
   </article>
 

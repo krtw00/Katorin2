@@ -15,7 +15,9 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_phase_path(league_id: @phase.league, id: @phase), class: "button" %>
-    <%= link_to t("actions.edit"), edit_phase_week_path(phase_id: @phase, id: @week), class: "button" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_phase_week_path(phase_id: @phase, id: @week), class: "button" %>
+    <% end %>
   </div>
 </section>
 
@@ -28,7 +30,9 @@
             <h2><%= block&.name || t("weeks.unassigned_block") %></h2>
           </div>
           <div class="page-actions">
-            <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block&.id), class: "button" %>
+            <% if can_manage? %>
+              <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block&.id), class: "button" %>
+            <% end %>
           </div>
         </div>
         <% if matches.any? %>
@@ -51,15 +55,19 @@
               <h2><%= block.name %></h2>
             </div>
             <div class="page-actions">
-              <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block.id), class: "button" %>
+              <% if can_manage? %>
+                <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week, block_id: block.id), class: "button" %>
+              <% end %>
             </div>
           </div>
         <% end %>
       <% else %>
         <h2><%= t("weeks.matches") %></h2>
-        <div class="page-actions">
-          <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week), class: "button" %>
-        </div>
+        <% if can_manage? %>
+          <div class="page-actions">
+            <%= link_to t("actions.create_match"), new_week_match_path(week_id: @week), class: "button" %>
+          </div>
+        <% end %>
       <% end %>
     </article>
   <% end %>

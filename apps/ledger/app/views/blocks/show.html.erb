@@ -1,0 +1,59 @@
+<% page_title t("blocks.title_show", block: @block.name) %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@phase.league.name, league_path(id: @phase.league)),
+  breadcrumb_item(@phase.name, league_phase_path(league_id: @phase.league, id: @phase)),
+  breadcrumb_item(@block.name)
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("blocks.eyebrow") %></p>
+    <h1><%= @block.name %></h1>
+    <p class="muted"><%= t("blocks.usage", teams: @teams.size, matches: @block.matches.count) %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: @phase.league, id: @phase), class: "button" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_phase_block_path(phase_id: @phase, id: @block), class: "button" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel">
+    <h2><%= t("blocks.sections.teams") %></h2>
+    <% if @teams.any? %>
+      <ul class="compact-list">
+        <% @teams.each do |team| %>
+          <li>
+            <strong><%= team.display_name %></strong>
+            <%= status_badge translated_enum("enums.team.status", team.status), "neutral" %>
+            <% if can_manage? %>
+              <%= button_to t("actions.unassign_team"), unassign_team_phase_block_path(phase_id: @phase, id: @block), method: :delete, params: { team_id: team.id }, class: "button button--danger" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-copy"><%= t("blocks.empty_teams") %></p>
+    <% end %>
+  </article>
+
+  <% if can_manage? %>
+    <article class="panel">
+      <h2><%= t("blocks.sections.assign_team") %></h2>
+      <%= form_with url: assign_team_phase_block_path(phase_id: @phase, id: @block), scope: nil, class: "stack" do |form| %>
+        <div class="field">
+          <%= form.label :team_id, t("blocks.sections.assign_team") %>
+          <%= form.collection_select :team_id, @available_teams, :id, :display_name, include_blank: t("blocks.assign_prompt") %>
+        </div>
+
+        <div class="page-actions">
+          <%= form.submit t("actions.assign_team"), class: "button button--primary", disabled: @available_teams.empty? %>
+        </div>
+      <% end %>
+    </article>
+  <% end %>
+</section>
