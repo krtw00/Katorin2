@@ -10,7 +10,7 @@ module MatchExports
     WIDTH = 1024
     HEIGHT = 1449
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
-    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', sans-serif".freeze
+    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Color Emoji', sans-serif".freeze
 
     def initialize(match)
       @match = match
