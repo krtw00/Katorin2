@@ -263,6 +263,7 @@ module Brackets
         away_lines: wrap_lines(team_text(match, side: :away), max_chars: 22, max_lines: 1),
         score: match_result ? "#{match_result.home_round_wins} - #{match_result.away_round_wins}" : nil,
         meta: [match.scheduled_on, match.scheduled_time&.strftime("%H:%M")].compact.join(" "),
+        show_path: @routes.match_path(id: match),
         edit_path: @routes.edit_match_path(id: match),
         result_path: @routes.edit_match_result_entry_path(match_id: match),
         ready: match.ready_for_result_entry?,

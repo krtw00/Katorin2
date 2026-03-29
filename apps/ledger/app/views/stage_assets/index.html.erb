@@ -6,9 +6,11 @@
     <h1><%= t("stage_assets.title_index") %></h1>
     <p class="muted"><%= t("stage_assets.lede") %></p>
   </div>
-  <div class="page-actions">
-    <%= link_to t("actions.create_stage_asset"), new_stage_asset_path, class: "button button--primary" %>
-  </div>
+  <% if can_manage? %>
+    <div class="page-actions">
+      <%= link_to t("actions.create_stage_asset"), new_stage_asset_path, class: "button button--primary" %>
+    </div>
+  <% end %>
 </section>
 
 <section class="stack">
@@ -22,8 +24,10 @@
         <div class="page-actions">
           <%= status_badge translated_enum("rulesets.formats", stage_asset.format), "neutral" %>
           <%= status_badge stage_asset.active? ? t("labels.on") : t("labels.off"), stage_asset.active? ? "success" : "neutral" %>
-          <%= link_to t("actions.edit"), edit_stage_asset_path(id: stage_asset), class: "button" %>
-          <%= button_to t("actions.delete"), stage_asset_path(id: stage_asset), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("stage_assets.delete_confirm") } } %>
+          <% if can_manage? %>
+            <%= link_to t("actions.edit"), edit_stage_asset_path(id: stage_asset), class: "button" %>
+            <%= button_to t("actions.delete"), stage_asset_path(id: stage_asset), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("stage_assets.delete_confirm") } } %>
+          <% end %>
         </div>
       </div>
 

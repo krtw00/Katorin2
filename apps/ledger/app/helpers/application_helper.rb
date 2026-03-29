@@ -25,6 +25,21 @@ module ApplicationHelper
     content_tag(:span, text, class: "status-badge status-badge--#{tone}")
   end
 
+  def organizer_member_role_badge(member)
+    return if member.blank?
+
+    tone = case member.role
+           when "owner"
+             "success"
+           when "admin"
+             "warning"
+           else
+             "neutral"
+           end
+
+    status_badge(translated_enum("enums.organizer_member.role", member.role), tone)
+  end
+
   def enum_options(scope, values)
     values.map { |value| [translated_enum(scope, value), value] }
   end

@@ -3,6 +3,7 @@ class MatchesController < ApplicationController
   before_action :ensure_regular_week!, only: %i[new create]
   before_action :set_match, only: %i[show edit update destroy]
   before_action :set_form_collections, only: %i[new create edit update]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def show
     @match_result = @match.match_result

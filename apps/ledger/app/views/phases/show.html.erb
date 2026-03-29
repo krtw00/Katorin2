@@ -16,12 +16,16 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
-    <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% end %>
     <% if @phase.bracket_enabled? %>
       <%= link_to t("actions.view_bracket"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button button--primary" %>
     <% else %>
-      <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
-      <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
+      <% if can_manage? %>
+        <%= link_to t("actions.create_block"), new_phase_block_path(phase_id: @phase), class: "button" %>
+        <%= link_to t("actions.create_week"), new_phase_week_path(phase_id: @phase), class: "button button--primary" %>
+      <% end %>
     <% end %>
   </div>
 </section>
@@ -40,9 +44,11 @@
         <div><span><%= t("phases.bracket_size") %></span><strong><%= @phase.bracket_size_effective || t("labels.none") %></strong></div>
         <div><span><%= t("phases.byes") %></span><strong><%= @phase.bracket_bye_count || 0 %></strong></div>
       </div>
-      <div class="page-actions">
-        <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
-      </div>
+      <% if can_manage? %>
+        <div class="page-actions">
+          <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+        </div>
+      <% end %>
     </article>
     <article class="panel">
       <h2><%= t("phases.rounds") %></h2>
@@ -78,7 +84,11 @@
         <ul class="compact-list">
           <% @blocks.each do |block| %>
             <li>
-              <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
+              <% if can_manage? %>
+                <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
+              <% else %>
+                <%= block.name %>
+              <% end %>
               <span class="muted">/ <%= t("blocks.usage", teams: block.teams.count, matches: block.matches.count) %></span>
             </li>
           <% end %>

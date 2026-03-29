@@ -14,9 +14,11 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_path(id: @league), class: "button" %>
-    <%= link_to t("actions.download_csv_template"), template_league_team_import_path(league_id: @league), class: "button" %>
-    <%= link_to t("actions.import_teams_csv"), new_league_team_import_path(league_id: @league), class: "button" %>
-    <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.download_csv_template"), template_league_team_import_path(league_id: @league), class: "button" %>
+      <%= link_to t("actions.import_teams_csv"), new_league_team_import_path(league_id: @league), class: "button" %>
+      <%= link_to t("actions.create_team"), new_league_team_path(league_id: @league), class: "button button--primary" %>
+    <% end %>
   </div>
 </section>
 
@@ -31,7 +33,9 @@
           </div>
           <div class="page-actions">
             <%= status_badge translated_enum("enums.team.status", team.status), "neutral" %>
-            <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: team), class: "button" %>
+            <% if can_manage? %>
+              <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: team), class: "button" %>
+            <% end %>
           </div>
         </div>
       </article>
