@@ -105,6 +105,7 @@ en:
     phases:
       created: Phase created.
       updated: Phase updated.
+      seeds_applied: Seed assignment applied.
       deleted: Phase deleted.
       delete_blocked: This phase cannot be deleted because it already has weeks or matches. Only draft leagues can remove it.
       bracket_not_available: Tournament size is not available for this phase.
@@ -369,6 +370,12 @@ en:
     waiting_loser: "Loser of %{match}"
     seed_placeholder: "Slot %{slot}"
     round_region: "Region %{count}"
+    seed_assignment:
+      title: Seed assignment
+      lede: Assign teams to seed numbers to auto-place them across the bracket. Top seeds receive first-round byes.
+      seed_number: "Seed #%{number}"
+      select_team: Select a team
+      bye_badge: First-round bye
     weeks: Weeks
     blocks: Blocks
     weeks_count: "Matches: %{count}"
@@ -402,6 +409,8 @@ en:
     actions:
       configure_bracket: Set tournament size
       save_bracket: Save tournament size
+      seed_assignment: Seed assignment
+      apply_seeds: Apply seeds
   blocks:
     eyebrow: Block
     title_new: Create block

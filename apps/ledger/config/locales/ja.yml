@@ -105,6 +105,7 @@ ja:
     phases:
       created: フェーズを作成しました。
       updated: フェーズを更新しました。
+      seeds_applied: シード配置を反映しました。
       deleted: フェーズを削除しました。
       delete_blocked: このフェーズには週または対戦があるため削除できません。下書きリーグのみ削除できます。
       bracket_not_available: このフェーズではトーナメント人数を設定できません。
@@ -369,6 +370,12 @@ ja:
     waiting_loser: "%{match} の敗者"
     seed_placeholder: "枠 %{slot}"
     round_region: "区画%{count}"
+    seed_assignment:
+      title: シード配置
+      lede: シード番号にチームを割り当てると、ブラケットの全マッチに自動配置されます。上位シードには1回戦免除（BYE）が付きます。
+      seed_number: "シード #%{number}"
+      select_team: チームを選択
+      bye_badge: 1回戦免除
     weeks: 週一覧
     blocks: ブロック
     weeks_count: "対戦数 %{count}"
@@ -402,6 +409,8 @@ ja:
     actions:
       configure_bracket: トーナメント人数を設定
       save_bracket: トーナメント人数を保存
+      seed_assignment: シード配置
+      apply_seeds: 配置を反映
   blocks:
     eyebrow: ブロック
     title_new: ブロック作成

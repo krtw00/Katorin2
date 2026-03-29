@@ -1,0 +1,50 @@
+<% page_title t("phases.seed_assignment.title") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name, league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("phases.bracket"), bracket_league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("phases.actions.seed_assignment"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("phases.eyebrow") %></p>
+    <h1><%= t("phases.seed_assignment.title") %></h1>
+    <p class="muted"><%= t("phases.seed_assignment.lede") %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+  </div>
+</section>
+
+<section class="panel">
+  <%= form_with url: apply_seeds_league_phase_path(league_id: @league, id: @phase), method: :patch, scope: nil, class: "stack" do %>
+    <div class="stack">
+      <% @seed_slots.each do |seed_number, slot| %>
+        <article class="panel panel--nested">
+          <div class="panel-header">
+            <strong><%= t("phases.seed_assignment.seed_number", number: seed_number) %></strong>
+            <% if slot[:bye] %>
+              <%= status_badge(t("phases.seed_assignment.bye_badge"), "warning") %>
+            <% end %>
+          </div>
+
+          <div class="field">
+            <%= label_tag "seeds_#{seed_number}", t("phases.seed_assignment.select_team") %>
+            <%= select_tag "seeds[#{seed_number}]",
+              options_from_collection_for_select(@teams, :id, :display_name, @current_assignments[seed_number]),
+              include_blank: t("phases.seed_assignment.select_team"),
+              id: "seeds_#{seed_number}" %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+
+    <div class="page-actions">
+      <%= link_to t("actions.back"), bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+      <%= submit_tag t("phases.actions.apply_seeds"), class: "button button--primary" %>
+    </div>
+  <% end %>
+</section>

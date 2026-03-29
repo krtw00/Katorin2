@@ -47,6 +47,8 @@ Rails.application.routes.draw do
           get :bracket
           get :edit_bracket
           patch :update_bracket
+          get :seed_assignment
+          patch :apply_seeds
         end
       end
     end
