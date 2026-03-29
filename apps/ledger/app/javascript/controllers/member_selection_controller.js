@@ -2,15 +2,15 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["select", "passwordField", "submit"]
-  static values = { privileged: Array }
 
   connect() {
     this.toggle()
   }
 
   toggle() {
+    const selected = this.selectTarget.selectedOptions[0]
     const selectedId = this.selectTarget.value
-    const needsPassword = this.privilegedValue.includes(selectedId)
+    const needsPassword = selected && selected.dataset.privileged === "true"
 
     this.passwordFieldTarget.hidden = !needsPassword
     if (!needsPassword) {
