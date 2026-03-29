@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_180323) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -204,9 +204,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_180323) do
     t.string "email", null: false
     t.string "login_id", null: false
     t.string "password_digest", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_organizer_accounts_on_email", unique: true
     t.index ["login_id"], name: "index_organizer_accounts_on_login_id", unique: true
+    t.index ["reset_password_token"], name: "index_organizer_accounts_on_reset_password_token", unique: true
   end
 
   create_table "organizer_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

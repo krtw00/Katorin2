@@ -28,6 +28,7 @@
     <div class="login-links">
       <span><%= t("sessions.no_account") %></span>
       <%= link_to t("sessions.register"), new_registration_path, class: "login-links__link" %>
+      <%= link_to t("sessions.forgot_password"), new_password_reset_path, class: "login-links__link" %>
     </div>
   </div>
 </section>

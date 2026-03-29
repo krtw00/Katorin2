@@ -1,0 +1,4 @@
+<h2><%= t("password_resets.email.greeting", name: @organizer_account.display_name) %></h2>
+<p><%= t("password_resets.email.instruction") %></p>
+<p><%= link_to t("password_resets.email.link_text"), @reset_url %></p>
+<p><%= t("password_resets.email.expiry") %></p>
