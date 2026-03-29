@@ -281,6 +281,8 @@ ja:
   member_selections:
     title: 操作メンバー選択
     lede: どのメンバーとして操作しますか？
+    member_label: メンバー
+    select_prompt: 選択してください
     admin_password: 管理パス
     admin_password_placeholder: 管理パスを入力
     submit: このメンバーで操作

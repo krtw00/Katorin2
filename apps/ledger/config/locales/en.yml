@@ -281,6 +281,8 @@ en:
   member_selections:
     title: Select member
     lede: Which member do you want to operate as?
+    member_label: Member
+    select_prompt: Select a member
     admin_password: Admin password
     admin_password_placeholder: Enter the admin password
     submit: Use this member
