@@ -44,23 +44,9 @@ bin/dev
 - `SECRET_KEY_BASE`
 - `APP_HOST`
 
-任意:
+## Seed
 
-- `LEDGER_SEED_PROFILE`
-  - `blank`
-  - `bootstrap`
-  - `demo`
-
-## Seed Profiles
-
-- `blank`
-  - 何も作らない
-- `bootstrap`
-  - 共通運営アカウントだけ作る
-- `demo`
-  - 既定では `admin / demo` の demo 運営アカウントと、Season 7 のロスターを土台にした `Season 7.5` 完結済みデータを作る
-  - 旧 `Season 8` demo リーグは seed 実行時に削除される
-  - `DEMO_ORGANIZER_LOGIN_ID`, `DEMO_ORGANIZER_PASSWORD`, `DEMO_ORGANIZER_EMAIL` で上書きできる
+`bin/rails db:seed` で bootstrap アカウントとデモデータを投入する。ステージング環境がデモ環境を兼ねる。
 
 ## Current Status
 
