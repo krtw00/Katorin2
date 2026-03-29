@@ -13,8 +13,7 @@ class BlocksController < ApplicationController
   end
 
   def create
-    @block = @phase.blocks.new(block_params.merge(league: @phase.league))
-    @block.position ||= next_position
+    @block = @phase.blocks.new(block_params.merge(league: @phase.league, position: next_position))
 
     if @block.save
       redirect_to league_phase_path(league_id: @phase.league, id: @phase), notice: t("flash.blocks.created")
@@ -70,7 +69,7 @@ class BlocksController < ApplicationController
   end
 
   def block_params
-    params.require(:block).permit(:name, :position)
+    params.require(:block).permit(:name)
   end
 
   def load_show_collections
