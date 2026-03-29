@@ -84,11 +84,7 @@
         <ul class="compact-list">
           <% @blocks.each do |block| %>
             <li>
-              <% if can_manage? %>
-                <%= link_to block.name, edit_phase_block_path(phase_id: @phase, id: block) %>
-              <% else %>
-                <%= block.name %>
-              <% end %>
+              <%= link_to block.name, phase_block_path(phase_id: @phase, id: block) %>
               <span class="muted">/ <%= t("blocks.usage", teams: block.teams.count, matches: block.matches.count) %></span>
             </li>
           <% end %>

@@ -52,7 +52,12 @@ Rails.application.routes.draw do
     end
 
     resources :phases, only: [] do
-      resources :blocks, only: %i[new create edit update destroy]
+      resources :blocks, only: %i[show new create edit update destroy] do
+        member do
+          post :assign_team
+          delete :unassign_team
+        end
+      end
       resources :weeks, only: %i[show new create edit update destroy]
     end
 
