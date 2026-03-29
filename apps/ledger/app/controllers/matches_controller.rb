@@ -94,7 +94,6 @@ class MatchesController < ApplicationController
                       league.teams.order(:display_name)
                     end
     @block_options = phase.blocks.order(:position)
-    @judge_options = current_organizer_account.organizer_members.where(active: true).order(:display_name).pluck(:display_name)
   end
 
   def match_params
@@ -104,7 +103,6 @@ class MatchesController < ApplicationController
       :away_team_id,
       :scheduled_on,
       :scheduled_time,
-      :judge_name,
       :room_id,
       :spectator_room_id,
       :status,

@@ -12,6 +12,7 @@ class MatchLineupsController < ApplicationController
       persist_side!("home", @match.home_team)
       persist_side!("away", @match.away_team)
     end
+    @match.update_column(:judge_name, current_organizer_member.display_name)
 
     redirect_to edit_match_lineup_path(match_id: @match), notice: t("flash.matches.lineup_updated")
   rescue ActiveRecord::RecordInvalid => error
