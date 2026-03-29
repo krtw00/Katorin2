@@ -12,11 +12,6 @@
 
   <div class="field-grid">
     <div class="field">
-      <%= form.label :block_id, t("teams.form.block") %>
-      <%= form.collection_select :block_id, @block_options, :id, :name, include_blank: t("teams.form.no_block") %>
-    </div>
-
-    <div class="field">
       <%= form.label :status, t("teams.form.status") %>
       <%= form.select :status, enum_options("enums.team.status", %w[active inactive withdrawn]) %>
       <p class="ghost-note"><%= t("teams.form.status_hint", draft_label: translated_enum("enums.league.status", "draft"), withdrawn_label: translated_enum("enums.team.status", "withdrawn")) %></p>
