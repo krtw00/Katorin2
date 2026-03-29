@@ -535,6 +535,10 @@ h2 {
   align-items: center;
 }
 
+.login-form__row[hidden] {
+  display: none;
+}
+
 .login-form__label {
   color: rgba(231, 240, 242, 0.92);
   font-size: 0.9rem;
