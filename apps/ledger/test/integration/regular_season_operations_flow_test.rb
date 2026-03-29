@@ -481,7 +481,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to leagues_path(locale: :ja)
   end
 
-  test "organizer can create participants with member_id and see it on team details" do
+  test "organizer can create participants with member_id and role and see them on team details" do
     login_as!(@organizer_account, password: @password)
 
     league = @organizer_account.leagues.create!(
@@ -497,12 +497,14 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     get league_team_path(locale: :ja, league_id: league, id: team)
     assert_response :success
     assert_includes response.body, "メンバーID"
+    assert_includes response.body, "ロール"
 
     assert_difference("Participant.count", 1) do
       post league_team_participants_path(locale: :ja, league_id: league, team_id: team), params: {
         participant: {
           display_name: "ID Player",
           member_id: "MEM-001",
+          participant_role: "sub_leader",
           position: 1,
           status: "active",
           notes: ""
@@ -513,10 +515,12 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
     participant = team.participants.find_by!(display_name: "ID Player")
     assert_equal "MEM-001", participant.member_id
+    assert_equal "sub_leader", participant.participant_role
 
     get league_team_path(locale: :ja, league_id: league, id: team)
     assert_response :success
     assert_includes response.body, "ID Player"
+    assert_includes response.body, "サブリーダー"
     assert_includes response.body, "ID: MEM-001"
     assert_includes response.body, "番号 1"
   end
@@ -539,19 +543,19 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     get template_league_team_import_path(locale: :ja, league_id: league)
     assert_response :success
     assert_equal "text/csv", response.media_type
-    assert_includes response.body, "チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ"
-    assert_includes response.body, "サンプルチームA,有効,テンプレート例,山田 太郎,,1,有効,リーダー"
+    assert_includes response.body, "チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバーロール,メンバー順,メンバー状態,メンバーメモ"
+    assert_includes response.body, "サンプルチームA,有効,テンプレート例,山田 太郎,,リーダー,1,有効,主将"
 
     get template_league_team_import_path(locale: :en, league_id: league)
     assert_response :success
-    assert_includes response.body, "Team name,Team status,Team notes,Member name,Member ID,Member order,Member status,Member notes"
-    assert_includes response.body, "Sample Team A,active,template example,Taro Yamada,,1,active,captain"
+    assert_includes response.body, "Team name,Team status,Team notes,Member name,Member ID,Member role,Member order,Member status,Member notes"
+    assert_includes response.body, "Sample Team A,active,template example,Taro Yamada,,leader,1,active,captain"
 
     csv = <<~CSV
-      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ
-      Team Alpha,active,Alpha memo,Alice,A-001,1,active,Captain
-      Team Alpha,active,Alpha memo,Bob,,2,active,
-      Team Beta,withdrawn,Beta memo,Carol,C-009,1,inactive,Reserve
+      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバーロール,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,active,Alpha memo,Alice,A-001,leader,1,active,Captain
+      Team Alpha,active,Alpha memo,Bob,,member,2,active,
+      Team Beta,withdrawn,Beta memo,Carol,C-009,サブリーダー,1,inactive,Reserve
     CSV
 
     assert_difference("Team.count", 2) do
@@ -573,14 +577,17 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal [1, 2], team_alpha.participants.order(:position).pluck(:position)
     assert_equal %w[Alice Bob], team_alpha.participants.order(:position).pluck(:display_name)
     assert_equal "A-001", team_alpha.participants.find_by!(display_name: "Alice").member_id
+    assert_equal "leader", team_alpha.participants.find_by!(display_name: "Alice").participant_role
     assert_nil team_alpha.participants.find_by!(display_name: "Bob").member_id
+    assert_equal "member", team_alpha.participants.find_by!(display_name: "Bob").participant_role
     assert_equal "C-009", team_beta.participants.find_by!(display_name: "Carol").member_id
+    assert_equal "sub_leader", team_beta.participants.find_by!(display_name: "Carol").participant_role
     assert_equal "inactive", team_beta.participants.find_by!(display_name: "Carol").status
 
     update_csv = <<~CSV
-      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ
-      Team Alpha,inactive,Alpha updated,Alice,A-777,3,inactive,Updated captain
-      Team Gamma,active,Gamma memo,Dave,,1,active,New member
+      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバーロール,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,inactive,Alpha updated,Alice,A-777,sub_leader,3,inactive,Updated captain
+      Team Gamma,active,Gamma memo,Dave,,member,1,active,New member
     CSV
 
     assert_difference("Team.count", 1) do
@@ -600,9 +607,42 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal "Alpha updated", team_alpha.notes
     assert_equal 3, alice.position
     assert_equal "A-777", alice.member_id
+    assert_equal "sub_leader", alice.participant_role
     assert_equal "inactive", alice.status
     assert_equal "Updated captain", alice.notes
     assert_equal "Gamma memo", league.teams.find_by!(display_name: "Team Gamma").notes
+    assert_equal "member", league.teams.find_by!(display_name: "Team Gamma").participants.find_by!(display_name: "Dave").participant_role
+  end
+
+  test "organizer sees validation error when csv member_role is invalid" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "CSV Import Role Validation League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+
+    invalid_csv = <<~CSV
+      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバーロール,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,active,Alpha memo,Alice,A-001,captain,1,active,Captain
+    CSV
+
+    assert_no_difference("Team.count") do
+      assert_no_difference("Participant.count") do
+        post league_team_import_path(locale: :ja, league_id: league), params: {
+          team_import: {
+            file: uploaded_csv(invalid_csv)
+          }
+        }
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "2行目: member_role の値 `captain` は使えません。"
   end
 
   test "organizer can open shared template management screens" do

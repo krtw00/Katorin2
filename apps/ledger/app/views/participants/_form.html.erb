@@ -15,6 +15,11 @@
     </div>
 
     <div class="field">
+      <%= form.label :participant_role, t("participants.form.participant_role") %>
+      <%= form.select :participant_role, enum_options("enums.participant.participant_role", Participant::PARTICIPANT_ROLES.values) %>
+    </div>
+
+    <div class="field">
       <%= form.label :position, t("participants.form.position") %>
       <%= form.number_field :position, min: 1 %>
     </div>

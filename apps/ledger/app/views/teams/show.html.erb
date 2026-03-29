@@ -30,6 +30,7 @@
         <% @participants.each do |participant| %>
           <li>
             <strong><%= participant.display_name %></strong>
+            <%= status_badge translated_enum("enums.participant.participant_role", participant.participant_role), "neutral" %>
             <span class="muted">
               <% if participant.member_id.present? %>
                 / <%= t("labels.member_id") %>: <%= participant.member_id %>

@@ -234,6 +234,7 @@ ja:
     form:
       display_name: メンバー名
       member_id: メンバーID
+      participant_role: ロール
       position: 並び順
       status: 状態
       notes: メモ
@@ -256,6 +257,7 @@ ja:
         team_notes: チームメモ
         member_name: メンバー名
         member_id: メンバーID
+        member_role: メンバーロール
         member_position: メンバー順
         member_status: メンバー状態
         member_notes: メンバーメモ
@@ -265,6 +267,7 @@ ja:
         team_notes: 任意。チームメモです。
         member_name: 必須。メンバー名です。
         member_id: 任意。メンバーIDです。
+        member_role: 任意。leader / sub_leader / member、またはリーダー / サブリーダー / メンバー。
         member_position: 任意。並び順です。未入力なら末尾に自動採番します。
         member_status: 任意。active / inactive、または 有効 / 非表示。
         member_notes: 任意。メンバーメモです。
@@ -277,6 +280,7 @@ ja:
       blank_member_name: "%{line}行目: member_name は必須です。"
       invalid_team_status: "%{line}行目: team_status の値 `%{value}` は使えません。"
       invalid_member_status: "%{line}行目: member_status の値 `%{value}` は使えません。"
+      invalid_member_role: "%{line}行目: member_role の値 `%{value}` は使えません。"
       invalid_member_position: "%{line}行目: member_position は 1 以上の整数で入力してください。"
       conflicting_team_field: "%{line}行目: 同じ team_name で `%{field}` の値が揃っていません。"
       conflicting_member_field: "%{line}行目: チーム `%{team_name}` のメンバー `%{member_name}` で `%{field}` の値が揃っていません。"
@@ -571,6 +575,10 @@ ja:
       status:
         active: 有効
         inactive: 非表示
+      participant_role:
+        leader: リーダー
+        sub_leader: サブリーダー
+        member: メンバー
   activerecord:
     models:
       league: リーグ
@@ -593,6 +601,7 @@ ja:
       participant:
         display_name: メンバー名
         member_id: メンバーID
+        participant_role: ロール
         position: 並び順
         status: 状態
         notes: メモ

@@ -8,6 +8,7 @@ module TeamImports
       team_notes
       member_name
       member_id
+      member_role
       member_position
       member_status
       member_notes
@@ -38,6 +39,15 @@ module TeamImports
       "非表示" => "inactive"
     }.freeze
 
+    PARTICIPANT_ROLE_ALIASES = {
+      "leader" => "leader",
+      "sub_leader" => "sub_leader",
+      "member" => "member",
+      "リーダー" => "leader",
+      "サブリーダー" => "sub_leader",
+      "メンバー" => "member"
+    }.freeze
+
     Result = Struct.new(
       :success?,
       :messages,
@@ -49,7 +59,7 @@ module TeamImports
     )
 
     TeamSpec = Struct.new(:display_name, :status, :notes, :members, keyword_init: true)
-    MemberSpec = Struct.new(:display_name, :member_id, :position, :status, :notes, keyword_init: true)
+    MemberSpec = Struct.new(:display_name, :member_id, :member_role, :position, :status, :notes, keyword_init: true)
 
     def self.headers_for(locale: I18n.locale)
       I18n.with_locale(locale) do
@@ -116,6 +126,7 @@ module TeamImports
 
         team_status = normalize_status(attributes.fetch("team_status"), TEAM_STATUS_ALIASES, :invalid_team_status, line_number)
         member_status = normalize_status(attributes.fetch("member_status"), PARTICIPANT_STATUS_ALIASES, :invalid_member_status, line_number)
+        member_role = normalize_status(attributes.fetch("member_role"), PARTICIPANT_ROLE_ALIASES, :invalid_member_role, line_number)
         member_position = normalize_position(attributes.fetch("member_position"), line_number)
 
         team_spec = team_specs[team_name] ||= TeamSpec.new(display_name: team_name, members: {})
@@ -124,6 +135,7 @@ module TeamImports
 
         member_spec = team_spec.members[member_name] ||= MemberSpec.new(display_name: member_name)
         merge_value(member_spec, :member_id, attributes.fetch("member_id"), :conflicting_member_field, line_number, field: "member_id", member_name:, team_name:)
+        merge_value(member_spec, :member_role, member_role, :conflicting_member_field, line_number, field: "member_role", member_name:, team_name:)
         merge_value(member_spec, :position, member_position, :conflicting_member_field, line_number, field: "member_position", member_name:, team_name:)
         merge_value(member_spec, :status, member_status, :conflicting_member_field, line_number, field: "member_status", member_name:, team_name:)
         merge_value(member_spec, :notes, attributes.fetch("member_notes"), :conflicting_member_field, line_number, field: "member_notes", member_name:, team_name:)
@@ -179,6 +191,11 @@ module TeamImports
 
           if member_spec.member_id.present? && participant.member_id != member_spec.member_id
             participant.member_id = member_spec.member_id
+            participant_changed = true
+          end
+
+          if member_spec.member_role.present? && participant.participant_role != member_spec.member_role
+            participant.participant_role = member_spec.member_role
             participant_changed = true
           end
 
@@ -339,15 +356,15 @@ module TeamImports
 
     def self.sample_rows_ja
       [
-        ["サンプルチームA", "有効", "テンプレート例", "山田 太郎", nil, 1, "有効", "リーダー"],
-        ["サンプルチームA", "有効", "テンプレート例", "佐藤 花子", nil, 2, "非表示", "欠席予定"]
+        ["サンプルチームA", "有効", "テンプレート例", "山田 太郎", nil, "リーダー", 1, "有効", "主将"],
+        ["サンプルチームA", "有効", "テンプレート例", "佐藤 花子", nil, "メンバー", 2, "非表示", "欠席予定"]
       ]
     end
 
     def self.sample_rows_en
       [
-        ["Sample Team A", "active", "template example", "Taro Yamada", nil, 1, "active", "captain"],
-        ["Sample Team A", "active", "template example", "Hanako Sato", nil, 2, "inactive", "absent"]
+        ["Sample Team A", "active", "template example", "Taro Yamada", nil, "leader", 1, "active", "captain"],
+        ["Sample Team A", "active", "template example", "Hanako Sato", nil, "member", 2, "inactive", "absent"]
       ]
     end
   end
