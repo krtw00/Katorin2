@@ -13,7 +13,6 @@ class TeamsController < ApplicationController
 
   def new
     @team = @league.teams.new(status: "active")
-    load_block_options
   end
 
   def create
@@ -22,20 +21,17 @@ class TeamsController < ApplicationController
     if @team.save
       redirect_to league_team_path(league_id: @league, id: @team), notice: t("flash.teams.created")
     else
-      load_block_options
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    load_block_options
   end
 
   def update
     if @team.update(team_params)
       redirect_to league_team_path(league_id: @league, id: @team), notice: t("flash.teams.updated")
     else
-      load_block_options
       render :edit, status: :unprocessable_entity
     end
   end
@@ -65,10 +61,6 @@ class TeamsController < ApplicationController
   end
 
   def team_params
-    params.require(:team).permit(:display_name, :block_id, :status, :notes)
-  end
-
-  def load_block_options
-    @block_options = @league.blocks.order(:position, :name)
+    params.require(:team).permit(:display_name, :status, :notes)
   end
 end
