@@ -1,7 +1,5 @@
 <% page_title t("member_selections.title") %>
 
-<% privileged_ids = @members.select { |m| m.owner? || m.admin? }.map { |m| m.id.to_s } %>
-
 <section class="login-screen">
   <div class="login-panel">
     <div class="login-brand">
@@ -12,13 +10,17 @@
     <h1 class="member-selection-title"><%= t("member_selections.title") %></h1>
     <p class="login-copy"><%= t("member_selections.lede") %></p>
 
-    <%= form_with url: member_selection_path, class: "login-form", data: { controller: "member-selection", "member-selection-privileged-value": privileged_ids.to_json } do |form| %>
+    <%= form_with url: member_selection_path, class: "login-form", data: { controller: "member-selection" } do |form| %>
       <div class="login-form__row">
         <%= label_tag :organizer_member_id, t("member_selections.member_label"), class: "login-form__label" %>
-        <%= select_tag :organizer_member_id,
-              options_for_select(@members.map { |m| ["#{m.display_name}（#{translated_enum('enums.organizer_member.role', m.role)}）", m.id] }),
-              include_blank: t("member_selections.select_prompt"),
-              class: "login-form__input", data: { member_selection_target: "select", action: "change->member-selection#toggle" } %>
+        <select name="organizer_member_id" class="login-form__input" data-member-selection-target="select" data-action="change->member-selection#toggle">
+          <option value=""><%= t("member_selections.select_prompt") %></option>
+          <% @members.each do |m| %>
+            <option value="<%= m.id %>" <% if m.owner? || m.admin? %>data-privileged="true"<% end %>>
+              <%= m.display_name %>（<%= translated_enum("enums.organizer_member.role", m.role) %>）
+            </option>
+          <% end %>
+        </select>
       </div>
 
       <div class="login-form__row" data-member-selection-target="passwordField" hidden>
