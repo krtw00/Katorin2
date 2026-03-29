@@ -24,13 +24,15 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), match_parent_path(@match), class: "button" %>
-    <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button button--primary" %>
+    <% end %>
     <% if @match.ready_for_result_entry? %>
       <%= link_to t("actions.edit_lineup"), edit_match_lineup_path(match_id: @match), class: "button" %>
       <%= link_to t("actions.edit_result"), edit_match_result_entry_path(match_id: @match), class: "button" %>
       <%= link_to t("actions.download_export"), download_match_result_card_export_path(match_id: @match), class: "button" %>
     <% end %>
-    <% if @match.destroyable? %>
+    <% if can_manage? && @match.destroyable? %>
       <%= button_to t("actions.delete"), match_path(id: @match), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("matches.delete_confirm") } } %>
     <% end %>
   </div>

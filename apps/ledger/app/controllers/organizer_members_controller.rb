@@ -1,5 +1,6 @@
 class OrganizerMembersController < ApplicationController
   before_action :set_organizer_member, only: %i[edit update destroy]
+  before_action :owner_only!
 
   def index
     @organizer_members = current_organizer_account.organizer_members.order(:created_at)

@@ -2,6 +2,7 @@ class WeeksController < ApplicationController
   before_action :set_phase
   before_action :ensure_regular_phase
   before_action :set_week, only: %i[show edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def show
     @matches = @week.matches.includes(:home_team, :away_team, :block).order(:scheduled_on, :scheduled_time, :created_at)

@@ -1,6 +1,7 @@
 class StageAssetsController < ApplicationController
   before_action :ensure_stage_assets_seeded
   before_action :set_stage_asset, only: %i[edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def index
     @stage_assets = current_organizer_account.stage_assets.order(:created_at)

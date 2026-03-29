@@ -11,6 +11,7 @@ en:
     leagues: Leagues
     stage_assets: Phase templates
     organizer_members: Members
+    switch_member: Switch member
     login: Log in
     logout: Log out
   actions:
@@ -61,10 +62,14 @@ en:
   flash:
     auth:
       required: Please log in.
+    authorization:
+      denied: You are not allowed to perform this action.
     sessions:
       created: Logged in.
       destroyed: Logged out.
       invalid: The login ID or password is incorrect.
+    member_selections:
+      selected: Member selected.
     registrations:
       created: Account created.
       invalid: Please review the registration details.
@@ -273,6 +278,14 @@ en:
       ambiguous_team: "Team `%{team_name}` exists multiple times, so bulk update cannot continue."
       ambiguous_member: "Member `%{member_name}` in team `%{team_name}` exists multiple times, so bulk update cannot continue."
       record_invalid: "Save failed: %{detail}"
+  member_selections:
+    title: Select member
+    lede: Which member do you want to operate as?
+    admin_password: Admin password
+    admin_password_placeholder: Enter the admin password
+    submit: Use this member
+    invalid_password: The admin password is incorrect.
+    member_not_found: Member not found.
   organizer_members:
     eyebrow: Organizer members
     lede: Manage the operators who run this organizer account.

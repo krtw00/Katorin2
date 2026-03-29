@@ -23,7 +23,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <% auth_screen = %w[sessions registrations organizer_setups].include?(controller_name) && %w[new create].include?(action_name) %>
+  <% auth_screen = %w[sessions registrations organizer_setups member_selections].include?(controller_name) && %w[new create].include?(action_name) %>
 
   <body class="<%= "body--auth" if auth_screen %>">
     <div class="shell <%= "shell--auth" if auth_screen %>">
@@ -53,7 +53,9 @@
               <%= nav_link_to t("nav.home"), dashboard_path %>
               <%= nav_link_to t("nav.leagues"), leagues_path, active_paths: ["/leagues"] %>
               <%= nav_link_to t("nav.stage_assets"), stage_assets_path, active_paths: ["/stage_assets"] %>
-              <%= nav_link_to t("nav.organizer_members"), organizer_members_path, active_paths: ["/organizer_members"] %>
+              <% if can_admin? %>
+                <%= nav_link_to t("nav.organizer_members"), organizer_members_path, active_paths: ["/organizer_members"] %>
+              <% end %>
             </nav>
 
             <div class="topbar__actions">
@@ -66,7 +68,20 @@
               </div>
 
               <div class="account-box">
-                <span><%= current_organizer_account.display_name %></span>
+                <div class="account-box__identity">
+                  <strong><%= current_organizer_account.display_name %></strong>
+                  <% if current_organizer_member %>
+                    <div class="account-box__member">
+                      <%= link_to new_member_selection_path, class: "account-box__member-link" do %>
+                        <span><%= current_organizer_member.display_name %></span>
+                        <%= organizer_member_role_badge(current_organizer_member) %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+                <% if current_organizer_member %>
+                  <%= link_to t("nav.switch_member"), new_member_selection_path, class: "button button--ghost" %>
+                <% end %>
                 <%= button_to t("nav.logout"), session_path, method: :delete, class: "button button--ghost" %>
               </div>
             </div>

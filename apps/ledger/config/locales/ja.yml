@@ -11,6 +11,7 @@ ja:
     leagues: リーグ
     stage_assets: フェーズテンプレート
     organizer_members: 運営メンバー
+    switch_member: メンバー切替
     login: ログイン
     logout: ログアウト
   actions:
@@ -61,10 +62,14 @@ ja:
   flash:
     auth:
       required: ログインしてください。
+    authorization:
+      denied: この操作を行う権限がありません。
     sessions:
       created: ログインしました。
       destroyed: ログアウトしました。
       invalid: ログインIDまたはパスワードが違います。
+    member_selections:
+      selected: メンバーを選択しました。
     registrations:
       created: アカウントを作成しました。
       invalid: 入力内容を確認してください。
@@ -273,6 +278,14 @@ ja:
       ambiguous_team: "チーム `%{team_name}` は既存データで重複しているため、一括更新できません。"
       ambiguous_member: "チーム `%{team_name}` のメンバー `%{member_name}` は既存データで重複しているため、一括更新できません。"
       record_invalid: "保存に失敗しました: %{detail}"
+  member_selections:
+    title: 操作メンバー選択
+    lede: どのメンバーとして操作しますか？
+    admin_password: 管理パス
+    admin_password_placeholder: 管理パスを入力
+    submit: このメンバーで操作
+    invalid_password: 管理パスが違います。
+    member_not_found: メンバーが見つかりません。
   organizer_members:
     eyebrow: 運営メンバー
     lede: 運営チームの担当者一覧を管理します。

@@ -2,6 +2,7 @@ class BlocksController < ApplicationController
   before_action :set_phase
   before_action :ensure_regular_phase
   before_action :set_block, only: %i[edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def new
     @block = @phase.blocks.new(position: next_position)

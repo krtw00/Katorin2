@@ -1,0 +1,37 @@
+<% page_title t("member_selections.title") %>
+
+<section class="login-screen">
+  <div class="login-panel login-panel--wide">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <p class="login-brand__name">Katorin2</p>
+    </div>
+
+    <h1 class="member-selection-title"><%= t("member_selections.title") %></h1>
+    <p class="login-copy"><%= t("member_selections.lede") %></p>
+
+    <div class="member-selection-list">
+      <% @members.each do |member| %>
+        <%= form_with url: member_selection_path, class: "member-selection-card" do |form| %>
+          <%= form.hidden_field :organizer_member_id, value: member.id %>
+
+          <div class="member-selection-card__header">
+            <h2><%= member.display_name %></h2>
+            <%= organizer_member_role_badge(member) %>
+          </div>
+
+          <% if member.owner? || member.admin? %>
+            <div class="member-selection-card__field">
+              <%= label_tag "admin_password_#{member.id}", t("member_selections.admin_password"), class: "login-form__label" %>
+              <%= password_field_tag :admin_password, nil, id: "admin_password_#{member.id}", placeholder: t("member_selections.admin_password_placeholder"), autocomplete: "current-password", class: "login-form__input" %>
+            </div>
+          <% end %>
+
+          <div class="member-selection-card__actions">
+            <%= form.submit t("member_selections.submit"), class: "button button--auth" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</section>

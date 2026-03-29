@@ -1,6 +1,7 @@
 class TeamsController < ApplicationController
   before_action :set_league
   before_action :set_team, only: %i[show edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def index
     @teams = @league.teams.includes(:participants).order(:display_name, :created_at)
