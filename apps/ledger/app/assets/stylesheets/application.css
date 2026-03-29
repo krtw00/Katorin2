@@ -42,6 +42,16 @@ a {
   text-decoration: none;
 }
 
+.content a:not(.button):not(.brand-link):not(.nav-link):not(.inline-link):not(.shell-locale__link) {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.content a:not(.button):not(.brand-link):not(.nav-link):not(.inline-link):not(.shell-locale__link):visited {
+  color: #7c3aed;
+}
+
 img {
   display: block;
   max-width: 100%;
