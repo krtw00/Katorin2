@@ -496,10 +496,6 @@ h2 {
   width: min(30rem, 100%);
 }
 
-.login-panel--wide {
-  width: min(38rem, 100%);
-}
-
 .login-brand {
   display: flex;
   align-items: center;
@@ -588,42 +584,6 @@ h2 {
   margin-bottom: 0.75rem;
   text-align: center;
   font-size: 1.65rem;
-}
-
-.member-selection-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.member-selection-card {
-  display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.member-selection-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.member-selection-card__header h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.member-selection-card__field {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.member-selection-card__actions {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .stack {

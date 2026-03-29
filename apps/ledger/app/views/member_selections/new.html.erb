@@ -1,7 +1,9 @@
 <% page_title t("member_selections.title") %>
 
+<% privileged_ids = @members.select { |m| m.owner? || m.admin? }.map { |m| m.id.to_s } %>
+
 <section class="login-screen">
-  <div class="login-panel login-panel--wide">
+  <div class="login-panel">
     <div class="login-brand">
       <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
       <p class="login-brand__name">Katorin2</p>
@@ -10,28 +12,23 @@
     <h1 class="member-selection-title"><%= t("member_selections.title") %></h1>
     <p class="login-copy"><%= t("member_selections.lede") %></p>
 
-    <div class="member-selection-list">
-      <% @members.each do |member| %>
-        <%= form_with url: member_selection_path, class: "member-selection-card" do |form| %>
-          <%= form.hidden_field :organizer_member_id, value: member.id %>
+    <%= form_with url: member_selection_path, class: "login-form", data: { controller: "member-selection", member_selection_privileged_value: privileged_ids.to_json } do |form| %>
+      <div class="login-form__row">
+        <%= form.label :organizer_member_id, t("member_selections.member_label"), class: "login-form__label" %>
+        <%= form.select :organizer_member_id,
+              options_for_select(@members.map { |m| ["#{m.display_name}（#{translated_enum('enums.organizer_member.role', m.role)}）", m.id] }),
+              { include_blank: t("member_selections.select_prompt") },
+              class: "login-form__input", data: { member_selection_target: "select", action: "change->member-selection#toggle" } %>
+      </div>
 
-          <div class="member-selection-card__header">
-            <h2><%= member.display_name %></h2>
-            <%= organizer_member_role_badge(member) %>
-          </div>
+      <div class="login-form__row" data-member-selection-target="passwordField" hidden>
+        <%= form.label :admin_password, t("member_selections.admin_password"), class: "login-form__label" %>
+        <%= form.password_field :admin_password, placeholder: t("member_selections.admin_password_placeholder"), autocomplete: "current-password", class: "login-form__input" %>
+      </div>
 
-          <% if member.owner? || member.admin? %>
-            <div class="member-selection-card__field">
-              <%= label_tag "admin_password_#{member.id}", t("member_selections.admin_password"), class: "login-form__label" %>
-              <%= password_field_tag :admin_password, nil, id: "admin_password_#{member.id}", placeholder: t("member_selections.admin_password_placeholder"), autocomplete: "current-password", class: "login-form__input" %>
-            </div>
-          <% end %>
-
-          <div class="member-selection-card__actions">
-            <%= form.submit t("member_selections.submit"), class: "button button--auth" %>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
+      <div class="login-form__actions">
+        <%= form.submit t("member_selections.submit"), class: "button button--auth", disabled: true, data: { member_selection_target: "submit" } %>
+      </div>
+    <% end %>
   </div>
 </section>
