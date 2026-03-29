@@ -540,16 +540,4 @@ def seed_demo_ledger!
   puts "Seeded demo leagues: #{leagues.map(&:slug).join(', ')}"
 end
 
-seed_profile = ENV.fetch("LEDGER_SEED_PROFILE", "blank")
-
-case seed_profile
-when "blank"
-  puts "Seed profile blank: no records created"
-when "bootstrap"
-  organizer = seed_bootstrap_organizer!
-  puts "Seeded organizer: #{organizer.login_id}"
-when "demo"
-  seed_demo_ledger!
-else
-  raise "Unknown LEDGER_SEED_PROFILE: #{seed_profile}"
-end
+seed_demo_ledger!

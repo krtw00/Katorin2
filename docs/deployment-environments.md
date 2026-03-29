@@ -18,9 +18,8 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
 - 1つのランタイムが本番DBとdemo DBを動的に切り替えない
 - `同じアプリを2環境へデプロイ` し、DB も完全に分離する
 - Cloud Run service と runtime secret も環境ごとに分ける
-- demo データ判定はテーブルフラグではなく `環境` で分ける
-- staging だけ `LEDGER_SEED_PROFILE=demo` を流す
-- production は `LEDGER_SEED_PROFILE=blank` か `bootstrap` を使う
+- staging がデモ環境を兼ねる（デモデータは staging のみ）
+- production にはデモデータを入れない
 
 Cloud Run deploy:
 
@@ -76,12 +75,10 @@ seed profile:
 staging の推奨値:
 
 - `APP_HOST=katorin2-staging.web.app`
-- `LEDGER_SEED_PROFILE=demo`
 
 production の推奨値:
 
 - `APP_HOST=katorin2.codenica.dev`
-- `LEDGER_SEED_PROFILE=blank`
 
 Cloud Run one-shot job:
 
