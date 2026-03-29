@@ -58,6 +58,7 @@ en:
     template: Template
     kind: Kind
     number: Number
+    member_id: ID
     board: Board
     participants_count: "Members: %{count}"
     scheduled_at: Scheduled at
@@ -232,6 +233,7 @@ en:
     submit_update: Update member
     form:
       display_name: Member name
+      member_id: Member ID
       position: Position
       status: Status
       notes: Notes
@@ -251,18 +253,18 @@ en:
       headers:
         team_name: Team name
         team_status: Team status
-        block_name: Block name
         team_notes: Team notes
         member_name: Member name
+        member_id: Member ID
         member_position: Member order
         member_status: Member status
         member_notes: Member notes
       columns:
         team_name: Required. Team display name.
         team_status: Optional. active / inactive / withdrawn, or the localized labels.
-        block_name: Optional. Existing block name.
         team_notes: Optional. Team notes.
         member_name: Required. Member display name.
+        member_id: Optional. Member ID.
         member_position: Optional. Display order. If blank, the next available position is assigned.
         member_status: Optional. active / inactive, or the localized labels.
         member_notes: Optional. Member notes.
@@ -276,7 +278,6 @@ en:
       invalid_team_status: "Line %{line}: `%{value}` is not a valid team_status."
       invalid_member_status: "Line %{line}: `%{value}` is not a valid member_status."
       invalid_member_position: "Line %{line}: member_position must be an integer greater than or equal to 1."
-      unknown_block: "Team `%{team_name}`: no block matches `%{block_name}`."
       conflicting_team_field: "Line %{line}: `%{field}` does not match other rows with the same team_name."
       conflicting_member_field: "Line %{line}: `%{field}` does not match other rows for member `%{member_name}` in team `%{team_name}`."
       ambiguous_team: "Team `%{team_name}` exists multiple times, so bulk update cannot continue."
@@ -591,6 +592,7 @@ en:
         notes: Notes
       participant:
         display_name: Member name
+        member_id: Member ID
         position: Position
         status: Status
         notes: Notes

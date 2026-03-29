@@ -3,10 +3,15 @@
 <% participant_form_url = participant.persisted? ? league_team_participant_path(league_id: league, team_id: team, id: participant) : league_team_participants_path(league_id: league, team_id: team) %>
 
 <%= form_with model: participant, url: participant_form_url, class: "stack" do |form| %>
+  <div class="field">
+    <%= form.label :display_name, t("participants.form.display_name") %>
+    <%= form.text_field :display_name, required: true %>
+  </div>
+
   <div class="field-grid">
     <div class="field">
-      <%= form.label :display_name, t("participants.form.display_name") %>
-      <%= form.text_field :display_name, required: true %>
+      <%= form.label :member_id, t("participants.form.member_id") %>
+      <%= form.text_field :member_id %>
     </div>
 
     <div class="field">

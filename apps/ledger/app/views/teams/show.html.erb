@@ -30,7 +30,13 @@
         <% @participants.each do |participant| %>
           <li>
             <strong><%= participant.display_name %></strong>
-            <span class="muted">/ <%= t("labels.number") %> <%= participant.position || "-" %> / <%= translated_enum("enums.participant.status", participant.status) %></span>
+            <span class="muted">
+              <% if participant.member_id.present? %>
+                / <%= t("labels.member_id") %>: <%= participant.member_id %>
+              <% end %>
+              / <%= t("labels.number") %> <%= participant.position || "-" %>
+              / <%= translated_enum("enums.participant.status", participant.status) %>
+            </span>
             <% if can_manage? %>
               <%= link_to t("actions.edit"), edit_league_team_participant_path(league_id: @league, team_id: @team, id: participant), class: "inline-link" %>
             <% end %>
