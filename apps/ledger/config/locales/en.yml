@@ -234,6 +234,7 @@ en:
     form:
       display_name: Member name
       member_id: Member ID
+      participant_role: Role
       position: Position
       status: Status
       notes: Notes
@@ -256,6 +257,7 @@ en:
         team_notes: Team notes
         member_name: Member name
         member_id: Member ID
+        member_role: Member role
         member_position: Member order
         member_status: Member status
         member_notes: Member notes
@@ -265,6 +267,7 @@ en:
         team_notes: Optional. Team notes.
         member_name: Required. Member display name.
         member_id: Optional. Member ID.
+        member_role: Optional. leader / sub_leader / member.
         member_position: Optional. Display order. If blank, the next available position is assigned.
         member_status: Optional. active / inactive, or the localized labels.
         member_notes: Optional. Member notes.
@@ -277,6 +280,7 @@ en:
       blank_member_name: "Line %{line}: member_name is required."
       invalid_team_status: "Line %{line}: `%{value}` is not a valid team_status."
       invalid_member_status: "Line %{line}: `%{value}` is not a valid member_status."
+      invalid_member_role: "Row %{line}: member_role value `%{value}` is not allowed."
       invalid_member_position: "Line %{line}: member_position must be an integer greater than or equal to 1."
       conflicting_team_field: "Line %{line}: `%{field}` does not match other rows with the same team_name."
       conflicting_member_field: "Line %{line}: `%{field}` does not match other rows for member `%{member_name}` in team `%{team_name}`."
@@ -571,6 +575,10 @@ en:
       status:
         active: Active
         inactive: Hidden
+      participant_role:
+        leader: Leader
+        sub_leader: Sub-leader
+        member: Member
   activerecord:
     models:
       league: League
@@ -593,6 +601,7 @@ en:
       participant:
         display_name: Member name
         member_id: Member ID
+        participant_role: Role
         position: Position
         status: Status
         notes: Notes

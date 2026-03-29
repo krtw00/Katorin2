@@ -698,6 +698,11 @@ h2 {
   align-items: end;
 }
 
+.checkbox-input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
 .flash {
   margin-bottom: 1rem;
   border-radius: 0.7rem;

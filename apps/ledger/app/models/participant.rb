@@ -1,9 +1,13 @@
 class Participant < ApplicationRecord
+  PARTICIPANT_ROLES = { leader: "leader", sub_leader: "sub_leader", member: "member" }.freeze
+
   belongs_to :league
   belongs_to :team
 
   has_many :home_board_results, class_name: "BoardResult", foreign_key: :home_participant_id, dependent: :nullify
   has_many :away_board_results, class_name: "BoardResult", foreign_key: :away_participant_id, dependent: :nullify
+
+  enum :participant_role, PARTICIPANT_ROLES, validate: true
 
   before_validation :assign_name
   before_validation :assign_position, on: :create
