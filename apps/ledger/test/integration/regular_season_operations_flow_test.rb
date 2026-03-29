@@ -79,7 +79,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
         away_team_id: team_b.id,
         scheduled_on: Date.new(2026, 3, 22),
         scheduled_time: "20:00",
-        judge_name: @judge.display_name,
         room_id: "room-1",
         spectator_room_id: "spec-1",
         status: "scheduled",
@@ -102,6 +101,12 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_match_lineup_path(locale: :ja, match_id: match)
     match.reload
     assert_equal 8, match.match_lineup_members.count
+    assert_equal "Owner", match.judge_name
+
+    post member_selection_path(locale: :ja), params: {
+      organizer_member_id: @judge.id
+    }
+    assert_redirected_to dashboard_path(locale: :ja)
 
     patch match_result_entry_path(locale: :ja, match_id: match), params: {
       result_entry: {
@@ -112,6 +117,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
     match.reload
     assert_equal "confirmed", match.status
+    assert_equal @judge.display_name, match.judge_name
     assert_equal team_a, match.match_result.winner_team
     assert_equal [2, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
     assert_equal 3, match.rounds.count
