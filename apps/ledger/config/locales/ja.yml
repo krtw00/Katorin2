@@ -58,6 +58,7 @@ ja:
     template: テンプレート
     kind: 種別
     number: 番号
+    member_id: ID
     board: 卓
     participants_count: "メンバー %{count}"
     scheduled_at: 対戦日時
@@ -232,6 +233,7 @@ ja:
     submit_update: メンバーを更新
     form:
       display_name: メンバー名
+      member_id: メンバーID
       position: 並び順
       status: 状態
       notes: メモ
@@ -251,18 +253,18 @@ ja:
       headers:
         team_name: チーム名
         team_status: チーム状態
-        block_name: ブロック名
         team_notes: チームメモ
         member_name: メンバー名
+        member_id: メンバーID
         member_position: メンバー順
         member_status: メンバー状態
         member_notes: メンバーメモ
       columns:
         team_name: 必須。チーム名です。
         team_status: 任意。active / inactive / withdrawn、または 有効 / 非表示 / 辞退。
-        block_name: 任意。既存ブロック名をそのまま指定します。
         team_notes: 任意。チームメモです。
         member_name: 必須。メンバー名です。
+        member_id: 任意。メンバーIDです。
         member_position: 任意。並び順です。未入力なら末尾に自動採番します。
         member_status: 任意。active / inactive、または 有効 / 非表示。
         member_notes: 任意。メンバーメモです。
@@ -276,7 +278,6 @@ ja:
       invalid_team_status: "%{line}行目: team_status の値 `%{value}` は使えません。"
       invalid_member_status: "%{line}行目: member_status の値 `%{value}` は使えません。"
       invalid_member_position: "%{line}行目: member_position は 1 以上の整数で入力してください。"
-      unknown_block: "チーム `%{team_name}`: block_name `%{block_name}` に一致するブロックがありません。"
       conflicting_team_field: "%{line}行目: 同じ team_name で `%{field}` の値が揃っていません。"
       conflicting_member_field: "%{line}行目: チーム `%{team_name}` のメンバー `%{member_name}` で `%{field}` の値が揃っていません。"
       ambiguous_team: "チーム `%{team_name}` は既存データで重複しているため、一括更新できません。"
@@ -591,6 +592,7 @@ ja:
         notes: メモ
       participant:
         display_name: メンバー名
+        member_id: メンバーID
         position: 並び順
         status: 状態
         notes: メモ

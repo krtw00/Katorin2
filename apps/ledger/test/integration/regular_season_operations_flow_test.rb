@@ -475,6 +475,46 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to leagues_path(locale: :ja)
   end
 
+  test "organizer can create participants with member_id and see it on team details" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Participant ID League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    team = league.teams.create!(display_name: "Team Member ID", status: "active")
+
+    get league_team_path(locale: :ja, league_id: league, id: team)
+    assert_response :success
+    assert_includes response.body, "メンバーID"
+
+    assert_difference("Participant.count", 1) do
+      post league_team_participants_path(locale: :ja, league_id: league, team_id: team), params: {
+        participant: {
+          display_name: "ID Player",
+          member_id: "MEM-001",
+          position: 1,
+          status: "active",
+          notes: ""
+        }
+      }
+    end
+    assert_redirected_to league_team_path(locale: :ja, league_id: league, id: team)
+
+    participant = team.participants.find_by!(display_name: "ID Player")
+    assert_equal "MEM-001", participant.member_id
+
+    get league_team_path(locale: :ja, league_id: league, id: team)
+    assert_response :success
+    assert_includes response.body, "ID Player"
+    assert_includes response.body, "ID: MEM-001"
+    assert_includes response.body, "番号 1"
+  end
+
   test "organizer can import teams and members from csv and download the template" do
     login_as!(@organizer_account, password: @password)
 
@@ -486,8 +526,6 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       lineup_size: 3,
       substitute_size: 1
     )
-    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
-    block = phase.blocks.create!(league:, name: "Block A", position: 1)
 
     get new_league_team_import_path(locale: :ja, league_id: league)
     assert_response :success
@@ -495,19 +533,19 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     get template_league_team_import_path(locale: :ja, league_id: league)
     assert_response :success
     assert_equal "text/csv", response.media_type
-    assert_includes response.body, "チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ"
-    assert_includes response.body, "サンプルチームA,有効,Block A,テンプレート例,山田 太郎,1,有効,リーダー"
+    assert_includes response.body, "チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ"
+    assert_includes response.body, "サンプルチームA,有効,テンプレート例,山田 太郎,,1,有効,リーダー"
 
     get template_league_team_import_path(locale: :en, league_id: league)
     assert_response :success
-    assert_includes response.body, "Team name,Team status,Block name,Team notes,Member name,Member order,Member status,Member notes"
-    assert_includes response.body, "Sample Team A,active,Block A,template example,Taro Yamada,1,active,captain"
+    assert_includes response.body, "Team name,Team status,Team notes,Member name,Member ID,Member order,Member status,Member notes"
+    assert_includes response.body, "Sample Team A,active,template example,Taro Yamada,,1,active,captain"
 
     csv = <<~CSV
-      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
-      Team Alpha,active,Block A,Alpha memo,Alice,1,active,Captain
-      Team Alpha,active,Block A,Alpha memo,Bob,2,active,
-      Team Beta,withdrawn,,Beta memo,Carol,1,inactive,Reserve
+      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,active,Alpha memo,Alice,A-001,1,active,Captain
+      Team Alpha,active,Alpha memo,Bob,,2,active,
+      Team Beta,withdrawn,Beta memo,Carol,C-009,1,inactive,Reserve
     CSV
 
     assert_difference("Team.count", 2) do
@@ -523,18 +561,20 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
 
     team_alpha = league.teams.find_by!(display_name: "Team Alpha")
     team_beta = league.teams.find_by!(display_name: "Team Beta")
-    assert_equal block, team_alpha.block
     assert_equal "withdrawn", team_beta.status
     assert_equal "Alpha memo", team_alpha.notes
     assert_equal "Beta memo", team_beta.notes
     assert_equal [1, 2], team_alpha.participants.order(:position).pluck(:position)
     assert_equal %w[Alice Bob], team_alpha.participants.order(:position).pluck(:display_name)
+    assert_equal "A-001", team_alpha.participants.find_by!(display_name: "Alice").member_id
+    assert_nil team_alpha.participants.find_by!(display_name: "Bob").member_id
+    assert_equal "C-009", team_beta.participants.find_by!(display_name: "Carol").member_id
     assert_equal "inactive", team_beta.participants.find_by!(display_name: "Carol").status
 
     update_csv = <<~CSV
-      チーム名,チーム状態,ブロック名,チームメモ,メンバー名,メンバー順,メンバー状態,メンバーメモ
-      Team Alpha,inactive,Block A,Alpha updated,Alice,3,inactive,Updated captain
-      Team Gamma,active,,Gamma memo,Dave,1,active,New member
+      チーム名,チーム状態,チームメモ,メンバー名,メンバーID,メンバー順,メンバー状態,メンバーメモ
+      Team Alpha,inactive,Alpha updated,Alice,A-777,3,inactive,Updated captain
+      Team Gamma,active,Gamma memo,Dave,,1,active,New member
     CSV
 
     assert_difference("Team.count", 1) do
@@ -553,6 +593,7 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal "inactive", team_alpha.status
     assert_equal "Alpha updated", team_alpha.notes
     assert_equal 3, alice.position
+    assert_equal "A-777", alice.member_id
     assert_equal "inactive", alice.status
     assert_equal "Updated captain", alice.notes
     assert_equal "Gamma memo", league.teams.find_by!(display_name: "Team Gamma").notes
