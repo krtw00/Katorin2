@@ -116,11 +116,11 @@ module MatchExports
         <rect x="632" y="246" width="372" height="160" fill="#0f172a"/>
         <rect x="392" y="246" width="240" height="160" fill="#18346a"/>
 
-        #{fit_text_svg(42, 330, match.home_team.display_name, "team-name", "start", 195, font_size: 30)}
-        #{fit_text_svg(982, 330, match.away_team.display_name, "team-name", "end", 195, font_size: 30)}
+        #{fit_text_svg(42, 330, match.home_team.display_name, "team-name", "start", 200, font_size: 30)}
+        #{fit_text_svg(990, 330, match.away_team.display_name, "team-name", "end", 200, font_size: 30)}
 
         #{player_strip_svg(242, left_players)}
-        #{player_strip_svg(632, right_players)}
+        #{player_strip_svg(640, right_players)}
 
         <text x="512" y="336" text-anchor="middle" class="base title">#{escape(I18n.t("labels.vs"))}</text>
       SVG
@@ -163,11 +163,11 @@ module MatchExports
       <<~SVG
         <rect x="20" y="#{row_top}" width="984" height="50" fill="#ffe082"/>
         #{grid_lines_svg(row_top, 50)}
-        #{fit_text_svg(100, row_top + 31, board.home_participant&.display_name || "-", "table-cell", "middle", 150, font_size: 22)}
-        #{fit_text_svg(312, row_top + 31, board.home_deck_name.presence || "-", "table-cell", "middle", 250, font_size: 22)}
+        #{fit_text_svg(100, row_top + 31, board.home_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
+        #{fit_text_svg(312, row_top + 31, board.home_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
         <text x="512" y="#{row_top + 31}" text-anchor="middle" class="base score">#{escape(board.score_text || "- -")}</text>
-        #{fit_text_svg(712, row_top + 31, board.away_deck_name.presence || "-", "table-cell", "middle", 250, font_size: 22)}
-        #{fit_text_svg(924, row_top + 31, board.away_participant&.display_name || "-", "table-cell", "middle", 150, font_size: 22)}
+        #{fit_text_svg(712, row_top + 31, board.away_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
+        #{fit_text_svg(924, row_top + 31, board.away_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
       SVG
     end
 
@@ -262,7 +262,7 @@ module MatchExports
     def fit_text_svg(x, y, text, klass, anchor, max_width, font_size:)
       content = text.to_s.strip.presence || "-"
       escaped = escape(content)
-      estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 0.9 : font_size * 0.6 }
+      estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
       attrs = %{x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}"}
 
       if estimated_width > max_width
