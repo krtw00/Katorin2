@@ -2,6 +2,7 @@ class PhasesController < ApplicationController
   before_action :set_league
   before_action :set_phase, only: %i[show edit update destroy bracket edit_bracket update_bracket]
   before_action :ensure_bracket_phase, only: %i[edit_bracket update_bracket]
+  before_action :admin_or_above!, only: %i[new create edit update destroy edit_bracket update_bracket]
 
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)

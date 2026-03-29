@@ -15,8 +15,10 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_teams_path(league_id: @league), class: "button" %>
-    <%= link_to t("actions.edit"), edit_league_team_path(league_id: @league, id: @team), class: "button" %>
-    <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button button--primary" %>
+    <% if can_manage? %>
+      <%= link_to t("actions.edit"), edit_league_team_path(league_id: @league, id: @team), class: "button" %>
+      <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button button--primary" %>
+    <% end %>
   </div>
 </section>
 
@@ -28,8 +30,17 @@
         <% @participants.each do |participant| %>
           <li>
             <strong><%= participant.display_name %></strong>
-            <span class="muted">/ <%= t("labels.number") %> <%= participant.position || "-" %> / <%= translated_enum("enums.participant.status", participant.status) %></span>
-            <%= link_to t("actions.edit"), edit_league_team_participant_path(league_id: @league, team_id: @team, id: participant), class: "inline-link" %>
+            <%= status_badge translated_enum("enums.participant.participant_role", participant.participant_role), "neutral" %>
+            <span class="muted">
+              <% if participant.member_id.present? %>
+                / <%= t("labels.member_id") %>: <%= participant.member_id %>
+              <% end %>
+              / <%= t("labels.number") %> <%= participant.position || "-" %>
+              / <%= translated_enum("enums.participant.status", participant.status) %>
+            </span>
+            <% if can_manage? %>
+              <%= link_to t("actions.edit"), edit_league_team_participant_path(league_id: @league, team_id: @team, id: participant), class: "inline-link" %>
+            <% end %>
           </li>
         <% end %>
       </ul>
@@ -38,11 +49,13 @@
     <% end %>
   </article>
 
-  <article class="panel">
-    <div class="panel-header">
-      <h2><%= t("participants.title_new_inline") %></h2>
-      <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button" %>
-    </div>
-    <%= render "participants/form", league: @league, team: @team, participant: @participant %>
-  </article>
+  <% if can_manage? %>
+    <article class="panel">
+      <div class="panel-header">
+        <h2><%= t("participants.title_new_inline") %></h2>
+        <%= link_to t("actions.create_participant"), new_league_team_participant_path(league_id: @league, team_id: @team), class: "button" %>
+      </div>
+      <%= render "participants/form", league: @league, team: @team, participant: @participant %>
+    </article>
+  <% end %>
 </section>

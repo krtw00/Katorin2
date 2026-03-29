@@ -42,6 +42,16 @@ a {
   text-decoration: none;
 }
 
+.content a:not(.button):not(.brand-link):not(.nav-link):not(.inline-link):not(.shell-locale__link) {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.content a:not(.button):not(.brand-link):not(.nav-link):not(.inline-link):not(.shell-locale__link):visited {
+  color: #7c3aed;
+}
+
 img {
   display: block;
   max-width: 100%;
@@ -196,6 +206,27 @@ ol {
   border-radius: 0.75rem;
   background: #fff;
   border: 1px solid var(--line);
+}
+
+.account-box__identity {
+  display: grid;
+  gap: 0.2rem;
+  margin-right: 0.25rem;
+}
+
+.account-box__member {
+  font-size: 0.86rem;
+}
+
+.account-box__member-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
+}
+
+.account-box__member-link:hover {
+  color: var(--text);
 }
 
 .content {
@@ -514,6 +545,10 @@ h2 {
   align-items: center;
 }
 
+.login-form__row[hidden] {
+  display: none;
+}
+
 .login-form__label {
   color: rgba(231, 240, 242, 0.92);
   font-size: 0.9rem;
@@ -557,6 +592,12 @@ h2 {
   color: #f7fbfc;
   text-decoration: underline;
   text-underline-offset: 0.18rem;
+}
+
+.member-selection-title {
+  margin-bottom: 0.75rem;
+  text-align: center;
+  font-size: 1.65rem;
 }
 
 .stack {
@@ -655,6 +696,11 @@ h2 {
 .checkbox-field {
   display: flex;
   align-items: end;
+}
+
+.checkbox-input {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .flash {
@@ -967,6 +1013,12 @@ h2 {
   background: rgba(180, 35, 24, 0.08);
 }
 
+.status-badge--success {
+  border-color: rgba(22, 101, 52, 0.16);
+  color: var(--success);
+  background: rgba(22, 101, 52, 0.08);
+}
+
 .status-badge--warning {
   border-color: rgba(161, 98, 7, 0.18);
   color: var(--warning);
@@ -1000,6 +1052,11 @@ h2 {
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
+  }
+
+  .account-box {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .brand-link {
@@ -1055,6 +1112,19 @@ h2 {
   }
 
   .button--auth {
+    width: 100%;
+  }
+
+  .member-selection-card__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-selection-card__actions {
+    justify-content: stretch;
+  }
+
+  .member-selection-card__actions .button {
     width: 100%;
   }
 

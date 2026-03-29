@@ -3,6 +3,7 @@ class MatchesController < ApplicationController
   before_action :ensure_regular_week!, only: %i[new create]
   before_action :set_match, only: %i[show edit update destroy]
   before_action :set_form_collections, only: %i[new create edit update]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def show
     @match_result = @match.match_result
@@ -93,7 +94,6 @@ class MatchesController < ApplicationController
                       league.teams.order(:display_name)
                     end
     @block_options = phase.blocks.order(:position)
-    @judge_options = current_organizer_account.organizer_members.where(active: true).order(:display_name).pluck(:display_name)
   end
 
   def match_params
@@ -103,7 +103,6 @@ class MatchesController < ApplicationController
       :away_team_id,
       :scheduled_on,
       :scheduled_time,
-      :judge_name,
       :room_id,
       :spectator_room_id,
       :status,

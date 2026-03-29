@@ -10,7 +10,7 @@ module MatchExports
     WIDTH = 1024
     HEIGHT = 1449
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
-    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', sans-serif".freeze
+    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Color Emoji', sans-serif".freeze
 
     def initialize(match)
       @match = match
@@ -116,11 +116,11 @@ module MatchExports
         <rect x="632" y="246" width="372" height="160" fill="#0f172a"/>
         <rect x="392" y="246" width="240" height="160" fill="#18346a"/>
 
-        #{multiline_text_svg(42, 330, match.home_team.display_name, "team-name", 12, "start", max_lines: 3)}
-        #{multiline_text_svg(982, 330, match.away_team.display_name, "team-name", 12, "end", max_lines: 3)}
+        #{fit_text_svg(42, 330, match.home_team.display_name, "team-name", "start", 200, font_size: 30)}
+        #{fit_text_svg(990, 330, match.away_team.display_name, "team-name", "end", 200, font_size: 30)}
 
-        #{player_strip_svg(264, left_players)}
-        #{player_strip_svg(632, right_players)}
+        #{player_strip_svg(242, left_players)}
+        #{player_strip_svg(640, right_players)}
 
         <text x="512" y="336" text-anchor="middle" class="base title">#{escape(I18n.t("labels.vs"))}</text>
       SVG
@@ -163,11 +163,11 @@ module MatchExports
       <<~SVG
         <rect x="20" y="#{row_top}" width="984" height="50" fill="#ffe082"/>
         #{grid_lines_svg(row_top, 50)}
-        #{multiline_text_svg(100, row_top + 23, board.home_participant&.display_name || "-", "table-cell-small", 10, "middle", max_lines: 2, line_height: 18)}
-        <text x="312" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.home_deck_name.presence || "-", 18))}</text>
+        #{fit_text_svg(100, row_top + 31, board.home_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
+        #{fit_text_svg(312, row_top + 31, board.home_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
         <text x="512" y="#{row_top + 31}" text-anchor="middle" class="base score">#{escape(board.score_text || "- -")}</text>
-        <text x="712" y="#{row_top + 31}" text-anchor="middle" class="base table-cell">#{escape(truncate(board.away_deck_name.presence || "-", 18))}</text>
-        #{multiline_text_svg(924, row_top + 23, board.away_participant&.display_name || "-", "table-cell-small", 10, "middle", max_lines: 2, line_height: 18)}
+        #{fit_text_svg(712, row_top + 31, board.away_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
+        #{fit_text_svg(924, row_top + 31, board.away_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
       SVG
     end
 
@@ -192,9 +192,9 @@ module MatchExports
 
       <<~SVG
         <rect x="20" y="1294" width="984" height="70" fill="#0f172a"/>
-        <text x="160" y="1339" text-anchor="middle" class="base footer-team">#{escape(truncate(match.home_team.display_name, 24))}</text>
+        #{fit_text_svg(160, 1339, match.home_team.display_name, "footer-team", "middle", 280, font_size: 34)}
         <text x="512" y="1339" text-anchor="middle" class="base footer-score">#{home_score} - #{away_score}</text>
-        <text x="864" y="1339" text-anchor="middle" class="base footer-team">#{escape(truncate(match.away_team.display_name, 24))}</text>
+        #{fit_text_svg(864, 1339, match.away_team.display_name, "footer-team", "middle", 280, font_size: 34)}
       SVG
     end
 
@@ -210,9 +210,10 @@ module MatchExports
     def player_strip_svg(x, names)
       names.each_with_index.map do |name, index|
         y = 264 + (index * 42)
+        box_w = 150
         <<~SVG
-          <rect x="#{x}" y="#{y}" width="128" height="38" fill="#ffe082" stroke="#111827" stroke-width="1"/>
-          #{multiline_text_svg(x + 64, y + 17, name, "table-cell-small", 8, "middle", max_lines: 2, line_height: 15)}
+          <rect x="#{x}" y="#{y}" width="#{box_w}" height="38" fill="#ffe082" stroke="#111827" stroke-width="1"/>
+          #{fit_text_svg(x + (box_w / 2), y + 25, name, "table-cell-small", "middle", 142, font_size: 18)}
         SVG
       end.join
     end
@@ -256,6 +257,19 @@ module MatchExports
       end.join
 
       %(<text x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}">#{tspans}</text>)
+    end
+
+    def fit_text_svg(x, y, text, klass, anchor, max_width, font_size:)
+      content = text.to_s.strip.presence || "-"
+      escaped = escape(content)
+      estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
+      attrs = %{x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}"}
+
+      if estimated_width > max_width
+        %(<text #{attrs} textLength="#{max_width}" lengthAdjust="spacingAndGlyphs">#{escaped}</text>)
+      else
+        %(<text #{attrs}>#{escaped}</text>)
+      end
     end
 
     def canvas_background_svg

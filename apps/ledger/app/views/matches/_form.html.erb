@@ -59,13 +59,6 @@
       <%= form.label :scheduled_time, t("matches.form.scheduled_time") %>
       <%= form.time_field :scheduled_time %>
     </div>
-  </div>
-
-  <div class="field-grid">
-    <div class="field">
-      <%= form.label :judge_name, t("matches.form.judge_name") %>
-      <%= form.select :judge_name, options_for_select(@judge_options, match.judge_name), { include_blank: t("matches.form.select_prompt") } %>
-    </div>
 
     <div class="field">
       <%= form.label :status, t("matches.form.status") %>

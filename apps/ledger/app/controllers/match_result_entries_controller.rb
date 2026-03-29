@@ -8,6 +8,7 @@ class MatchResultEntriesController < ApplicationController
 
   def update
     MatchResults::Recorder.new(@match, result_entry_params).save!
+    @match.update_column(:judge_name, current_organizer_member.display_name)
     Brackets::ProgressionSync.new(@match).sync!
     redirect_to edit_match_result_entry_path(match_id: @match), notice: t("flash.matches.results_updated")
   rescue Brackets::ProgressionSync::LockedError => error

@@ -9,9 +9,11 @@
     <p class="eyebrow"><%= t("leagues.eyebrow_index") %></p>
     <h1><%= t("leagues.title_index") %></h1>
   </div>
-  <div class="page-actions">
-    <%= link_to t("actions.create_league"), new_league_path, class: "button button--primary" %>
-  </div>
+  <% if can_manage? %>
+    <div class="page-actions">
+      <%= link_to t("actions.create_league"), new_league_path, class: "button button--primary" %>
+    </div>
+  <% end %>
 </section>
 
 <section class="stack">

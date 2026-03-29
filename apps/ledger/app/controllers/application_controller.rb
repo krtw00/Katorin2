@@ -6,9 +6,11 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   include Authentication
+  include Authorization
 
   before_action :set_locale
   before_action :require_authentication
+  before_action :require_member_selection
   before_action :require_organizer_setup
 
   helper_method :available_locales, :locale_label
@@ -42,7 +44,15 @@ class ApplicationController < ActionController::Base
   end
 
   def post_auth_redirect_path
-    organizer_setup_required? ? new_organizer_setup_path : dashboard_path
+    organizer_setup_required? ? new_organizer_setup_path : new_member_selection_path
+  end
+
+  def require_member_selection
+    return if organizer_setup_required?
+    return if %w[sessions registrations organizer_setups member_selections].include?(controller_name)
+    return if member_selected?
+
+    redirect_to new_member_selection_path
   end
 
   def require_organizer_setup

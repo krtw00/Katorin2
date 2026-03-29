@@ -2,6 +2,7 @@ class ParticipantsController < ApplicationController
   before_action :set_league
   before_action :set_team
   before_action :set_participant, only: %i[edit update destroy]
+  before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def new
     @participant = @team.participants.new(status: "active")
@@ -54,6 +55,6 @@ class ParticipantsController < ApplicationController
   end
 
   def participant_params
-    params.require(:participant).permit(:display_name, :position, :status, :notes)
+    params.require(:participant).permit(:display_name, :member_id, :participant_role, :position, :status, :notes)
   end
 end

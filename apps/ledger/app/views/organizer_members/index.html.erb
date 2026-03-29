@@ -20,7 +20,9 @@
           <p class="muted"><%= translated_enum("enums.organizer_member.role", organizer_member.role) %></p>
         </div>
         <div class="page-actions">
-          <%= status_badge organizer_member.admin_password_configured? ? t("organizer_members.password_status.configured") : t("organizer_members.password_status.not_configured"), organizer_member.admin_password_configured? ? "success" : "warning" %>
+          <% if organizer_member.owner? || organizer_member.admin? %>
+            <%= status_badge organizer_member.admin_password_configured? ? t("organizer_members.password_status.configured") : t("organizer_members.password_status.not_configured"), organizer_member.admin_password_configured? ? "success" : "warning" %>
+          <% end %>
           <%= status_badge organizer_member.active? ? t("labels.on") : t("labels.off"), organizer_member.active? ? "success" : "neutral" %>
           <%= link_to t("actions.edit"), edit_organizer_member_path(id: organizer_member), class: "button" %>
           <% if organizer_member.destroyable? %>

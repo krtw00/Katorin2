@@ -20,7 +20,9 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
-    <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% if can_manage? %>
+      <%= link_to t("phases.actions.configure_bracket"), edit_bracket_league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <% end %>
   </div>
 </section>
 
@@ -54,7 +56,7 @@
         <% end %>
 
         <% @bracket[:cards].each do |card| %>
-          <a href="<%= card[:edit_path] %>">
+          <a href="<%= can_manage? ? card[:edit_path] : card[:show_path] %>">
             <rect x="<%= card[:x] %>" y="<%= card[:y] %>" width="<%= card[:width] %>" height="<%= card[:height] %>" rx="16" class="bracket-svg__card" />
             <text x="<%= card[:x] + 16 %>" y="<%= card[:slot_meta_y] %>" class="bracket-svg__meta"><%= card[:slot_label] %></text>
             <text x="<%= card[:x] + 16 %>" y="<%= card[:home_text_y] %>" class="bracket-svg__team">

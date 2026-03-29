@@ -11,6 +11,7 @@ en:
     leagues: Leagues
     stage_assets: Phase templates
     organizer_members: Members
+    switch_member: Switch member
     login: Log in
     logout: Log out
   actions:
@@ -33,6 +34,8 @@ en:
     create_week: Create week
     create_match: Create match
     view_bracket: Bracket
+    unassign_team: Remove
+    assign_team: Add
   labels:
     locale: Language
     vs: vs
@@ -55,16 +58,21 @@ en:
     template: Template
     kind: Kind
     number: Number
+    member_id: ID
     board: Board
     participants_count: "Members: %{count}"
     scheduled_at: Scheduled at
   flash:
     auth:
       required: Please log in.
+    authorization:
+      denied: You are not allowed to perform this action.
     sessions:
       created: Logged in.
       destroyed: Logged out.
       invalid: The login ID or password is incorrect.
+    member_selections:
+      selected: Member selected.
     registrations:
       created: Account created.
       invalid: Please review the registration details.
@@ -111,6 +119,8 @@ en:
       created: Block created.
       updated: Block updated.
       deleted: Block deleted.
+      team_assigned: Team assigned to block.
+      team_unassigned: Team removed from block.
       delete_blocked: This block cannot be deleted because it still has teams or matches. Only draft leagues can clean it up.
     weeks:
       created: Week created.
@@ -223,6 +233,8 @@ en:
     submit_update: Update member
     form:
       display_name: Member name
+      member_id: Member ID
+      participant_role: Role
       position: Position
       status: Status
       notes: Notes
@@ -242,18 +254,20 @@ en:
       headers:
         team_name: Team name
         team_status: Team status
-        block_name: Block name
         team_notes: Team notes
         member_name: Member name
+        member_id: Member ID
+        member_role: Member role
         member_position: Member order
         member_status: Member status
         member_notes: Member notes
       columns:
         team_name: Required. Team display name.
         team_status: Optional. active / inactive / withdrawn, or the localized labels.
-        block_name: Optional. Existing block name.
         team_notes: Optional. Team notes.
         member_name: Required. Member display name.
+        member_id: Optional. Member ID.
+        member_role: Optional. leader / sub_leader / member.
         member_position: Optional. Display order. If blank, the next available position is assigned.
         member_status: Optional. active / inactive, or the localized labels.
         member_notes: Optional. Member notes.
@@ -266,13 +280,23 @@ en:
       blank_member_name: "Line %{line}: member_name is required."
       invalid_team_status: "Line %{line}: `%{value}` is not a valid team_status."
       invalid_member_status: "Line %{line}: `%{value}` is not a valid member_status."
+      invalid_member_role: "Row %{line}: member_role value `%{value}` is not allowed."
       invalid_member_position: "Line %{line}: member_position must be an integer greater than or equal to 1."
-      unknown_block: "Team `%{team_name}`: no block matches `%{block_name}`."
       conflicting_team_field: "Line %{line}: `%{field}` does not match other rows with the same team_name."
       conflicting_member_field: "Line %{line}: `%{field}` does not match other rows for member `%{member_name}` in team `%{team_name}`."
       ambiguous_team: "Team `%{team_name}` exists multiple times, so bulk update cannot continue."
       ambiguous_member: "Member `%{member_name}` in team `%{team_name}` exists multiple times, so bulk update cannot continue."
       record_invalid: "Save failed: %{detail}"
+  member_selections:
+    title: Select member
+    lede: Which member do you want to operate as?
+    member_label: Member
+    select_prompt: Select a member
+    admin_password: Admin password
+    admin_password_placeholder: Enter the admin password
+    submit: Use this member
+    invalid_password: The admin password is incorrect.
+    member_not_found: Member not found.
   organizer_members:
     eyebrow: Organizer members
     lede: Manage the operators who run this organizer account.
@@ -382,10 +406,16 @@ en:
     eyebrow: Block
     title_new: Create block
     title_edit: Edit block
+    title_show: "Teams in %{block}"
     empty: No blocks yet.
     usage: "Teams %{teams} / Matches %{matches}"
+    assign_prompt: Select a team
+    empty_teams: No teams assigned to this block yet.
     delete_confirm: Delete this block?
     delete_hint: Only blocks without teams or matches can be deleted.
+    sections:
+      teams: Assigned teams
+      assign_team: Add team
     form:
       name: Block name
       position: Position
@@ -545,6 +575,10 @@ en:
       status:
         active: Active
         inactive: Hidden
+      participant_role:
+        leader: Leader
+        sub_leader: Sub-leader
+        member: Member
   activerecord:
     models:
       league: League
@@ -566,6 +600,8 @@ en:
         notes: Notes
       participant:
         display_name: Member name
+        member_id: Member ID
+        participant_role: Role
         position: Position
         status: Status
         notes: Notes
