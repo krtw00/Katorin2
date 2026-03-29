@@ -32,5 +32,9 @@
         <%= form.submit t("member_selections.submit"), class: "button button--auth", disabled: true, data: { member_selection_target: "submit" } %>
       </div>
     <% end %>
+
+    <div class="login-links">
+      <%= button_to t("nav.logout"), session_path, method: :delete, class: "login-links__link" %>
+    </div>
   </div>
 </section>
