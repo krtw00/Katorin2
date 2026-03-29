@@ -34,6 +34,8 @@ en:
     create_week: Create week
     create_match: Create match
     view_bracket: Bracket
+    unassign_team: Remove
+    assign_team: Add
   labels:
     locale: Language
     vs: vs
@@ -116,6 +118,8 @@ en:
       created: Block created.
       updated: Block updated.
       deleted: Block deleted.
+      team_assigned: Team assigned to block.
+      team_unassigned: Team removed from block.
       delete_blocked: This block cannot be deleted because it still has teams or matches. Only draft leagues can clean it up.
     weeks:
       created: Week created.
@@ -397,10 +401,16 @@ en:
     eyebrow: Block
     title_new: Create block
     title_edit: Edit block
+    title_show: "Teams in %{block}"
     empty: No blocks yet.
     usage: "Teams %{teams} / Matches %{matches}"
+    assign_prompt: Select a team
+    empty_teams: No teams assigned to this block yet.
     delete_confirm: Delete this block?
     delete_hint: Only blocks without teams or matches can be deleted.
+    sections:
+      teams: Assigned teams
+      assign_team: Add team
     form:
       name: Block name
       position: Position

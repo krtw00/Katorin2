@@ -34,6 +34,8 @@ ja:
     create_week: 週作成
     create_match: 対戦作成
     view_bracket: ブラケット
+    unassign_team: 除外
+    assign_team: 追加
   labels:
     locale: 言語
     vs: 対
@@ -116,6 +118,8 @@ ja:
       created: ブロックを作成しました。
       updated: ブロックを更新しました。
       deleted: ブロックを削除しました。
+      team_assigned: チームをブロックに追加しました。
+      team_unassigned: チームをブロックから除外しました。
       delete_blocked: このブロックにはチームまたは対戦があるため削除できません。下書きリーグのみ整理削除できます。
     weeks:
       created: 週を作成しました。
@@ -397,10 +401,16 @@ ja:
     eyebrow: ブロック
     title_new: ブロック作成
     title_edit: ブロック編集
+    title_show: "%{block} のチーム"
     empty: ブロックがまだありません。
     usage: "チーム %{teams} / 対戦 %{matches}"
+    assign_prompt: チームを選択
+    empty_teams: このブロックにチームはまだありません。
     delete_confirm: このブロックを削除します。よろしいですか？
     delete_hint: チームや対戦を持たないブロックだけ削除できます。
+    sections:
+      teams: 所属チーム
+      assign_team: チームを追加
     form:
       name: ブロック名
       position: 並び順
