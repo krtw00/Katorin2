@@ -12,18 +12,18 @@
     <h1 class="member-selection-title"><%= t("member_selections.title") %></h1>
     <p class="login-copy"><%= t("member_selections.lede") %></p>
 
-    <%= form_with url: member_selection_path, class: "login-form", data: { controller: "member-selection", member_selection_privileged_value: privileged_ids.to_json } do |form| %>
+    <%= form_with url: member_selection_path, class: "login-form", data: { controller: "member-selection", member_selection_privileged_value: privileged_ids } do |form| %>
       <div class="login-form__row">
-        <%= form.label :organizer_member_id, t("member_selections.member_label"), class: "login-form__label" %>
-        <%= form.select :organizer_member_id,
+        <%= label_tag :organizer_member_id, t("member_selections.member_label"), class: "login-form__label" %>
+        <%= select_tag :organizer_member_id,
               options_for_select(@members.map { |m| ["#{m.display_name}（#{translated_enum('enums.organizer_member.role', m.role)}）", m.id] }),
-              { include_blank: t("member_selections.select_prompt") },
+              include_blank: t("member_selections.select_prompt"),
               class: "login-form__input", data: { member_selection_target: "select", action: "change->member-selection#toggle" } %>
       </div>
 
       <div class="login-form__row" data-member-selection-target="passwordField" hidden>
-        <%= form.label :admin_password, t("member_selections.admin_password"), class: "login-form__label" %>
-        <%= form.password_field :admin_password, placeholder: t("member_selections.admin_password_placeholder"), autocomplete: "current-password", class: "login-form__input" %>
+        <%= label_tag :admin_password, t("member_selections.admin_password"), class: "login-form__label" %>
+        <%= password_field_tag :admin_password, nil, placeholder: t("member_selections.admin_password_placeholder"), autocomplete: "current-password", class: "login-form__input" %>
       </div>
 
       <div class="login-form__actions">
