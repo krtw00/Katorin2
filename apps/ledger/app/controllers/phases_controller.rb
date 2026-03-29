@@ -1,8 +1,8 @@
 class PhasesController < ApplicationController
   before_action :set_league
-  before_action :set_phase, only: %i[show edit update destroy bracket edit_bracket update_bracket]
-  before_action :ensure_bracket_phase, only: %i[edit_bracket update_bracket]
-  before_action :admin_or_above!, only: %i[new create edit update destroy edit_bracket update_bracket]
+  before_action :set_phase, only: %i[show edit update destroy bracket edit_bracket update_bracket seed_assignment apply_seeds]
+  before_action :ensure_bracket_phase, only: %i[edit_bracket update_bracket seed_assignment apply_seeds]
+  before_action :admin_or_above!, only: %i[new create edit update destroy edit_bracket update_bracket seed_assignment apply_seeds]
 
   def show
     @weeks = @phase.weeks.includes(matches: %i[home_team away_team]).order(:position)
@@ -36,6 +36,10 @@ class PhasesController < ApplicationController
   def edit_bracket
   end
 
+  def seed_assignment
+    prepare_seed_assignment
+  end
+
   def update
     if @phase.update(phase_params)
       redirect_to league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.updated")
@@ -54,6 +58,20 @@ class PhasesController < ApplicationController
   rescue Brackets::PhaseBuilder::LockedError => error
     flash.now[:alert] = error.message
     render :edit_bracket, status: :unprocessable_entity
+  end
+
+  def apply_seeds
+    prepare_seed_assignment
+    @current_assignments = seed_assignments_from_params
+    @seed_mapping.apply!(@current_assignments)
+
+    redirect_to bracket_league_phase_path(league_id: @league, id: @phase), notice: t("flash.phases.seeds_applied")
+  rescue ActiveRecord::RecordInvalid => error
+    flash.now[:alert] = error.record.errors.full_messages.to_sentence
+    render :seed_assignment, status: :unprocessable_entity
+  rescue Brackets::ProgressionSync::LockedError => error
+    flash.now[:alert] = error.message
+    render :seed_assignment, status: :unprocessable_entity
   end
 
   def destroy
@@ -96,5 +114,24 @@ class PhasesController < ApplicationController
     return if @phase.bracket_enabled?
 
     redirect_to league_phase_path(league_id: @league, id: @phase), alert: t("flash.phases.bracket_not_available")
+  end
+
+  def prepare_seed_assignment
+    @seed_mapping = Brackets::SeedMapping.new(@phase)
+    @seed_slots = @seed_mapping.seed_slots
+    @teams = @league.teams.where(status: "active").order(:display_name)
+    @current_assignments = @seed_slots.each_with_object({}) do |(seed_number, slot), assignments|
+      team_id = slot[:match].public_send(slot[:side])
+      assignments[seed_number] = team_id if team_id.present?
+    end
+  end
+
+  def seed_assignments_from_params
+    params.fetch(:seeds, {}).to_h.each_with_object({}) do |(seed_number, team_id), assignments|
+      seed = Integer(seed_number, exception: false)
+      next if seed.nil?
+
+      assignments[seed] = team_id.presence
+    end
   end
 end
