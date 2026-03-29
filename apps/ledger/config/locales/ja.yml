@@ -71,6 +71,11 @@ ja:
       created: ログインしました。
       destroyed: ログアウトしました。
       invalid: ログインIDまたはパスワードが違います。
+    password_resets:
+      sent: リセット用のリンクをメールで送信しました。メールをご確認ください。
+      updated: パスワードを更新しました。ログインしてください。
+      invalid_token: リセットリンクが無効または期限切れです。
+      invalid_password: パスワードを確認してください。
     member_selections:
       selected: メンバーを選択しました。
     registrations:
@@ -166,6 +171,22 @@ ja:
       today_matches: 本日の対戦はありません。
       result_pending: 未確定の対戦はありません。
       leagues: リーグがまだありません。
+  password_resets:
+    title_new: パスワードリセット
+    title_edit: パスワード再設定
+    lede_new: 登録メールアドレスを入力してください。リセット用のリンクをお送りします。
+    lede_edit: 新しいパスワードを入力してください。
+    email_label: メールアドレス
+    new_password: 新しいパスワード
+    submit_request: リセットリンクを送信
+    submit_reset: パスワードを更新
+    back_to_login: ログインへ戻る
+    email:
+      subject: パスワードリセットのご案内
+      greeting: "%{name} さん"
+      instruction: 以下のリンクからパスワードを再設定してください。
+      link_text: パスワードを再設定する
+      expiry: このリンクは2時間有効です。
   leagues:
     eyebrow: リーグ
     eyebrow_index: リーグ台帳
@@ -521,6 +542,7 @@ ja:
     submit: ログイン
     no_account: アカウントをお持ちでない場合
     register: 新規登録
+    forgot_password: パスワードを忘れた方
   registrations:
     title: 新規登録
     lede: 運営アカウントを新しく作成します。管理ユーザーは初回ログイン後に登録します。

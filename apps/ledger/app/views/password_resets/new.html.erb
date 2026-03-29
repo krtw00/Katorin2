@@ -1,0 +1,28 @@
+<% page_title t("password_resets.title_new") %>
+
+<section class="login-screen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <p class="login-brand__name">Katorin2</p>
+    </div>
+
+    <h1 class="member-selection-title"><%= t("password_resets.title_new") %></h1>
+    <p class="login-copy"><%= t("password_resets.lede_new") %></p>
+
+    <%= form_with url: password_resets_path, class: "login-form" do |form| %>
+      <div class="login-form__row">
+        <%= form.label :email, t("password_resets.email_label"), class: "login-form__label" %>
+        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__actions">
+        <%= form.submit t("password_resets.submit_request"), class: "button button--auth" %>
+      </div>
+    <% end %>
+
+    <div class="login-links">
+      <%= link_to t("password_resets.back_to_login"), new_session_path, class: "login-links__link" %>
+    </div>
+  </div>
+</section>

@@ -71,6 +71,11 @@ en:
       created: Logged in.
       destroyed: Logged out.
       invalid: The login ID or password is incorrect.
+    password_resets:
+      sent: We sent a password reset link. Please check your email.
+      updated: Password updated. Please log in.
+      invalid_token: The reset link is invalid or has expired.
+      invalid_password: Please review the password.
     member_selections:
       selected: Member selected.
     registrations:
@@ -166,6 +171,22 @@ en:
       today_matches: No matches scheduled for today.
       result_pending: No pending results.
       leagues: No leagues yet.
+  password_resets:
+    title_new: Password reset
+    title_edit: Reset password
+    lede_new: Enter the email address registered to your account and we will send you a reset link.
+    lede_edit: Enter a new password.
+    email_label: Email address
+    new_password: New password
+    submit_request: Send reset link
+    submit_reset: Update password
+    back_to_login: Back to login
+    email:
+      subject: Password reset instructions
+      greeting: "%{name}"
+      instruction: Use the link below to reset your password.
+      link_text: Reset your password
+      expiry: This link is valid for 2 hours.
   leagues:
     eyebrow: League
     eyebrow_index: League Ledger
@@ -521,6 +542,7 @@ en:
     submit: Log in
     no_account: Don't have an account?
     register: Sign up
+    forgot_password: Forgot your password?
   registrations:
     title: Sign up
     lede: Create a new organizer account. Add the first admin user after the first login.
