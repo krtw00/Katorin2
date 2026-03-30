@@ -72,7 +72,7 @@ else
   exit 1
 fi
 
-for key in LEDGER_DATABASE_URL RAILS_MASTER_KEY SECRET_KEY_BASE; do
+for key in LEDGER_DATABASE_HOST LEDGER_DATABASE_USERNAME LEDGER_DATABASE_PASSWORD RAILS_MASTER_KEY SECRET_KEY_BASE; do
   if ! grep -q "^${key}:" "$RUNTIME_ENV_FILE"; then
     echo "${key} is required in ${RUNTIME_ENV_FILE}" >&2
     exit 1
