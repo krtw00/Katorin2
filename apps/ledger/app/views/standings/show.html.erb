@@ -44,12 +44,12 @@
                 <td class="standings-rank"><%= row[:rank] %></td>
                 <td class="standings-team"><%= row[:team].display_name %></td>
                 <td><%= row[:wins] %></td>
-                <td><%= row[:points] %></td>
+                <td class="standings-pts"><%= row[:points] %></td>
                 <td><%= row[:round_wins] %></td>
                 <td><%= row[:round_losses] %></td>
-                <td><%= row[:goal_diff] %></td>
-                <td><%= row[:round_board_diff] %></td>
-                <td><%= row[:match_game_diff] %></td>
+                <td class="<%= row[:goal_diff] > 0 ? 'standings-plus' : row[:goal_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:goal_diff] > 0 ? "+#{row[:goal_diff]}" : row[:goal_diff] %></td>
+                <td class="<%= row[:round_board_diff] > 0 ? 'standings-plus' : row[:round_board_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:round_board_diff] > 0 ? "+#{row[:round_board_diff]}" : row[:round_board_diff] %></td>
+                <td class="<%= row[:match_game_diff] > 0 ? 'standings-plus' : row[:match_game_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:match_game_diff] > 0 ? "+#{row[:match_game_diff]}" : row[:match_game_diff] %></td>
                 <td><%= row[:board_wins_total] %></td>
               </tr>
             <% end %>
