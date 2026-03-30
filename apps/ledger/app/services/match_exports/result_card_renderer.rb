@@ -15,6 +15,10 @@ module MatchExports
     end
 
     def render!
+      if fresh?
+        return match.exports.find_by(export_type: EXPORT_TYPE)
+      end
+
       FileUtils.mkdir_p(OUTPUT_DIR)
 
       browser = Ferrum::Browser.new(
@@ -54,6 +58,21 @@ module MatchExports
 
     def public_file_path
       "/generated/match_exports/#{match.id}.png"
+    end
+
+    def fresh?
+      return false unless output_path.exist?
+
+      export = match.exports.find_by(export_type: EXPORT_TYPE)
+      return false unless export&.generated_at
+
+      last_change = [
+        match.match_result&.updated_at,
+        match.rounds.maximum(:updated_at)
+      ].compact.max
+      return true unless last_change
+
+      export.generated_at >= last_change
     end
 
     def h(value)

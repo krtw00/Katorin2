@@ -12,6 +12,8 @@ module StandingsExports
     end
 
     def render!
+      return output_path if fresh?
+
       FileUtils.mkdir_p(OUTPUT_DIR)
 
       browser = Ferrum::Browser.new(
@@ -37,6 +39,16 @@ module StandingsExports
 
     def output_path
       OUTPUT_DIR.join("#{@phase.id}.png")
+    end
+
+    def fresh?
+      return false unless output_path.exist?
+
+      last_result_at = @phase.matches.joins(:match_result)
+        .maximum("match_results.updated_at")
+      return true unless last_result_at
+
+      output_path.mtime >= last_result_at
     end
 
     def h(value)
