@@ -1,0 +1,26 @@
+<% page_title t("password_resets.title_edit") %>
+
+<section class="login-screen">
+  <div class="login-panel">
+    <div class="login-brand">
+      <%= image_tag "/icon.png", alt: "Katorin2", class: "login-brand__mark" %>
+      <p class="login-brand__name">Katorin2</p>
+    </div>
+
+    <h1 class="member-selection-title"><%= t("password_resets.title_edit") %></h1>
+    <p class="login-copy"><%= t("password_resets.lede_edit") %></p>
+
+    <%= render "shared/errors", record: @organizer_account %>
+
+    <%= form_with url: password_reset_path(@token), method: :patch, class: "login-form" do |form| %>
+      <div class="login-form__row">
+        <%= form.label :password, t("password_resets.new_password"), class: "login-form__label" %>
+        <%= form.password_field :password, required: true, autofocus: true, autocomplete: "new-password", class: "login-form__input" %>
+      </div>
+
+      <div class="login-form__actions">
+        <%= form.submit t("password_resets.submit_reset"), class: "button button--auth" %>
+      </div>
+    <% end %>
+  </div>
+</section>

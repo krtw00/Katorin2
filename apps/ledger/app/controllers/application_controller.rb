@@ -49,7 +49,7 @@ class ApplicationController < ActionController::Base
 
   def require_member_selection
     return if organizer_setup_required?
-    return if %w[sessions registrations organizer_setups member_selections].include?(controller_name)
+    return if %w[sessions registrations organizer_setups member_selections password_resets].include?(controller_name)
     return if member_selected?
 
     redirect_to new_member_selection_path
