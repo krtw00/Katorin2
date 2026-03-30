@@ -707,3 +707,19 @@ ja:
       group_count: "%{count}ブロック"
       round_count: "%{count}回戦"
       bracket_size: "%{count}チーム"
+  standings:
+    eyebrow: 順位表
+    title: "%{phase} 順位表"
+    lede: 対戦結果から自動計算したブロック別順位表です。
+    empty: 対戦結果がまだありません。
+    columns:
+      rank: 順位
+      team: チーム名
+      wins: 勝利数
+      points: 勝点
+      round_wins: 得点
+      round_losses: 失点
+      goal_diff: 得失点
+      round_board_diff: ラウンド得失点
+      match_game_diff: マッチ得失点
+      board_wins_total: ラウンド総得点

@@ -51,6 +51,7 @@ Rails.application.routes.draw do
           get :seed_assignment
           patch :apply_seeds
         end
+        resource :standings, only: :show, controller: 'standings'
       end
     end
 
