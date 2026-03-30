@@ -43,6 +43,7 @@ esac
 : "${GOOGLE_CLOUD_REGION:=asia-northeast1}"
 : "${CLOUD_RUN_SERVICE:=$DEFAULT_CLOUD_RUN_SERVICE}"
 : "${ARTIFACT_REGISTRY_REPOSITORY:=apps}"
+: "${CLOUD_SQL_INSTANCE:=${GOOGLE_CLOUD_PROJECT}:${GOOGLE_CLOUD_REGION}:main-pg}"
 
 DEFAULT_RUNTIME_SECRET="${APP_NAME}-ledger-runtime-${APP_ENV}"
 : "${RUNTIME_ENV_SECRET:=$DEFAULT_RUNTIME_SECRET}"
@@ -92,4 +93,5 @@ gcloud run deploy "$CLOUD_RUN_SERVICE" \
   --platform managed \
   --allow-unauthenticated \
   --port 8080 \
+  --add-cloudsql-instances "$CLOUD_SQL_INSTANCE" \
   --env-vars-file "$RUNTIME_ENV_FILE"
