@@ -25,6 +25,7 @@ Rails.application.configure do
 
   # Store uploaded files using the configured service.
   config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
+  config.active_storage.variant_processor = :disabled
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
