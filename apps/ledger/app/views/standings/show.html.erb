@@ -1,0 +1,64 @@
+<% page_title t("standings.title", phase: @phase.name.presence || translated_enum("enums.phase.kind", @phase.kind)) %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.leagues"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(@phase.name.presence || translated_enum("enums.phase.kind", @phase.kind), league_phase_path(league_id: @league, id: @phase)),
+  breadcrumb_item(t("standings.eyebrow"), nil, current: true)
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("standings.eyebrow") %></p>
+    <h1><%= t("standings.title", phase: @phase.name.presence || translated_enum("enums.phase.kind", @phase.kind)) %></h1>
+    <p class="muted"><%= t("standings.lede") %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= link_to t("standings.download"), download_league_phase_standings_path(league_id: @league, phase_id: @phase), class: "button button--primary" %>
+  </div>
+</section>
+
+<% @blocks.each do |block_id, block| %>
+  <% rows = @standings_by_block[block_id] || [] %>
+  <section class="panel">
+    <h2><%= block.name %></h2>
+    <% if rows.any? %>
+      <div class="table-scroll">
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th class="standings-rank"><%= t("standings.columns.rank") %></th>
+              <th class="standings-team"><%= t("standings.columns.team") %></th>
+              <th><%= t("standings.columns.wins") %></th>
+              <th><%= t("standings.columns.points") %></th>
+              <th><%= t("standings.columns.round_wins") %></th>
+              <th><%= t("standings.columns.round_losses") %></th>
+              <th><%= t("standings.columns.goal_diff") %></th>
+              <th><%= t("standings.columns.round_board_diff") %></th>
+              <th><%= t("standings.columns.match_game_diff") %></th>
+              <th><%= t("standings.columns.board_wins_total") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.each do |row| %>
+              <tr>
+                <td class="standings-rank"><%= row[:rank] %></td>
+                <td class="standings-team"><%= row[:team].display_name %></td>
+                <td><%= row[:wins] %></td>
+                <td class="standings-pts"><%= row[:points] %></td>
+                <td><%= row[:round_wins] %></td>
+                <td><%= row[:round_losses] %></td>
+                <td class="<%= row[:goal_diff] > 0 ? 'standings-plus' : row[:goal_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:goal_diff] > 0 ? "+#{row[:goal_diff]}" : row[:goal_diff] %></td>
+                <td class="<%= row[:round_board_diff] > 0 ? 'standings-plus' : row[:round_board_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:round_board_diff] > 0 ? "+#{row[:round_board_diff]}" : row[:round_board_diff] %></td>
+                <td class="<%= row[:match_game_diff] > 0 ? 'standings-plus' : row[:match_game_diff] < 0 ? 'standings-minus' : '' %>"><%= row[:match_game_diff] > 0 ? "+#{row[:match_game_diff]}" : row[:match_game_diff] %></td>
+                <td><%= row[:board_wins_total] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="empty-copy"><%= t("standings.empty") %></p>
+    <% end %>
+  </section>
+<% end %>

@@ -1137,3 +1137,37 @@ h2 {
     justify-content: start;
   }
 }
+
+/* ── Standings table ── */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.standings-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .875rem; }
+.standings-table th,
+.standings-table td { padding: .625rem .75rem; text-align: right; white-space: nowrap; }
+
+/* header */
+.standings-table thead th {
+  background: var(--bg-deep);
+  border-bottom: 2px solid var(--line-strong);
+  font-size: .6875rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+
+/* body rows */
+.standings-table tbody td { border-bottom: 1px solid var(--line); }
+.standings-table tbody tr:nth-child(even) { background: var(--bg-deep); }
+.standings-table tbody tr:hover { background: rgba(13, 148, 136, .06); }
+
+/* rank column */
+.standings-table .standings-rank { text-align: center; width: 2.5rem; font-weight: 700; color: var(--muted); }
+.standings-table tbody td.standings-rank { font-size: 1rem; }
+
+/* team name column */
+.standings-table .standings-team { text-align: left; font-weight: 600; min-width: 10rem; }
+
+/* points column highlight */
+.standings-table td.standings-pts { font-weight: 700; color: var(--gem-deep); }
+
+/* positive/negative diff coloring */
+.standings-table td.standings-plus { color: var(--success); }
+.standings-table td.standings-minus { color: var(--danger); }
