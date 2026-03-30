@@ -18,20 +18,19 @@ module StandingsExports
     NUM_FONT = "'Noto Sans', 'Noto Sans CJK JP', sans-serif".freeze
 
     COLUMNS = [
-      { key: :rank,             label: "",              x: 38  },
-      { key: :team,             label: "チーム名",       x: 140 },
-      { key: :wins,             label: "勝利数",         x: 260 },
-      { key: :points,           label: "勝点",           x: 336 },
-      { key: :round_wins,       label: "得点",           x: 412 },
-      { key: :round_losses,     label: "失点",           x: 488 },
-      { key: :goal_diff,        label: "得失点",         x: 572 },
-      { key: :round_board_diff, label: "ラウンド得失点",  x: 668 },
-      { key: :match_game_diff,  label: "マッチ得失点",    x: 788 },
-      { key: :board_wins_total, label: "ラウンド総得点",  x: 908 },
+      { key: :rank,             label: "",              x: 38,  anchor: "middle" },
+      { key: :team,             label: "チーム名",       x: 176, anchor: "middle", text_x: 64, text_anchor: "start", max_w: 224 },
+      { key: :wins,             label: "勝利数",         x: 328, anchor: "middle" },
+      { key: :points,           label: "勝点",           x: 392, anchor: "middle" },
+      { key: :round_wins,       label: "得点",           x: 454, anchor: "middle" },
+      { key: :round_losses,     label: "失点",           x: 514, anchor: "middle" },
+      { key: :goal_diff,        label: "得失点",         x: 580, anchor: "middle" },
+      { key: :round_board_diff, label: "ラウンド得失点",  x: 668, anchor: "middle" },
+      { key: :match_game_diff,  label: "マッチ得失点",    x: 772, anchor: "middle" },
+      { key: :board_wins_total, label: "ラウンド総得点",  x: 914, anchor: "middle" },
     ].freeze
 
-    # column boundaries for vertical grid lines (between columns)
-    COL_BORDERS = [56, 224, 298, 374, 450, 526, 618, 728, 848].freeze
+    COL_BORDERS = [56, 296, 360, 424, 484, 544, 616, 720, 824].freeze
 
     def initialize(phase, standings_by_block, blocks)
       @phase = phase
@@ -133,25 +132,15 @@ module StandingsExports
           parts << %(<rect x="#{TABLE_LEFT}" y="#{y}" width="#{TABLE_WIDTH}" height="#{ROW_HEIGHT}" fill="#{bg}"/>)
           parts << header_grid_lines(y, ROW_HEIGHT)
 
-          # rank
           parts << %(<text x="#{COLUMNS[0][:x]}" y="#{y + 27}" text-anchor="middle" class="base td-rank">#{row[:rank]}</text>)
-          # team name - use fit_text_svg for long names
-          parts << fit_text_svg(COLUMNS[1][:x], y + 27, row[:team].display_name, "td-team", "middle", 160, font_size: 18)
-          # wins
+          parts << fit_text_svg(COLUMNS[1][:text_x], y + 27, row[:team].display_name, "td-team", "start", COLUMNS[1][:max_w], font_size: 18)
           parts << %(<text x="#{COLUMNS[2][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:wins]}</text>)
-          # points
           parts << %(<text x="#{COLUMNS[3][:x]}" y="#{y + 27}" text-anchor="middle" class="base td-pts">#{row[:points]}</text>)
-          # round_wins
           parts << %(<text x="#{COLUMNS[4][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_wins]}</text>)
-          # round_losses
           parts << %(<text x="#{COLUMNS[5][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_losses]}</text>)
-          # goal_diff
           parts << %(<text x="#{COLUMNS[6][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:goal_diff]}</text>)
-          # round_board_diff
           parts << %(<text x="#{COLUMNS[7][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_board_diff]}</text>)
-          # match_game_diff
           parts << %(<text x="#{COLUMNS[8][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:match_game_diff]}</text>)
-          # board_wins_total
           parts << %(<text x="#{COLUMNS[9][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:board_wins_total]}</text>)
 
           y += ROW_HEIGHT
