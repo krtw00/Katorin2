@@ -1,36 +1,9 @@
-require "cgi"
 require "fileutils"
-require "tempfile"
-require "base64"
+require "erb"
 
 module StandingsExports
   class TableRenderer
-    WIDTH = 1024
-    HERO_HEIGHT = 170
-    GROUP_TITLE_HEIGHT = 35
-    TABLE_HEADER_HEIGHT = 36
-    ROW_HEIGHT = 40
-    GROUP_GAP = 8
-    TABLE_LEFT = 20
-    TABLE_WIDTH = 984
     OUTPUT_DIR = Rails.root.join("public", "generated", "standings_exports")
-    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Color Emoji', sans-serif".freeze
-    NUM_FONT = "'Noto Sans', 'Noto Sans CJK JP', sans-serif".freeze
-
-    COLUMNS = [
-      { key: :rank,             label: "",              x: 38,  anchor: "middle" },
-      { key: :team,             label: "チーム名",       x: 176, anchor: "middle", text_x: 64, text_anchor: "start", max_w: 224 },
-      { key: :wins,             label: "勝利数",         x: 328, anchor: "middle" },
-      { key: :points,           label: "勝点",           x: 392, anchor: "middle" },
-      { key: :round_wins,       label: "得点",           x: 454, anchor: "middle" },
-      { key: :round_losses,     label: "失点",           x: 514, anchor: "middle" },
-      { key: :goal_diff,        label: "得失点",         x: 580, anchor: "middle" },
-      { key: :round_board_diff, label: "R得失点",    x: 668, anchor: "middle" },
-      { key: :match_game_diff,  label: "M得失点",    x: 772, anchor: "middle" },
-      { key: :board_wins_total, label: "R総得点",    x: 914, anchor: "middle" },
-    ].freeze
-
-    COL_BORDERS = [56, 296, 360, 424, 484, 544, 616, 720, 824].freeze
 
     def initialize(phase, standings_by_block, blocks)
       @phase = phase
@@ -41,13 +14,20 @@ module StandingsExports
     def render!
       FileUtils.mkdir_p(OUTPUT_DIR)
 
-      Tempfile.create(["standings-table", ".svg"]) do |svg_file|
-        svg_file.write(svg_document)
-        svg_file.flush
-
-        image = MiniMagick::Image.open(svg_file.path)
-        image.format("png")
-        image.write(output_path.to_s)
+      browser = Ferrum::Browser.new(
+        headless: "new",
+        browser_path: ENV["CHROMIUM_PATH"],
+        window_size: [1024, 800],
+        args: ["--no-sandbox", "--disable-gpu"]
+      )
+      begin
+        page = browser.create_page
+        page.main_frame.set_content(html_document)
+        height = page.evaluate("document.documentElement.scrollHeight")
+        page.set_viewport(width: 1024, height: height)
+        page.screenshot(path: output_path.to_s, format: "png", full: true)
+      ensure
+        browser.quit
       end
 
       output_path
@@ -59,133 +39,149 @@ module StandingsExports
       OUTPUT_DIR.join("#{@phase.id}.png")
     end
 
-    def total_height
-      body_height = @blocks.sum do |_block_id, block|
+    def h(value)
+      ERB::Util.html_escape(value.to_s)
+    end
+
+    def html_document
+      <<~HTML
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="utf-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              width: 1024px;
+              background: #e8e8e8;
+              font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;
+            }
+
+            .hero {
+              height: 170px;
+              background: linear-gradient(to right, #cf3215, #111827, #22d3ee);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+            }
+            .hero-sub { color: #94a3b8; font-size: 26px; font-weight: 700; }
+            .hero-title { color: #f8fafc; font-size: 58px; font-weight: 800; letter-spacing: 2px; }
+
+            .group-title {
+              background: #0f172a;
+              color: #fff;
+              text-align: center;
+              font-size: 22px;
+              font-weight: 800;
+              padding: 8px 0;
+            }
+
+            .block-table { margin-bottom: 8px; }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-variant-numeric: tabular-nums;
+              table-layout: fixed;
+            }
+
+            col.c-rank { width: 36px; }
+            col.c-team { width: 240px; }
+            col.c-stat { width: 64px; }
+            col.c-diff { width: 72px; }
+            col.c-wide { width: 88px; }
+
+            th {
+              background: #ffe082;
+              color: #111827;
+              font-size: 13px;
+              font-weight: 800;
+              padding: 8px 4px;
+              border: 1px solid #b0b0b0;
+              text-align: center;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            td {
+              font-size: 16px;
+              font-weight: 600;
+              padding: 8px 4px;
+              border: 1px solid #d0d0d0;
+              text-align: center;
+              color: #111827;
+            }
+
+            tr:nth-child(odd) td { background: #fff; }
+            tr:nth-child(even) td { background: #f0f0f0; }
+
+            .rank { font-size: 18px; font-weight: 800; font-style: italic; }
+            .team {
+              text-align: left;
+              padding-left: 8px;
+              font-weight: 700;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            .pts { font-weight: 800; }
+          </style>
+        </head>
+        <body>
+          <div class="hero">
+            <div class="hero-sub">MASTER DUEL</div>
+            <div class="hero-title">WMGP STANDINGS</div>
+            <div class="hero-sub">Katorin2 Match Ledger</div>
+          </div>
+          #{blocks_html}
+        </body>
+        </html>
+      HTML
+    end
+
+    def blocks_html
+      @blocks.map do |_block_id, block|
         rows = @standings_by_block[block.id] || []
-        GROUP_TITLE_HEIGHT + TABLE_HEADER_HEIGHT + (rows.size * ROW_HEIGHT) + GROUP_GAP
-      end
-      HERO_HEIGHT + body_height + 20
+        <<~HTML
+          <div class="block-table">
+            <div class="group-title">#{h block.name}</div>
+            <table>
+              <colgroup>
+                <col class="c-rank"><col class="c-team">
+                <col class="c-stat"><col class="c-stat">
+                <col class="c-stat"><col class="c-stat">
+                <col class="c-diff"><col class="c-wide">
+                <col class="c-wide"><col class="c-wide">
+              </colgroup>
+              <thead><tr>
+                <th></th><th>チーム名</th><th>勝利数</th><th>勝点</th>
+                <th>得点</th><th>失点</th><th>得失点</th>
+                <th>R得失点</th><th>M得失点</th><th>R総得点</th>
+              </tr></thead>
+              <tbody>#{rows.map { |r| row_html(r) }.join}</tbody>
+            </table>
+          </div>
+        HTML
+      end.join
     end
 
-    def svg_document
-      height = total_height
-      <<~SVG
-        <svg xmlns="http://www.w3.org/2000/svg" width="#{WIDTH}" height="#{height}" viewBox="0 0 #{WIDTH} #{height}">
-          <defs>
-            <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#cf3215"/>
-              <stop offset="50%" stop-color="#111827"/>
-              <stop offset="100%" stop-color="#22d3ee"/>
-            </linearGradient>
-            <style>
-              .base { font-family: #{FONT_FAMILY}; }
-              .hero-sub { font-size: 26px; font-weight: 700; fill: #94a3b8; }
-              .hero-title { font-size: 58px; font-weight: 800; fill: #f8fafc; letter-spacing: 2px; }
-              .group-title { font-size: 22px; font-weight: 800; fill: #f8fafc; }
-              .th { font-size: 16px; font-weight: 800; fill: #111827; }
-              .td { font-family: #{NUM_FONT}; font-size: 18px; font-weight: 600; fill: #111827; }
-              .td-rank { font-family: #{NUM_FONT}; font-size: 20px; font-weight: 800; font-style: italic; fill: #111827; }
-              .td-team { font-size: 18px; font-weight: 700; fill: #111827; }
-              .td-pts { font-family: #{NUM_FONT}; font-size: 18px; font-weight: 800; fill: #111827; }
-            </style>
-          </defs>
-
-          <!-- background -->
-          <rect width="#{WIDTH}" height="#{height}" fill="#e8e8e8"/>
-
-          <!-- hero header -->
-          <rect x="0" y="0" width="#{WIDTH}" height="#{HERO_HEIGHT}" fill="url(#heroGradient)"/>
-          <rect x="0" y="0" width="#{WIDTH}" height="#{HERO_HEIGHT}" fill="rgba(8, 15, 31, 0.32)"/>
-          <text x="512" y="52" text-anchor="middle" class="base hero-sub">MASTER DUEL</text>
-          <text x="512" y="104" text-anchor="middle" class="base hero-title">WMGP STANDINGS</text>
-          <text x="512" y="146" text-anchor="middle" class="base hero-sub">Katorin2 Match Ledger</text>
-
-          #{body_svg}
-        </svg>
-      SVG
-    end
-
-    def body_svg
-      y = HERO_HEIGHT
-      parts = []
-
-      @blocks.each do |_block_id, block|
-        rows = @standings_by_block[block.id] || []
-
-        # group title bar
-        parts << %(<rect x="#{TABLE_LEFT}" y="#{y}" width="#{TABLE_WIDTH}" height="#{GROUP_TITLE_HEIGHT}" fill="#0f172a"/>)
-        parts << %(<text x="512" y="#{y + 24}" text-anchor="middle" class="base group-title">#{escape(block.name)}</text>)
-        y += GROUP_TITLE_HEIGHT
-
-        # table header
-        parts << %(<rect x="#{TABLE_LEFT}" y="#{y}" width="#{TABLE_WIDTH}" height="#{TABLE_HEADER_HEIGHT}" fill="#ffe082"/>)
-        parts << header_grid_lines(y, TABLE_HEADER_HEIGHT)
-        COLUMNS.each_cons(2) do |col, next_col|
-          next if col[:key] == :rank
-          col_width = (next_col[:x] - col[:x]) * 0.9
-          parts << fit_text_svg(col[:x], y + 24, col[:label], "th", "middle", col_width, font_size: 16)
-        end
-        last = COLUMNS.last
-        parts << fit_text_svg(last[:x], y + 24, last[:label], "th", "middle", 150, font_size: 16)
-        y += TABLE_HEADER_HEIGHT
-
-        # data rows
-        rows.each_with_index do |row, i|
-          bg = i.even? ? "#ffffff" : "#f0f0f0"
-          parts << %(<rect x="#{TABLE_LEFT}" y="#{y}" width="#{TABLE_WIDTH}" height="#{ROW_HEIGHT}" fill="#{bg}"/>)
-          parts << header_grid_lines(y, ROW_HEIGHT)
-
-          parts << %(<text x="#{COLUMNS[0][:x]}" y="#{y + 27}" text-anchor="middle" class="base td-rank">#{row[:rank]}</text>)
-          parts << fit_text_svg(COLUMNS[1][:text_x], y + 27, row[:team].display_name, "td-team", "start", COLUMNS[1][:max_w], font_size: 18)
-          parts << %(<text x="#{COLUMNS[2][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:wins]}</text>)
-          parts << %(<text x="#{COLUMNS[3][:x]}" y="#{y + 27}" text-anchor="middle" class="base td-pts">#{row[:points]}</text>)
-          parts << %(<text x="#{COLUMNS[4][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_wins]}</text>)
-          parts << %(<text x="#{COLUMNS[5][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_losses]}</text>)
-          parts << %(<text x="#{COLUMNS[6][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:goal_diff]}</text>)
-          parts << %(<text x="#{COLUMNS[7][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:round_board_diff]}</text>)
-          parts << %(<text x="#{COLUMNS[8][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:match_game_diff]}</text>)
-          parts << %(<text x="#{COLUMNS[9][:x]}" y="#{y + 27}" text-anchor="middle" class="base td">#{row[:board_wins_total]}</text>)
-
-          y += ROW_HEIGHT
-        end
-
-        y += GROUP_GAP
-      end
-
-      parts.join("\n")
-    end
-
-    def header_grid_lines(y, height)
-      COL_BORDERS.map do |x|
-        %(<line x1="#{x}" y1="#{y}" x2="#{x}" y2="#{y + height}" stroke="#b0b0b0" stroke-width="1"/>)
-      end.join("\n")
-    end
-
-    def fit_text_svg(x, y, text, klass, anchor, max_width, font_size:)
-      content = text.to_s.strip.presence || "-"
-      estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
-      # 2倍超えは省略（圧縮しすぎると読めない）
-      if estimated_width > max_width * 2
-        content = truncate(content, (max_width / (font_size * 0.55)).to_i)
-        estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
-      end
-      escaped = escape(content)
-      attrs = %{x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}"}
-
-      if estimated_width > max_width
-        %(<text #{attrs} textLength="#{max_width}" lengthAdjust="spacingAndGlyphs">#{escaped}</text>)
-      else
-        %(<text #{attrs}>#{escaped}</text>)
-      end
-    end
-
-    def truncate(text, max_chars)
-      return text if text.length <= max_chars
-      "#{text[0, max_chars - 1]}…"
-    end
-
-    def escape(text)
-      CGI.escapeHTML(text.to_s)
+    def row_html(row)
+      <<~HTML
+        <tr>
+          <td class="rank">#{h row[:rank]}</td>
+          <td class="team">#{h row[:team].display_name}</td>
+          <td>#{h row[:wins]}</td>
+          <td class="pts">#{h row[:points]}</td>
+          <td>#{h row[:round_wins]}</td>
+          <td>#{h row[:round_losses]}</td>
+          <td>#{h row[:goal_diff]}</td>
+          <td>#{h row[:round_board_diff]}</td>
+          <td>#{h row[:match_game_diff]}</td>
+          <td>#{h row[:board_wins_total]}</td>
+        </tr>
+      HTML
     end
   end
 end
