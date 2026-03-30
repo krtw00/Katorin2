@@ -40,7 +40,7 @@ def seed_bootstrap_organizer!
     member.active = true
     member.admin_password = password
   end
-  organizer.ensure_default_rule_templates!
+  organizer.ensure_default_stage_assets!
 
   organizer
 end
@@ -67,7 +67,7 @@ def seed_demo_organizer!
     member.active = true
     member.admin_password = password
   end
-  organizer.ensure_default_rule_templates!
+  organizer.ensure_default_stage_assets!
 
   organizer
 end
