@@ -14,6 +14,24 @@ class OrganizerAccount < ApplicationRecord
   validates :login_id, presence: true, uniqueness: true
   validates :display_name, presence: true
 
+  def generate_reset_password_token!
+    token = SecureRandom.urlsafe_base64(32)
+    update!(reset_password_token: token, reset_password_sent_at: Time.current)
+    token
+  end
+
+  def reset_password!(new_password)
+    update!(password: new_password, reset_password_token: nil, reset_password_sent_at: nil)
+  end
+
+  def reset_token_valid?
+    reset_password_token.present? && reset_password_sent_at.present? && reset_password_sent_at > 2.hours.ago
+  end
+
+  def self.find_by_reset_token(token)
+    find_by(reset_password_token: token)
+  end
+
   def setup_required?
     organizer_members.none?
   end
