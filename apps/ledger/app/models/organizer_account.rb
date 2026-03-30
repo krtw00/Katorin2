@@ -21,7 +21,12 @@ class OrganizerAccount < ApplicationRecord
   end
 
   def reset_password!(new_password)
-    update!(password: new_password, reset_password_token: nil, reset_password_sent_at: nil)
+    transaction do
+      update!(password: new_password, reset_password_token: nil, reset_password_sent_at: nil)
+      organizer_members.where(role: %w[owner admin]).find_each do |member|
+        member.update!(admin_password: new_password)
+      end
+    end
   end
 
   def reset_token_valid?
