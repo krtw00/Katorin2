@@ -90,7 +90,11 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: ledger_production
+    database: <%= ENV.fetch("LEDGER_DATABASE_NAME", "katorin2") %>
+    username: <%= ENV["LEDGER_DATABASE_USERNAME"] %>
+    password: <%= ENV["LEDGER_DATABASE_PASSWORD"] %>
+    host: <%= ENV["LEDGER_DATABASE_HOST"] %>
+    port: <%= ENV.fetch("LEDGER_DATABASE_PORT", 5432) %>
   cache:
     <<: *primary_production
     migrations_paths: db/cache_migrate
