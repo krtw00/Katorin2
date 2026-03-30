@@ -7,11 +7,11 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
 - `production`
   - 実運用
   - Cloud Run service: `katorin2`
-  - DB: 本番用 Supabase project
+  - DB: Cloud SQL `katorin2` @ `main-pg`
 - `staging`
   - demo / 検証
   - Cloud Run service: `katorin2-staging`
-  - DB: staging 用 Supabase project
+  - DB: Cloud SQL `katorin2-staging` @ `main-pg`
 
 設計原則:
 
