@@ -13,8 +13,8 @@ class StandingsController < ApplicationController
     renderer = StandingsExports::TableRenderer.new(@phase, standings_by_block, blocks)
     output_path = renderer.render!
 
-    phase_label = @phase.name.presence || @phase.kind
-    filename = "standings-#{phase_label}.png".gsub(/[^\w.\-]/, "_")
+    league_label = @league.slug.presence || @league.name
+    filename = "standings-#{league_label}.png"
     send_file output_path, filename: filename, type: "image/png", disposition: "attachment"
   rescue => e
     redirect_to league_phase_standings_path(league_id: @league, phase_id: @phase),
