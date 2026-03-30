@@ -40,7 +40,7 @@ def seed_bootstrap_organizer!
     member.active = true
     member.admin_password = password
   end
-  organizer.ensure_default_rule_templates!
+  organizer.ensure_default_stage_assets!
 
   organizer
 end
@@ -67,7 +67,7 @@ def seed_demo_organizer!
     member.active = true
     member.admin_password = password
   end
-  organizer.ensure_default_rule_templates!
+  organizer.ensure_default_stage_assets!
 
   organizer
 end
@@ -300,8 +300,6 @@ def build_demo_league!(organizer:, spec:, rosters:)
   league = organizer.leagues.create!(
     name: "DEMO WMGP Season #{spec[:season_label]}",
     slug: spec[:slug],
-    rule_module_key: "wmgp",
-    ruleset_snapshot: ruleset,
     status: "completed",
     started_at: spec[:started_at],
     ended_at: spec[:ended_at]

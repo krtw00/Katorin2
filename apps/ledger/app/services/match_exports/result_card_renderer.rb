@@ -1,31 +1,39 @@
-require "cgi"
 require "fileutils"
-require "tempfile"
+require "erb"
 require "base64"
 
 module MatchExports
   class ResultCardRenderer
     EXPORT_TYPE = "match_result_card".freeze
-    RENDERER_KEY = "match_result_card_v1".freeze
+    RENDERER_KEY = "match_result_card_v2".freeze
     WIDTH = 1024
     HEIGHT = 1449
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
-    FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Color Emoji', sans-serif".freeze
 
     def initialize(match)
       @match = match
     end
 
     def render!
+      if fresh?
+        return match.exports.find_by(export_type: EXPORT_TYPE)
+      end
+
       FileUtils.mkdir_p(OUTPUT_DIR)
 
-      Tempfile.create(["match-result-card", ".svg"]) do |svg_file|
-        svg_file.write(svg_document)
-        svg_file.flush
-
-        image = MiniMagick::Image.open(svg_file.path)
-        image.format("png")
-        image.write(output_path.to_s)
+      browser = Ferrum::Browser.new(
+        headless: "new",
+        browser_path: ENV["CHROMIUM_PATH"],
+        window_size: [WIDTH, HEIGHT],
+        args: ["--no-sandbox", "--disable-gpu"]
+      )
+      begin
+        page = browser.create_page
+        page.main_frame.set_content(html_document)
+        page.set_viewport(width: WIDTH, height: HEIGHT)
+        page.screenshot(path: output_path.to_s, format: "png")
+      ensure
+        browser.quit
       end
 
       export = match.exports.find_or_initialize_by(export_type: EXPORT_TYPE)
@@ -52,170 +60,337 @@ module MatchExports
       "/generated/match_exports/#{match.id}.png"
     end
 
-    def svg_document
-      <<~SVG
-        <svg xmlns="http://www.w3.org/2000/svg" width="#{WIDTH}" height="#{HEIGHT}" viewBox="0 0 #{WIDTH} #{HEIGHT}">
-          <defs>
-            <linearGradient id="canvasGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#d9e2f7"/>
-              <stop offset="100%" stop-color="#edf2ff"/>
-            </linearGradient>
-            <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#cf3215"/>
-              <stop offset="50%" stop-color="#111827"/>
-              <stop offset="100%" stop-color="#22d3ee"/>
-            </linearGradient>
-            <style>
-              .base { font-family: #{FONT_FAMILY}; fill: #f8fafc; }
-              .meta { font-size: 26px; font-weight: 700; }
-              .title { font-size: 58px; font-weight: 800; letter-spacing: 2px; }
-              .header-label { font-size: 16px; font-weight: 700; fill: #dbeafe; }
-              .team-name { font-size: 30px; font-weight: 800; fill: #ffffff; }
-              .team-player { font-size: 24px; font-weight: 700; fill: #111827; }
-              .round-title { font-size: 28px; font-weight: 800; fill: #f8fafc; }
-              .table-head { font-size: 19px; font-weight: 800; fill: #f8fafc; }
-              .table-cell { font-size: 22px; font-weight: 700; fill: #111827; }
-              .table-cell-small { font-size: 18px; font-weight: 700; fill: #111827; }
-              .score { font-size: 28px; font-weight: 800; fill: #111827; }
-              .round-win { font-size: 28px; font-weight: 900; }
-              .footer-team { font-size: 34px; font-weight: 800; fill: #ffffff; }
-              .footer-score { font-size: 42px; font-weight: 900; fill: #ffffff; }
-              .muted { fill: #94a3b8; }
-            </style>
-          </defs>
-          #{canvas_background_svg}
-          <rect x="0" y="0" width="#{WIDTH}" height="170" fill="url(#heroGradient)"/>
-          <rect x="0" y="0" width="#{WIDTH}" height="170" fill="rgba(8, 15, 31, 0.32)"/>
-          <text x="512" y="52" text-anchor="middle" class="base muted meta">MASTER DUEL</text>
-          <text x="512" y="104" text-anchor="middle" class="base title">WMGP RESULT</text>
-          <text x="512" y="146" text-anchor="middle" class="base muted meta">Katorin2 Match Ledger</text>
-          #{header_meta_svg}
-          #{versus_panel_svg}
-          #{round_sections_svg}
-          #{footer_svg}
-        </svg>
-      SVG
+    def fresh?
+      return false unless output_path.exist?
+
+      export = match.exports.find_by(export_type: EXPORT_TYPE)
+      return false unless export&.generated_at
+
+      last_change = [
+        match.match_result&.updated_at,
+        match.rounds.maximum(:updated_at)
+      ].compact.max
+      return true unless last_change
+
+      export.generated_at >= last_change
     end
 
-    def header_meta_svg
-      <<~SVG
-        <rect x="0" y="170" width="#{WIDTH}" height="58" fill="#27447f"/>
-        <text x="18" y="206" class="base header-label">JUDGE:</text>
-        <text x="164" y="206" class="base meta">#{escape(match.judge_name.presence || "-")}</text>
-        <text x="512" y="206" text-anchor="middle" class="base meta">#{escape(week_label)}</text>
-        <text x="1006" y="206" text-anchor="end" class="base meta">#{escape(scheduled_label)}</text>
-      SVG
+    def h(value)
+      ERB::Util.html_escape(value.to_s)
     end
 
-    def versus_panel_svg
+    def html_document
+      <<~HTML
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="utf-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              width: #{WIDTH}px;
+              height: #{HEIGHT}px;
+              font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;
+              overflow: hidden;
+              #{canvas_background_css}
+            }
+
+            .hero {
+              height: 170px;
+              background: linear-gradient(to right, #cf3215, #111827, #22d3ee);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+            }
+            .hero::after {
+              content: '';
+              position: absolute;
+              inset: 0;
+              background: rgba(8, 15, 31, 0.32);
+            }
+            .hero > * { position: relative; z-index: 1; }
+            .hero-sub { color: #94a3b8; font-size: 26px; font-weight: 700; }
+            .hero-title { color: #f8fafc; font-size: 58px; font-weight: 800; letter-spacing: 2px; }
+
+            .meta-bar {
+              background: #27447f;
+              height: 58px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 0 18px;
+              color: #f8fafc;
+              font-size: 26px;
+              font-weight: 700;
+            }
+            .meta-bar .label { font-size: 16px; color: #dbeafe; margin-right: 8px; }
+
+            .versus {
+              display: flex;
+              margin: 18px 20px 0;
+              height: 160px;
+            }
+            .versus-team {
+              flex: 1;
+              background: #0f172a;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              padding: 0 20px;
+              overflow: hidden;
+            }
+            .versus-team.home { flex-direction: row; }
+            .versus-team.away { flex-direction: row-reverse; }
+            .team-name {
+              color: #fff;
+              font-size: 28px;
+              font-weight: 800;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 200px;
+            }
+            .player-list { display: flex; flex-direction: column; gap: 4px; }
+            .player-tag {
+              background: #ffe082;
+              color: #111827;
+              font-size: 16px;
+              font-weight: 700;
+              padding: 6px 12px;
+              border: 1px solid #111827;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 150px;
+              text-align: center;
+            }
+            .versus-center {
+              width: 240px;
+              flex-shrink: 0;
+              background: #18346a;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #f8fafc;
+              font-size: 58px;
+              font-weight: 800;
+            }
+
+            .round-section { margin: 0 20px; }
+            .round-header {
+              background: #0f172a;
+              color: #f8fafc;
+              text-align: center;
+              font-size: 28px;
+              font-weight: 800;
+              padding: 6px 0;
+              margin-top: 24px;
+            }
+
+            .board-table {
+              width: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+            }
+            .board-table th {
+              background: #111827;
+              color: #f8fafc;
+              font-size: 19px;
+              font-weight: 800;
+              padding: 6px 4px;
+              text-align: center;
+            }
+            .board-table td {
+              background: #ffe082;
+              color: #111827;
+              font-size: 20px;
+              font-weight: 700;
+              padding: 10px 4px;
+              text-align: center;
+              border: 1px solid #111827;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            .board-table .score-cell {
+              font-size: 26px;
+              font-weight: 800;
+            }
+            col.c-player { width: 16%; }
+            col.c-deck { width: 26%; }
+            col.c-score { width: 16%; }
+
+            .round-result {
+              display: flex;
+              justify-content: center;
+              gap: 80px;
+              padding: 4px 0;
+              font-size: 28px;
+              font-weight: 900;
+            }
+            .win { color: #ef4444; }
+            .lose { color: #2563eb; }
+
+            .footer {
+              background: #0f172a;
+              margin: 24px 20px 0;
+              height: 70px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 40px;
+            }
+            .footer-team {
+              color: #fff;
+              font-size: 34px;
+              font-weight: 800;
+              max-width: 280px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              text-align: center;
+            }
+            .footer-score {
+              color: #fff;
+              font-size: 42px;
+              font-weight: 900;
+              min-width: 120px;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          #{hero_html}
+          #{meta_bar_html}
+          #{versus_html}
+          #{rounds_html}
+          #{footer_html}
+        </body>
+        </html>
+      HTML
+    end
+
+    def canvas_background_css
+      if match.league.header_image.attached?
+        data_uri = header_image_data_uri
+        "background: url('#{data_uri}') center/cover; position: relative;"
+      else
+        "background: linear-gradient(135deg, #d9e2f7, #edf2ff);"
+      end
+    end
+
+    def hero_html
+      <<~HTML
+        <div class="hero">
+          <div class="hero-sub">MASTER DUEL</div>
+          <div class="hero-title">WMGP RESULT</div>
+          <div class="hero-sub">Katorin2 Match Ledger</div>
+        </div>
+      HTML
+    end
+
+    def meta_bar_html
+      <<~HTML
+        <div class="meta-bar">
+          <div><span class="label">JUDGE:</span>#{h(match.judge_name.presence || "-")}</div>
+          <div>#{h week_label}</div>
+          <div>#{h scheduled_label}</div>
+        </div>
+      HTML
+    end
+
+    def versus_html
       left_players = header_players("home")
       right_players = header_players("away")
-
-      <<~SVG
-        <rect x="20" y="246" width="372" height="160" fill="#0f172a"/>
-        <rect x="632" y="246" width="372" height="160" fill="#0f172a"/>
-        <rect x="392" y="246" width="240" height="160" fill="#18346a"/>
-
-        #{fit_text_svg(42, 330, match.home_team.display_name, "team-name", "start", 200, font_size: 30)}
-        #{fit_text_svg(990, 330, match.away_team.display_name, "team-name", "end", 200, font_size: 30)}
-
-        #{player_strip_svg(242, left_players)}
-        #{player_strip_svg(640, right_players)}
-
-        <text x="512" y="336" text-anchor="middle" class="base title">#{escape(I18n.t("labels.vs"))}</text>
-      SVG
+      <<~HTML
+        <div class="versus">
+          <div class="versus-team home">
+            <div class="team-name">#{h match.home_team.display_name}</div>
+            <div class="player-list">
+              #{left_players.map { |n| %(<div class="player-tag">#{h n}</div>) }.join}
+            </div>
+          </div>
+          <div class="versus-center">#{h I18n.t("labels.vs")}</div>
+          <div class="versus-team away">
+            <div class="team-name">#{h match.away_team.display_name}</div>
+            <div class="player-list">
+              #{right_players.map { |n| %(<div class="player-tag">#{h n}</div>) }.join}
+            </div>
+          </div>
+        </div>
+      HTML
     end
 
-    def round_sections_svg
+    def rounds_html
       rounds = match.rounds.index_by(&:number)
-      (1..3).map.with_index do |round_number, index|
+      (1..3).map do |round_number|
         round = rounds[round_number]
-        top = 430 + (index * 280)
-        round_section_svg(round_number, round, top)
+        round_section_html(round_number, round)
       end.join
     end
 
-    def round_section_svg(round_number, round, top)
+    def round_section_html(round_number, round)
       boards = round&.board_results&.index_by(&:board_number) || {}
-      <<~SVG
-        <rect x="20" y="#{top}" width="984" height="40" fill="#0f172a"/>
-        <text x="512" y="#{top + 28}" text-anchor="middle" class="base round-title">ROUND#{round_number}</text>
-        #{round_table_header_svg(top + 40)}
-        #{(1..3).map { |board_number| round_board_row_svg(boards[board_number], top + 40 + ((board_number - 1) * 50), board_number) }.join}
-        #{round_winner_svg(round, top + 196)}
-      SVG
+      <<~HTML
+        <div class="round-section">
+          <div class="round-header">ROUND#{round_number}</div>
+          <table class="board-table">
+            <colgroup>
+              <col class="c-player"><col class="c-deck"><col class="c-score"><col class="c-deck"><col class="c-player">
+            </colgroup>
+            <thead><tr>
+              <th>PLAYER</th><th>DECK</th><th>SCORE</th><th>DECK</th><th>PLAYER</th>
+            </tr></thead>
+            <tbody>
+              #{(1..3).map { |bn| board_row_html(boards[bn], bn) }.join}
+            </tbody>
+          </table>
+          #{round_result_html(round)}
+        </div>
+      HTML
     end
 
-    def round_table_header_svg(top)
-      <<~SVG
-        <rect x="20" y="#{top}" width="984" height="36" fill="#111827"/>
-        <text x="100" y="#{top + 24}" text-anchor="middle" class="base table-head">PLAYER</text>
-        <text x="312" y="#{top + 24}" text-anchor="middle" class="base table-head">DECK</text>
-        <text x="512" y="#{top + 24}" text-anchor="middle" class="base table-head">SCORE</text>
-        <text x="712" y="#{top + 24}" text-anchor="middle" class="base table-head">DECK</text>
-        <text x="924" y="#{top + 24}" text-anchor="middle" class="base table-head">PLAYER</text>
-      SVG
-    end
-
-    def round_board_row_svg(board, top, board_number)
+    def board_row_html(board, board_number)
       board ||= BoardResult.new(board_number: board_number)
-      row_top = top + 36
-      <<~SVG
-        <rect x="20" y="#{row_top}" width="984" height="50" fill="#ffe082"/>
-        #{grid_lines_svg(row_top, 50)}
-        #{fit_text_svg(100, row_top + 31, board.home_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
-        #{fit_text_svg(312, row_top + 31, board.home_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
-        <text x="512" y="#{row_top + 31}" text-anchor="middle" class="base score">#{escape(board.score_text || "- -")}</text>
-        #{fit_text_svg(712, row_top + 31, board.away_deck_name.presence || "-", "table-cell", "middle", 248, font_size: 22)}
-        #{fit_text_svg(924, row_top + 31, board.away_participant&.display_name || "-", "table-cell", "middle", 148, font_size: 22)}
-      SVG
+      <<~HTML
+        <tr>
+          <td>#{h(board.home_participant&.display_name || "-")}</td>
+          <td>#{h(board.home_deck_name.presence || "-")}</td>
+          <td class="score-cell">#{h(board.score_text || "- -")}</td>
+          <td>#{h(board.away_deck_name.presence || "-")}</td>
+          <td>#{h(board.away_participant&.display_name || "-")}</td>
+        </tr>
+      HTML
     end
 
-    def round_winner_svg(round, top)
+    def round_result_html(round)
       home_label, away_label =
         case round&.winner_team_id
         when match.home_team_id then ["W", "L"]
         when match.away_team_id then ["L", "W"]
         else ["-", "-"]
         end
-
-      <<~SVG
-        <text x="472" y="#{top + 28}" text-anchor="end" class="round-win" fill="#ef4444">#{home_label}</text>
-        <text x="552" y="#{top + 28}" text-anchor="start" class="round-win" fill="#2563eb">#{away_label}</text>
-      SVG
+      <<~HTML
+        <div class="round-result">
+          <span class="win">#{home_label}</span>
+          <span class="lose">#{away_label}</span>
+        </div>
+      HTML
     end
 
-    def footer_svg
+    def footer_html
       result = match.match_result
       home_score = result&.home_round_wins.to_i
       away_score = result&.away_round_wins.to_i
-
-      <<~SVG
-        <rect x="20" y="1294" width="984" height="70" fill="#0f172a"/>
-        #{fit_text_svg(160, 1339, match.home_team.display_name, "footer-team", "middle", 280, font_size: 34)}
-        <text x="512" y="1339" text-anchor="middle" class="base footer-score">#{home_score} - #{away_score}</text>
-        #{fit_text_svg(864, 1339, match.away_team.display_name, "footer-team", "middle", 280, font_size: 34)}
-      SVG
-    end
-
-    def grid_lines_svg(top, height)
-      <<~SVG
-        <line x1="180" y1="#{top}" x2="180" y2="#{top + height}" stroke="#111827" stroke-width="1"/>
-        <line x1="444" y1="#{top}" x2="444" y2="#{top + height}" stroke="#111827" stroke-width="1"/>
-        <line x1="580" y1="#{top}" x2="580" y2="#{top + height}" stroke="#111827" stroke-width="1"/>
-        <line x1="844" y1="#{top}" x2="844" y2="#{top + height}" stroke="#111827" stroke-width="1"/>
-      SVG
-    end
-
-    def player_strip_svg(x, names)
-      names.each_with_index.map do |name, index|
-        y = 264 + (index * 42)
-        box_w = 150
-        <<~SVG
-          <rect x="#{x}" y="#{y}" width="#{box_w}" height="38" fill="#ffe082" stroke="#111827" stroke-width="1"/>
-          #{fit_text_svg(x + (box_w / 2), y + 25, name, "table-cell-small", "middle", 142, font_size: 18)}
-        SVG
-      end.join
+      <<~HTML
+        <div class="footer">
+          <div class="footer-team">#{h match.home_team.display_name}</div>
+          <div class="footer-score">#{home_score} - #{away_score}</div>
+          <div class="footer-team">#{h match.away_team.display_name}</div>
+        </div>
+      HTML
     end
 
     def header_players(side)
@@ -241,84 +416,10 @@ module MatchExports
       parts.compact.join(" ")
     end
 
-    def multiline_text_svg(x, y, text, klass, max_chars, anchor, max_lines: 2, line_height: 30)
-      lines = wrap_text(text.to_s, max_chars).first(max_lines)
-      lines = [text.to_s] if lines.empty?
-      offset =
-        case lines.length
-        when 1 then 0
-        when 2 then -(line_height / 2)
-        else -line_height
-        end
-
-      tspans = lines.each_with_index.map do |line, index|
-        dy = index.zero? ? offset : line_height
-        %(<tspan x="#{x}" dy="#{dy}">#{escape(line)}</tspan>)
-      end.join
-
-      %(<text x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}">#{tspans}</text>)
-    end
-
-    def fit_text_svg(x, y, text, klass, anchor, max_width, font_size:)
-      content = text.to_s.strip.presence || "-"
-      escaped = escape(content)
-      estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
-      attrs = %{x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}"}
-
-      if estimated_width > max_width
-        %(<text #{attrs} textLength="#{max_width}" lengthAdjust="spacingAndGlyphs">#{escaped}</text>)
-      else
-        %(<text #{attrs}>#{escaped}</text>)
-      end
-    end
-
-    def canvas_background_svg
-      if match.league.header_image.attached?
-        <<~SVG
-          <image x="0" y="0" width="#{WIDTH}" height="#{HEIGHT}" preserveAspectRatio="xMidYMid slice" href="#{header_image_data_uri}" />
-          <rect x="0" y="0" width="#{WIDTH}" height="#{HEIGHT}" fill="rgba(238, 242, 255, 0.84)"/>
-        SVG
-      else
-        <<~SVG
-          <rect width="#{WIDTH}" height="#{HEIGHT}" fill="url(#canvasGradient)"/>
-        SVG
-      end
-    end
-
     def header_image_data_uri
       blob = match.league.header_image.blob
       encoded = Base64.strict_encode64(match.league.header_image.download)
       "data:#{blob.content_type};base64,#{encoded}"
-    end
-
-    def wrap_text(text, max_chars)
-      normalized = text.to_s.gsub(/\s+/, " ").strip
-      return [] if normalized.blank?
-
-      words = normalized.split(" ")
-      return normalized.scan(/.{1,#{max_chars}}/) if words.one?
-
-      lines = [String.new]
-      words.each do |word|
-        candidate = lines.last.blank? ? word : "#{lines.last} #{word}"
-        if candidate.length <= max_chars
-          lines[-1] = candidate
-        else
-          lines << word
-        end
-      end
-      lines
-    end
-
-    def truncate(text, max_chars)
-      value = text.to_s.strip
-      return value if value.length <= max_chars
-
-      "#{value.first(max_chars - 1)}…"
-    end
-
-    def escape(text)
-      CGI.escapeHTML(text.to_s)
     end
   end
 end

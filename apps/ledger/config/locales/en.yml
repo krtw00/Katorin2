@@ -143,6 +143,8 @@ en:
       lineup_updated: Order updated.
       results_updated: Match result updated.
       export_failed: "Failed to generate match image: %{message}"
+    standings:
+      export_failed: "Standings export failed: %{message}"
   shared:
     errors:
       title: Please review the highlighted fields.
@@ -707,3 +709,20 @@ en:
       group_count: "%{count} groups"
       round_count: "%{count} rounds"
       bracket_size: "%{count} teams"
+  standings:
+    eyebrow: Standings
+    title: "%{phase} Standings"
+    lede: Auto-calculated block standings from match results.
+    empty: No match results yet.
+    download: Download Image
+    columns:
+      rank: Rank
+      team: Team
+      wins: W
+      points: Pts
+      round_wins: RF
+      round_losses: RA
+      goal_diff: RD
+      round_board_diff: BRD
+      match_game_diff: MGD
+      board_wins_total: BWT
