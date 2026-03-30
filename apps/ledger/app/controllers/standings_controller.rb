@@ -6,6 +6,21 @@ class StandingsController < ApplicationController
     @blocks = @phase.blocks.order(:position).index_by(&:id)
   end
 
+  def download
+    standings_by_block = Standings::Calculator.call(@phase)
+    blocks = @phase.blocks.order(:position).index_by(&:id)
+
+    renderer = StandingsExports::TableRenderer.new(@phase, standings_by_block, blocks)
+    output_path = renderer.render!
+
+    phase_label = @phase.name.presence || @phase.kind
+    filename = "standings-#{phase_label}.png".gsub(/[^\w.\-]/, "_")
+    send_file output_path, filename: filename, type: "image/png", disposition: "attachment"
+  rescue => e
+    redirect_to league_phase_standings_path(league_id: @league, phase_id: @phase),
+      alert: t("flash.standings.export_failed", message: e.message)
+  end
+
   private
 
   def set_phase

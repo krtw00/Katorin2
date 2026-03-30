@@ -143,6 +143,8 @@ ja:
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       export_failed: "対戦画像の出力に失敗しました: %{message}"
+    standings:
+      export_failed: "順位表画像の出力に失敗しました: %{message}"
   shared:
     errors:
       title: 入力内容を確認してください。
@@ -712,6 +714,7 @@ ja:
     title: "%{phase} 順位表"
     lede: 対戦結果から自動計算したブロック別順位表です。
     empty: 対戦結果がまだありません。
+    download: 画像をダウンロード
     columns:
       rank: 順位
       team: チーム名

@@ -143,6 +143,8 @@ en:
       lineup_updated: Order updated.
       results_updated: Match result updated.
       export_failed: "Failed to generate match image: %{message}"
+    standings:
+      export_failed: "Standings export failed: %{message}"
   shared:
     errors:
       title: Please review the highlighted fields.
@@ -712,6 +714,7 @@ en:
     title: "%{phase} Standings"
     lede: Auto-calculated block standings from match results.
     empty: No match results yet.
+    download: Download Image
     columns:
       rank: Rank
       team: Team
