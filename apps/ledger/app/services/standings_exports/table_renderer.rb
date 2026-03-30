@@ -15,6 +15,7 @@ module StandingsExports
     TABLE_WIDTH = 984
     OUTPUT_DIR = Rails.root.join("public", "generated", "standings_exports")
     FONT_FAMILY = "'Noto Sans CJK JP', 'Noto Sans CJK', 'Noto Color Emoji', sans-serif".freeze
+    NUM_FONT = "'Noto Sans', 'Noto Sans CJK JP', sans-serif".freeze
 
     COLUMNS = [
       { key: :rank,             label: "",              x: 38  },
@@ -83,10 +84,10 @@ module StandingsExports
               .hero-title { font-size: 58px; font-weight: 800; fill: #f8fafc; letter-spacing: 2px; }
               .group-title { font-size: 22px; font-weight: 800; fill: #f8fafc; }
               .th { font-size: 16px; font-weight: 800; fill: #111827; }
-              .td { font-size: 18px; font-weight: 600; fill: #111827; }
-              .td-rank { font-size: 20px; font-weight: 800; font-style: italic; fill: #111827; }
+              .td { font-family: #{NUM_FONT}; font-size: 18px; font-weight: 600; fill: #111827; }
+              .td-rank { font-family: #{NUM_FONT}; font-size: 20px; font-weight: 800; font-style: italic; fill: #111827; }
               .td-team { font-size: 18px; font-weight: 700; fill: #111827; }
-              .td-pts { font-size: 18px; font-weight: 800; fill: #111827; }
+              .td-pts { font-family: #{NUM_FONT}; font-size: 18px; font-weight: 800; fill: #111827; }
             </style>
           </defs>
 
