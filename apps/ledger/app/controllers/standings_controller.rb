@@ -1,5 +1,4 @@
 class StandingsController < ApplicationController
-  before_action :require_organizer_session
   before_action :set_phase
 
   def show
