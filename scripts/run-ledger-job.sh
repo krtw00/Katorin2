@@ -31,6 +31,7 @@ esac
 : "${CLOUD_RUN_SERVICE:=$DEFAULT_CLOUD_RUN_SERVICE}"
 : "${CLOUD_RUN_JOB:=$DEFAULT_CLOUD_RUN_JOB}"
 : "${TASK_TIMEOUT:=10m}"
+: "${CLOUD_SQL_INSTANCE:=${GOOGLE_CLOUD_PROJECT}:${GOOGLE_CLOUD_REGION}:main-pg}"
 
 APP_RUNTIME_SECRET_DEFAULT="${APP_NAME}-ledger-runtime-${APP_ENV}"
 : "${RUNTIME_ENV_SECRET:=$APP_RUNTIME_SECRET_DEFAULT}"
@@ -74,6 +75,7 @@ gcloud run jobs deploy "$CLOUD_RUN_JOB" \
   --region "$GOOGLE_CLOUD_REGION" \
   --image "$IMAGE" \
   --env-vars-file "$RUNTIME_ENV_FILE" \
+  --add-cloudsql-instances "$CLOUD_SQL_INSTANCE" \
   --command bash \
   --args=-lc,"$JOB_COMMAND" \
   --max-retries=0 \
