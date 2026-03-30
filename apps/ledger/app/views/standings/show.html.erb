@@ -1,7 +1,7 @@
 <% page_title t("standings.title", phase: @phase.name.presence || translated_enum("enums.phase.kind", @phase.kind)) %>
 <% set_breadcrumbs([
   breadcrumb_item(t("nav.leagues"), leagues_path),
-  breadcrumb_item(@league.name, league_path(@league)),
+  breadcrumb_item(@league.name, league_path(id: @league)),
   breadcrumb_item(@phase.name.presence || translated_enum("enums.phase.kind", @phase.kind), league_phase_path(league_id: @league, id: @phase)),
   breadcrumb_item(t("standings.eyebrow"), nil, current: true)
 ]) %>
