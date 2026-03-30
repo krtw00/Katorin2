@@ -25,9 +25,9 @@ module StandingsExports
       { key: :round_wins,       label: "得点",           x: 454, anchor: "middle" },
       { key: :round_losses,     label: "失点",           x: 514, anchor: "middle" },
       { key: :goal_diff,        label: "得失点",         x: 580, anchor: "middle" },
-      { key: :round_board_diff, label: "ラウンド得失点",  x: 668, anchor: "middle" },
-      { key: :match_game_diff,  label: "マッチ得失点",    x: 772, anchor: "middle" },
-      { key: :board_wins_total, label: "ラウンド総得点",  x: 914, anchor: "middle" },
+      { key: :round_board_diff, label: "R得失点",    x: 668, anchor: "middle" },
+      { key: :match_game_diff,  label: "M得失点",    x: 772, anchor: "middle" },
+      { key: :board_wins_total, label: "R総得点",    x: 914, anchor: "middle" },
     ].freeze
 
     COL_BORDERS = [56, 296, 360, 424, 484, 544, 616, 720, 824].freeze
@@ -120,10 +120,13 @@ module StandingsExports
         # table header
         parts << %(<rect x="#{TABLE_LEFT}" y="#{y}" width="#{TABLE_WIDTH}" height="#{TABLE_HEADER_HEIGHT}" fill="#ffe082"/>)
         parts << header_grid_lines(y, TABLE_HEADER_HEIGHT)
-        COLUMNS.each do |col|
+        COLUMNS.each_cons(2) do |col, next_col|
           next if col[:key] == :rank
-          parts << %(<text x="#{col[:x]}" y="#{y + 24}" text-anchor="middle" class="base th">#{escape(col[:label])}</text>)
+          col_width = (next_col[:x] - col[:x]) * 0.9
+          parts << fit_text_svg(col[:x], y + 24, col[:label], "th", "middle", col_width, font_size: 16)
         end
+        last = COLUMNS.last
+        parts << fit_text_svg(last[:x], y + 24, last[:label], "th", "middle", 150, font_size: 16)
         y += TABLE_HEADER_HEIGHT
 
         # data rows
@@ -160,8 +163,13 @@ module StandingsExports
 
     def fit_text_svg(x, y, text, klass, anchor, max_width, font_size:)
       content = text.to_s.strip.presence || "-"
-      escaped = escape(content)
       estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
+      # 2倍超えは省略（圧縮しすぎると読めない）
+      if estimated_width > max_width * 2
+        content = truncate(content, (max_width / (font_size * 0.55)).to_i)
+        estimated_width = content.each_char.sum { |char| char.bytesize > 1 ? font_size * 1.0 : font_size * 0.6 }
+      end
+      escaped = escape(content)
       attrs = %{x="#{x}" y="#{y}" text-anchor="#{anchor}" class="base #{klass}"}
 
       if estimated_width > max_width
@@ -169,6 +177,11 @@ module StandingsExports
       else
         %(<text #{attrs}>#{escaped}</text>)
       end
+    end
+
+    def truncate(text, max_chars)
+      return text if text.length <= max_chars
+      "#{text[0, max_chars - 1]}…"
     end
 
     def escape(text)
