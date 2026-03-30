@@ -75,7 +75,7 @@ gcloud run jobs deploy "$CLOUD_RUN_JOB" \
   --region "$GOOGLE_CLOUD_REGION" \
   --image "$IMAGE" \
   --env-vars-file "$RUNTIME_ENV_FILE" \
-  --add-cloudsql-instances "$CLOUD_SQL_INSTANCE" \
+  --set-cloudsql-instances "$CLOUD_SQL_INSTANCE" \
   --command bash \
   --args=-lc,"$JOB_COMMAND" \
   --max-retries=0 \
