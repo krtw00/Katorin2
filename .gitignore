@@ -9,7 +9,6 @@
 !.yarn/versions
 /.next/
 /.vercel
-/supabase/
 
 # test and build artifacts
 /coverage
