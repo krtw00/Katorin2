@@ -14,6 +14,7 @@
   </div>
   <div class="page-actions">
     <%= link_to t("actions.back"), league_phase_path(league_id: @league, id: @phase), class: "button" %>
+    <%= link_to t("standings.download"), download_league_phase_standings_path(league_id: @league, phase_id: @phase), class: "button button--primary" %>
   </div>
 </section>
 
