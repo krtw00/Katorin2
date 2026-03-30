@@ -8,7 +8,7 @@
 
 - 新しい技術基盤を確定する
 - Rails アプリを立ち上げる
-- Supabase Postgres へ接続する最小構成を作る
+- Cloud SQL (PostgreSQL) へ接続する最小構成を作る
 - WMGP Phase 1 に必要な migration を最小セットで切る
 
 この再構築が終わるまでは、現行アプリへの機能追加を止める。

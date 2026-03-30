@@ -30,16 +30,19 @@ bin/dev
 
 - `production`
   - Cloud Run: `katorin2`
-  - 本番 Supabase project
+  - Cloud SQL: `katorin2` @ `main-pg`
 - `staging`
   - Cloud Run: `katorin2-staging`
-  - staging Supabase project
+  - Cloud SQL: `katorin2-staging` @ `main-pg`
 
 アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。Cloud Run service と Secret Manager secret も環境ごとに分離する。
 
 ## Required Env
 
-- `LEDGER_DATABASE_URL`
+- `LEDGER_DATABASE_NAME`
+- `LEDGER_DATABASE_USERNAME`
+- `LEDGER_DATABASE_PASSWORD`
+- `LEDGER_DATABASE_HOST`
 - `RAILS_MASTER_KEY`
 - `SECRET_KEY_BASE`
 - `APP_HOST`
