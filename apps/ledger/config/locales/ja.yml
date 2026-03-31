@@ -679,6 +679,7 @@ ja:
         spectator_room_id: 観戦ID
     errors:
       messages:
+        blank: を入力してください。
         record_invalid: "保存に失敗しました: %{errors}"
         taken: はすでに使われています。
       models:
