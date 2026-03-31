@@ -9,7 +9,11 @@
 
     <div class="field">
       <%= form.label :role, t("organizer_members.form.role") %>
-      <%= form.select :role, enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values), {}, required: true %>
+      <% role_options = can_admin? ? enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values) : enum_options("enums.organizer_member.role", ["staff"]) %>
+      <%= form.select :role, role_options, {}, required: true, disabled: !can_admin? %>
+      <% unless can_admin? %>
+        <%= form.hidden_field :role, value: "staff" %>
+      <% end %>
     </div>
   </div>
 

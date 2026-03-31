@@ -24,8 +24,10 @@
             <%= status_badge organizer_member.admin_password_configured? ? t("organizer_members.password_status.configured") : t("organizer_members.password_status.not_configured"), organizer_member.admin_password_configured? ? "success" : "warning" %>
           <% end %>
           <%= status_badge organizer_member.active? ? t("labels.on") : t("labels.off"), organizer_member.active? ? "success" : "neutral" %>
-          <%= link_to t("actions.edit"), edit_organizer_member_path(id: organizer_member), class: "button" %>
-          <% if organizer_member.destroyable? %>
+          <% if organizer_member.staff? || can_admin? %>
+            <%= link_to t("actions.edit"), edit_organizer_member_path(id: organizer_member), class: "button" %>
+          <% end %>
+          <% if can_admin? && organizer_member.destroyable? %>
             <%= button_to t("actions.delete"), organizer_member_path(id: organizer_member), method: :delete, class: "button button--danger", form: { data: { turbo_confirm: t("organizer_members.delete_confirm") } } %>
           <% end %>
         </div>
