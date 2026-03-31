@@ -1,6 +1,6 @@
 <%= render "shared/errors", record: organizer_member %>
 
-<%= form_with model: organizer_member, url: organizer_member.persisted? ? organizer_member_path(id: organizer_member) : organizer_members_path, class: "stack" do |form| %>
+<%= form_with model: organizer_member, url: organizer_member.persisted? ? organizer_member_path(id: organizer_member) : organizer_members_path, class: "stack", data: { controller: "role-toggle" } do |form| %>
   <div class="field-grid">
     <div class="field">
       <%= form.label :display_name, t("organizer_members.form.display_name") %>
@@ -9,7 +9,11 @@
 
     <div class="field">
       <%= form.label :role, t("organizer_members.form.role") %>
-      <%= form.select :role, enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values), {}, required: true %>
+      <% role_options = can_admin? ? enum_options("enums.organizer_member.role", OrganizerMember::ROLES.values) : enum_options("enums.organizer_member.role", ["staff"]) %>
+      <%= form.select :role, role_options, {}, required: true, disabled: !can_admin?, data: { role_toggle_target: "role", action: "change->role-toggle#toggle" } %>
+      <% unless can_admin? %>
+        <%= form.hidden_field :role, value: "staff" %>
+      <% end %>
     </div>
   </div>
 
@@ -25,16 +29,14 @@
     </div>
   </div>
 
-  <% if organizer_member.owner? || organizer_member.admin? || organizer_member.new_record? %>
-    <div class="panel">
-      <h2><%= t("organizer_members.sections.admin_password") %></h2>
-      <p class="muted"><%= t("organizer_members.form.admin_password_hint") %></p>
-      <div class="field">
-        <%= form.label :admin_password, t("organizer_members.form.admin_password") %>
-        <%= form.password_field :admin_password, autocomplete: "new-password" %>
-      </div>
+  <div class="panel" data-role-toggle-target="passwordPanel" <%= "hidden" unless organizer_member.owner? || organizer_member.admin? || organizer_member.new_record? %>>
+    <h2><%= t("organizer_members.sections.admin_password") %></h2>
+    <p class="muted"><%= t("organizer_members.form.admin_password_hint") %></p>
+    <div class="field">
+      <%= form.label :admin_password, t("organizer_members.form.admin_password") %>
+      <%= form.password_field :admin_password, autocomplete: "new-password" %>
     </div>
-  <% end %>
+  </div>
 
   <div class="page-actions">
     <%= link_to t("actions.back"), organizer_members_path, class: "button" %>

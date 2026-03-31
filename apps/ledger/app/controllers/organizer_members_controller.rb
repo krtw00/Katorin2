@@ -1,6 +1,8 @@
 class OrganizerMembersController < ApplicationController
+  before_action :admin_or_above!
   before_action :set_organizer_member, only: %i[edit update destroy]
-  before_action :owner_only!
+  before_action :ensure_can_manage_member!, only: %i[edit update]
+  before_action :owner_only!, only: :destroy
 
   def index
     @organizer_members = current_organizer_account.organizer_members.order(:created_at)
@@ -47,6 +49,15 @@ class OrganizerMembersController < ApplicationController
   end
 
   def organizer_member_params
-    params.require(:organizer_member).permit(:display_name, :role, :active, :notes, :admin_password)
+    permitted_params = params.require(:organizer_member).permit(:display_name, :role, :active, :notes, :admin_password)
+    permitted_params[:role] = "staff" unless current_organizer_member.owner?
+    permitted_params
+  end
+
+  def ensure_can_manage_member!
+    return if current_organizer_member.owner?
+    return if @organizer_member.staff?
+
+    redirect_to organizer_members_path, alert: t("flash.authorization.denied")
   end
 end
