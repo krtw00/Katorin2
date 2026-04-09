@@ -7,7 +7,7 @@ module MatchExports
     EXPORT_TYPE = "match_result_card".freeze
     RENDERER_KEY = "match_result_card_v2".freeze
     WIDTH = 1024
-    HEIGHT = 1449
+    MIN_HEIGHT = 1449
     BROWSER_TIMEOUT = 30
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
 
@@ -25,15 +25,16 @@ module MatchExports
       browser = Ferrum::Browser.new(
         headless: "new",
         browser_path: ENV["CHROMIUM_PATH"],
-        window_size: [WIDTH, HEIGHT],
+        window_size: [WIDTH, MIN_HEIGHT],
         timeout: BROWSER_TIMEOUT,
         args: ["--no-sandbox", "--disable-gpu"]
       )
       begin
         page = browser.create_page
         page.main_frame.set_content(html_document)
-        page.set_viewport(width: WIDTH, height: HEIGHT)
-        page.screenshot(path: output_path.to_s, format: "png")
+        height = page.evaluate("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)")
+        page.set_viewport(width: WIDTH, height: [height.to_i, MIN_HEIGHT].max)
+        page.screenshot(path: output_path.to_s, format: "png", full: true)
       ensure
         browser.quit
       end
@@ -91,9 +92,8 @@ module MatchExports
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               width: #{WIDTH}px;
-              height: #{HEIGHT}px;
+              min-height: #{MIN_HEIGHT}px;
               font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;
-              overflow: hidden;
               #{canvas_background_css}
             }
 
