@@ -989,6 +989,21 @@ h2 {
   gap: 0.45rem;
 }
 
+.result-entry-score .field {
+  min-width: 0;
+}
+
+.result-entry-score__select {
+  padding-left: 0.7rem;
+  padding-right: 1.95rem;
+  text-align: center;
+  text-align-last: center;
+  font-variant-numeric: tabular-nums;
+  background-position:
+    calc(100% - 0.9rem) calc(50% - 0.12rem),
+    calc(100% - 0.55rem) calc(50% - 0.12rem);
+}
+
 .result-entry-score__sep {
   color: var(--stone-light);
   font-weight: 700;
