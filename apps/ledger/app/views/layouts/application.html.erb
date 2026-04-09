@@ -89,7 +89,7 @@
         </header>
       <% end %>
 
-      <main class="content <%= "content--auth" if auth_screen %>">
+      <main class="<%= ["content", ("content--auth" if auth_screen), content_for(:content_class)].compact.join(" ") %>">
         <%= yield :breadcrumbs %>
         <%= render "shared/flash" %>
         <%= yield %>
