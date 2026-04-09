@@ -3,7 +3,14 @@ require "stringio"
 require "test_helper"
 
 class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
+    @original_queue_adapter = ActiveJob::Base.queue_adapter
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
+
     @password = "password"
     @organizer_account = OrganizerAccount.create!(
       display_name: "E2E Organizer",
@@ -23,6 +30,12 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       active: true
     )
     @organizer_account.ensure_default_stage_assets!
+  end
+
+  teardown do
+    clear_enqueued_jobs
+    clear_performed_jobs
+    ActiveJob::Base.queue_adapter = @original_queue_adapter
   end
 
   test "organizer can run the regular season flow end to end" do
@@ -108,11 +121,13 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to dashboard_path(locale: :ja)
 
-    patch match_result_entry_path(locale: :ja, match_id: match), params: {
-      result_entry: {
-        rounds: result_payload(match)
+    assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
+      patch match_result_entry_path(locale: :ja, match_id: match), params: {
+        result_entry: {
+          rounds: result_payload(match)
+        }
       }
-    }
+    end
     assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
 
     match.reload
@@ -123,13 +138,18 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal 3, match.rounds.count
     assert_equal 9, match.rounds.sum { |round| round.board_results.count }
 
-    get download_match_result_card_export_path(locale: :ja, match_id: match)
+    MatchExports::GenerateResultCardJob.perform_now(match.id)
+    clear_enqueued_jobs
+
+    assert_no_enqueued_jobs only: MatchExports::GenerateResultCardJob do
+      get download_match_result_card_export_path(locale: :ja, match_id: match)
+    end
     assert_response :success
     assert_equal "image/png", response.media_type
     assert_includes response.headers["Content-Disposition"], "attachment"
   end
 
-  test "match export timeout shows a localized alert instead of raw exception text" do
+  test "downloading without a fresh export queues background generation" do
     login_as!(@organizer_account, password: @password)
 
     league = @organizer_account.leagues.create!(
@@ -156,28 +176,17 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       status: "scheduled"
     )
 
-    timeout_renderer = Object.new
-    def timeout_renderer.render!
-      raise Ferrum::TimeoutError, "Timed out waiting for response."
-    end
-
-    renderer_singleton = MatchExports::ResultCardRenderer.singleton_class
-    original_new = MatchExports::ResultCardRenderer.method(:new)
-    renderer_singleton.send(:define_method, :new) do |*|
-      timeout_renderer
-    end
-
-    begin
+    assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
       get download_match_result_card_export_path(locale: :ja, match_id: match)
-    ensure
-      renderer_singleton.send(:define_method, :new, original_new)
     end
 
     assert_redirected_to match_path(locale: :ja, id: match)
     follow_redirect!
     assert_response :success
-    assert_includes response.body, "対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。"
-    refute_includes response.body, "Timed out waiting for response"
+    assert_includes response.body, "画像生成を開始しました。少し待ってから再度ダウンロードしてください。"
+
+    export = match.exports.find_by!(export_type: MatchExports::ResultCardRenderer::EXPORT_TYPE)
+    assert_equal "pending", export.status
   end
 
   test "organizer can create a tournament phase before setting participant count" do

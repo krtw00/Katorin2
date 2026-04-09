@@ -142,6 +142,9 @@ ja:
       bracket_progress_locked: 次のカードに結果が入っているため、勝ち上がり先を更新できません。
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
+      results_updated_with_export: 対戦結果を更新しました。画像生成をバックグラウンドで開始しました。
+      export_generation_started: 画像生成を開始しました。少し待ってから再度ダウンロードしてください。
+      export_refresh_started: 最新画像への更新を開始しました。少し待ってから再度ダウンロードしてください。
       export_failed: 対戦画像の出力に失敗しました。時間をおいて再度お試しください。
       export_timeout: 対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。
     standings:
@@ -476,7 +479,17 @@ ja:
     progress: 進行状況
     official_result: 公式結果
     result_card: 結果画像
-    result_card_download: ダウンロード時に最新画像を生成します。
+    result_card_download: 結果保存後に画像をバックグラウンド生成します。
+    result_card_status:
+      missing: 未生成
+      pending: 生成中
+      stale: 更新待ち
+      generated: 生成済み
+    result_card_hint:
+      missing: 結果保存後に自動生成されます。必要ならダウンロード操作でも生成を開始できます。
+      pending: 画像を生成中です。少し待ってから再度ダウンロードしてください。
+      stale: 最新結果へ更新中です。少し待ってから再度ダウンロードしてください。
+      generated: 最新画像をすぐダウンロードできます。
     rounds: ラウンド
     empty_result: 公式結果はまだありません。
     empty_rounds: ラウンドはまだありません。
