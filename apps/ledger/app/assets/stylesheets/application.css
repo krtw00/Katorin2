@@ -235,6 +235,10 @@ ol {
   padding: 2rem 1.5rem 4rem;
 }
 
+.content--wide {
+  max-width: 1360px;
+}
+
 .content--auth {
   max-width: none;
   min-height: 100vh;
@@ -947,7 +951,7 @@ h2 {
 .result-entry-table__header,
 .result-entry-row {
   display: grid;
-  grid-template-columns: 3.25rem minmax(0, 1.4fr) minmax(0, 1fr) 9.5rem minmax(0, 1fr) minmax(0, 1.4fr);
+  grid-template-columns: 3.25rem minmax(0, 1.5fr) minmax(0, 1.1fr) 10.75rem minmax(0, 1.1fr) minmax(0, 1.5fr);
   gap: 0.75rem;
   align-items: center;
 }
@@ -987,6 +991,22 @@ h2 {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 0.45rem;
+}
+
+.result-entry-score .field {
+  min-width: 0;
+}
+
+.result-entry-score__select {
+  min-width: 4.25rem;
+  padding-left: 0.7rem;
+  padding-right: 1.95rem;
+  text-align: center;
+  text-align-last: center;
+  font-variant-numeric: tabular-nums;
+  background-position:
+    calc(100% - 0.9rem) calc(50% - 0.12rem),
+    calc(100% - 0.55rem) calc(50% - 0.12rem);
 }
 
 .result-entry-score__sep {

@@ -1,4 +1,5 @@
 <% page_title t("matches.result_entry.title") %>
+<% content_for :content_class, "content--wide" %>
 <% set_breadcrumbs([
   breadcrumb_item(t("nav.home"), dashboard_path),
   breadcrumb_item(t("leagues.title_index"), leagues_path),
@@ -72,12 +73,12 @@
               <div class="result-entry-score">
                 <div class="field field--compact">
                   <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) %></label>
-                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_game_wins]", options_for_select(game_win_options, board.home_game_wins), include_blank: false, aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) } %>
+                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_game_wins]", options_for_select(game_win_options, board.home_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) } %>
                 </div>
                 <span class="result-entry-score__sep">-</span>
                 <div class="field field--compact">
                   <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) %></label>
-                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_game_wins]", options_for_select(game_win_options, board.away_game_wins), include_blank: false, aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) } %>
+                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_game_wins]", options_for_select(game_win_options, board.away_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) } %>
                 </div>
               </div>
 
