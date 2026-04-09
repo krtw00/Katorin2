@@ -248,20 +248,26 @@ module MatchExports
               background: #0f172a;
               margin: 24px 20px 0;
               height: 70px;
-              display: flex;
+              display: grid;
+              grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
               align-items: center;
-              justify-content: center;
-              gap: 40px;
+              column-gap: 32px;
+              padding: 0 28px;
             }
             .footer-team {
               color: #fff;
               font-size: 34px;
               font-weight: 800;
-              max-width: 280px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              text-align: center;
+              line-height: 1;
+            }
+            .footer-team.home {
+              text-align: right;
+            }
+            .footer-team.away {
+              text-align: left;
             }
             .footer-score {
               color: #fff;
@@ -269,6 +275,7 @@ module MatchExports
               font-weight: 900;
               min-width: 120px;
               text-align: center;
+              line-height: 1;
             }
           </style>
         </head>
@@ -397,9 +404,9 @@ module MatchExports
       away_score = result&.away_round_wins.to_i
       <<~HTML
         <div class="footer">
-          <div class="footer-team">#{h match.home_team.display_name}</div>
+          <div class="footer-team home">#{h match.home_team.display_name}</div>
           <div class="footer-score">#{home_score} - #{away_score}</div>
-          <div class="footer-team">#{h match.away_team.display_name}</div>
+          <div class="footer-team away">#{h match.away_team.display_name}</div>
         </div>
       HTML
     end
