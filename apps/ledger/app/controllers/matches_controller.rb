@@ -8,6 +8,7 @@ class MatchesController < ApplicationController
   def show
     @match_result = @match.match_result
     @rounds = @match.rounds.includes(:board_results).order(:number)
+    @result_card_export_state = MatchExports::ResultCardExportManager.new(@match).state
   end
 
   def new

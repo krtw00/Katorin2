@@ -142,6 +142,9 @@ en:
       bracket_progress_locked: The next bracket card already has a result, so advancement cannot be updated.
       lineup_updated: Order updated.
       results_updated: Match result updated.
+      results_updated_with_export: Match result updated. Background image generation has started.
+      export_generation_started: Image generation has started. Please wait a moment and try downloading again.
+      export_refresh_started: Refreshing the latest image has started. Please wait a moment and try downloading again.
       export_failed: Failed to generate the match image. Please try again in a moment.
       export_timeout: Match image generation timed out. Please wait a moment and try again.
     standings:
@@ -476,7 +479,17 @@ en:
     progress: Progress
     official_result: Official result
     result_card: Result image
-    result_card_download: The latest image is generated when you download it.
+    result_card_download: The image is generated in the background after results are saved.
+    result_card_status:
+      missing: Not generated
+      pending: Generating
+      stale: Refreshing
+      generated: Ready
+    result_card_hint:
+      missing: The image is generated automatically after results are saved. You can also start it by downloading.
+      pending: The image is being generated. Please wait a moment and try downloading again.
+      stale: The image is being refreshed with the latest result. Please wait a moment and try downloading again.
+      generated: The latest image is ready to download.
     rounds: Rounds
     empty_result: No official result yet.
     empty_rounds: No rounds yet.
