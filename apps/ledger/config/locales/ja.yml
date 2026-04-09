@@ -142,9 +142,11 @@ ja:
       bracket_progress_locked: 次のカードに結果が入っているため、勝ち上がり先を更新できません。
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
-      export_failed: "対戦画像の出力に失敗しました: %{message}"
+      export_failed: 対戦画像の出力に失敗しました。時間をおいて再度お試しください。
+      export_timeout: 対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。
     standings:
-      export_failed: "順位表画像の出力に失敗しました: %{message}"
+      export_failed: 順位表画像の出力に失敗しました。時間をおいて再度お試しください。
+      export_timeout: 順位表画像の出力がタイムアウトしました。少し待ってから再度お試しください。
   shared:
     errors:
       title: 入力内容を確認してください。
@@ -677,9 +679,17 @@ ja:
         bracket_slot: ブラケット位置
         room_id: ルームID
         spectator_room_id: 観戦ID
+      board_result:
+        round: ラウンド
+        board_number: 卓番号
+        home_game_wins: ホームゲーム勝数
+        away_game_wins: アウェイゲーム勝数
+        winner_side: 勝者サイド
     errors:
       messages:
         blank: を入力してください。
+        inclusion: は一覧にありません。
+        required: を入力してください。
         record_invalid: "保存に失敗しました: %{errors}"
         taken: はすでに使われています。
       models:
@@ -687,7 +697,6 @@ ja:
           attributes:
             base:
               invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-2, 0-2 のいずれかで入力してください。
-        notes: メモ
   helpers:
     submit:
       create: "%{model}を作成"

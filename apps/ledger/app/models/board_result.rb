@@ -10,7 +10,7 @@ class BoardResult < ApplicationRecord
   belongs_to :away_participant, class_name: "Participant", optional: true
 
   enum :result_status, RESULT_STATUSES, validate: true
-  enum :winner_side, WINNER_SIDES, validate: true, allow_nil: true
+  enum :winner_side, WINNER_SIDES, validate: { allow_nil: true }
 
   validates :board_number, presence: true, uniqueness: { scope: :round_id }
   validates :home_game_wins, :away_game_wins, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 2 }, allow_nil: true

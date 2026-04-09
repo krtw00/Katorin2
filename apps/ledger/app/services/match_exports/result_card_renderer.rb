@@ -8,6 +8,7 @@ module MatchExports
     RENDERER_KEY = "match_result_card_v2".freeze
     WIDTH = 1024
     HEIGHT = 1449
+    BROWSER_TIMEOUT = 30
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
 
     def initialize(match)
@@ -25,6 +26,7 @@ module MatchExports
         headless: "new",
         browser_path: ENV["CHROMIUM_PATH"],
         window_size: [WIDTH, HEIGHT],
+        timeout: BROWSER_TIMEOUT,
         args: ["--no-sandbox", "--disable-gpu"]
       )
       begin

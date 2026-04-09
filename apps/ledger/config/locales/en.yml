@@ -142,9 +142,11 @@ en:
       bracket_progress_locked: The next bracket card already has a result, so advancement cannot be updated.
       lineup_updated: Order updated.
       results_updated: Match result updated.
-      export_failed: "Failed to generate match image: %{message}"
+      export_failed: Failed to generate the match image. Please try again in a moment.
+      export_timeout: Match image generation timed out. Please wait a moment and try again.
     standings:
-      export_failed: "Standings export failed: %{message}"
+      export_failed: Failed to generate the standings image. Please try again in a moment.
+      export_timeout: Standings image generation timed out. Please wait a moment and try again.
   shared:
     errors:
       title: Please review the highlighted fields.
@@ -677,8 +679,17 @@ en:
         bracket_slot: Bracket slot
         room_id: Room ID
         spectator_room_id: Spectator ID
+      board_result:
+        round: Round
+        board_number: Board number
+        home_game_wins: Home game wins
+        away_game_wins: Away game wins
+        winner_side: Winner side
     errors:
       messages:
+        blank: can't be blank.
+        inclusion: is not included in the list.
+        required: must exist.
         record_invalid: "Validation failed: %{errors}"
         taken: has already been taken.
       models:
@@ -686,7 +697,6 @@ en:
           attributes:
             base:
               invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-2, or 0-2.
-        notes: Notes
   helpers:
     submit:
       create: "Create %{model}"

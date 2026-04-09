@@ -17,8 +17,9 @@ class StandingsController < ApplicationController
     filename = "standings-#{league_label}.png"
     send_file output_path, filename: filename, type: "image/png", disposition: "attachment"
   rescue => e
+    Rails.logger.error("Standings export failed for phase #{@phase.id}: #{e.class}: #{e.message}")
     redirect_to league_phase_standings_path(league_id: @league, phase_id: @phase),
-      alert: t("flash.standings.export_failed", message: e.message)
+      alert: export_error_message(e)
   end
 
   private
@@ -28,5 +29,14 @@ class StandingsController < ApplicationController
       .where(id: params[:phase_id], leagues: { organizer_account_id: current_organizer_account.id })
       .first!
     @league = @phase.league
+  end
+
+  def export_error_message(error)
+    case error
+    when Ferrum::TimeoutError
+      t("flash.standings.export_timeout")
+    else
+      t("flash.standings.export_failed")
+    end
   end
 end
