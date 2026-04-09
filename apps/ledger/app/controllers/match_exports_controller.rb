@@ -6,7 +6,8 @@ class MatchExportsController < ApplicationController
     set_export
     send_export_file(disposition: :attachment)
   rescue StandardError => error
-    redirect_to match_path(id: @match), alert: t("flash.matches.export_failed", message: error.message)
+    Rails.logger.error("Match export failed for #{@match.id}: #{error.class}: #{error.message}")
+    redirect_to match_path(id: @match), alert: export_error_message(error)
   end
 
   private
@@ -47,5 +48,14 @@ class MatchExportsController < ApplicationController
     home = @match.home_team.display_name.to_s.parameterize.presence || "home"
     away = @match.away_team.display_name.to_s.parameterize.presence || "away"
     "#{home}-vs-#{away}.png"
+  end
+
+  def export_error_message(error)
+    case error
+    when Ferrum::TimeoutError
+      t("flash.matches.export_timeout")
+    else
+      t("flash.matches.export_failed")
+    end
   end
 end

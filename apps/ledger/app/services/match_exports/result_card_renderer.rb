@@ -7,7 +7,8 @@ module MatchExports
     EXPORT_TYPE = "match_result_card".freeze
     RENDERER_KEY = "match_result_card_v2".freeze
     WIDTH = 1024
-    HEIGHT = 1449
+    MIN_HEIGHT = 1449
+    BROWSER_TIMEOUT = 30
     OUTPUT_DIR = Rails.root.join("public", "generated", "match_exports")
 
     def initialize(match)
@@ -24,14 +25,16 @@ module MatchExports
       browser = Ferrum::Browser.new(
         headless: "new",
         browser_path: ENV["CHROMIUM_PATH"],
-        window_size: [WIDTH, HEIGHT],
+        window_size: [WIDTH, MIN_HEIGHT],
+        timeout: BROWSER_TIMEOUT,
         args: ["--no-sandbox", "--disable-gpu"]
       )
       begin
         page = browser.create_page
         page.main_frame.set_content(html_document)
-        page.set_viewport(width: WIDTH, height: HEIGHT)
-        page.screenshot(path: output_path.to_s, format: "png")
+        height = page.evaluate("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)")
+        page.set_viewport(width: WIDTH, height: [height.to_i, MIN_HEIGHT].max)
+        page.screenshot(path: output_path.to_s, format: "png", full: true)
       ensure
         browser.quit
       end
@@ -89,9 +92,8 @@ module MatchExports
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               width: #{WIDTH}px;
-              height: #{HEIGHT}px;
+              min-height: #{MIN_HEIGHT}px;
               font-family: 'Noto Sans', 'Noto Sans CJK JP', sans-serif;
-              overflow: hidden;
               #{canvas_background_css}
             }
 
@@ -193,6 +195,7 @@ module MatchExports
               width: 100%;
               border-collapse: collapse;
               table-layout: fixed;
+              font-variant-numeric: tabular-nums;
             }
             .board-table th {
               background: #111827;
@@ -200,7 +203,10 @@ module MatchExports
               font-size: 19px;
               font-weight: 800;
               padding: 6px 4px;
+              height: 42px;
+              line-height: 1.05;
               text-align: center;
+              vertical-align: middle;
             }
             .board-table td {
               background: #ffe082;
@@ -208,7 +214,10 @@ module MatchExports
               font-size: 20px;
               font-weight: 700;
               padding: 10px 4px;
+              height: 60px;
+              line-height: 1.15;
               text-align: center;
+              vertical-align: middle;
               border: 1px solid #111827;
               overflow: hidden;
               text-overflow: ellipsis;
@@ -217,6 +226,7 @@ module MatchExports
             .board-table .score-cell {
               font-size: 26px;
               font-weight: 800;
+              line-height: 1;
             }
             col.c-player { width: 16%; }
             col.c-deck { width: 26%; }
@@ -229,6 +239,7 @@ module MatchExports
               padding: 4px 0;
               font-size: 28px;
               font-weight: 900;
+              line-height: 1;
             }
             .win { color: #ef4444; }
             .lose { color: #2563eb; }
@@ -237,20 +248,26 @@ module MatchExports
               background: #0f172a;
               margin: 24px 20px 0;
               height: 70px;
-              display: flex;
+              display: grid;
+              grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
               align-items: center;
-              justify-content: center;
-              gap: 40px;
+              column-gap: 32px;
+              padding: 0 28px;
             }
             .footer-team {
               color: #fff;
               font-size: 34px;
               font-weight: 800;
-              max-width: 280px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              text-align: center;
+              line-height: 1;
+            }
+            .footer-team.home {
+              text-align: right;
+            }
+            .footer-team.away {
+              text-align: left;
             }
             .footer-score {
               color: #fff;
@@ -258,6 +275,7 @@ module MatchExports
               font-weight: 900;
               min-width: 120px;
               text-align: center;
+              line-height: 1;
             }
           </style>
         </head>
@@ -386,9 +404,9 @@ module MatchExports
       away_score = result&.away_round_wins.to_i
       <<~HTML
         <div class="footer">
-          <div class="footer-team">#{h match.home_team.display_name}</div>
+          <div class="footer-team home">#{h match.home_team.display_name}</div>
           <div class="footer-score">#{home_score} - #{away_score}</div>
-          <div class="footer-team">#{h match.away_team.display_name}</div>
+          <div class="footer-team away">#{h match.away_team.display_name}</div>
         </div>
       HTML
     end
