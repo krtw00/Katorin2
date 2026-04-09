@@ -129,6 +129,57 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "attachment"
   end
 
+  test "match export timeout shows a localized alert instead of raw exception text" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Export Timeout League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Export Team A")
+    team_b = create_team_record_with_members!(league:, name: "Export Team B")
+    match = week.matches.create!(
+      league: league,
+      phase: phase,
+      block: block,
+      home_team: team_a,
+      away_team: team_b,
+      scheduled_on: Date.new(2026, 4, 9),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    timeout_renderer = Object.new
+    def timeout_renderer.render!
+      raise Ferrum::TimeoutError, "Timed out waiting for response."
+    end
+
+    renderer_singleton = MatchExports::ResultCardRenderer.singleton_class
+    original_new = MatchExports::ResultCardRenderer.method(:new)
+    renderer_singleton.send(:define_method, :new) do |*|
+      timeout_renderer
+    end
+
+    begin
+      get download_match_result_card_export_path(locale: :ja, match_id: match)
+    ensure
+      renderer_singleton.send(:define_method, :new, original_new)
+    end
+
+    assert_redirected_to match_path(locale: :ja, id: match)
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, "対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。"
+    refute_includes response.body, "Timed out waiting for response"
+  end
+
   test "organizer can create a tournament phase before setting participant count" do
     login_as!(@organizer_account, password: @password)
 
