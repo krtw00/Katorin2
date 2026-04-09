@@ -3,6 +3,7 @@ require "erb"
 
 module StandingsExports
   class TableRenderer
+    BROWSER_TIMEOUT = 30
     OUTPUT_DIR = Rails.root.join("public", "generated", "standings_exports")
 
     def initialize(phase, standings_by_block, blocks)
@@ -20,6 +21,7 @@ module StandingsExports
         headless: "new",
         browser_path: ENV["CHROMIUM_PATH"],
         window_size: [1024, 800],
+        timeout: BROWSER_TIMEOUT,
         args: ["--no-sandbox", "--disable-gpu"]
       )
       begin
