@@ -195,6 +195,7 @@ module MatchExports
               width: 100%;
               border-collapse: collapse;
               table-layout: fixed;
+              font-variant-numeric: tabular-nums;
             }
             .board-table th {
               background: #111827;
@@ -202,7 +203,10 @@ module MatchExports
               font-size: 19px;
               font-weight: 800;
               padding: 6px 4px;
+              height: 42px;
+              line-height: 1.05;
               text-align: center;
+              vertical-align: middle;
             }
             .board-table td {
               background: #ffe082;
@@ -210,7 +214,10 @@ module MatchExports
               font-size: 20px;
               font-weight: 700;
               padding: 10px 4px;
+              height: 60px;
+              line-height: 1.15;
               text-align: center;
+              vertical-align: middle;
               border: 1px solid #111827;
               overflow: hidden;
               text-overflow: ellipsis;
@@ -219,6 +226,7 @@ module MatchExports
             .board-table .score-cell {
               font-size: 26px;
               font-weight: 800;
+              line-height: 1;
             }
             col.c-player { width: 16%; }
             col.c-deck { width: 26%; }
@@ -231,6 +239,7 @@ module MatchExports
               padding: 4px 0;
               font-size: 28px;
               font-weight: 900;
+              line-height: 1;
             }
             .win { color: #ef4444; }
             .lose { color: #2563eb; }
