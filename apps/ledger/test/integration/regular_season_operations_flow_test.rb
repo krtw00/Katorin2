@@ -149,6 +149,35 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "attachment"
   end
 
+  test "organizer can reopen a completed league by changing it back to active" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Reopenable League",
+      status: "completed",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+
+    patch league_path(locale: :ja, id: league), params: {
+      league: {
+        name: league.name,
+        status: "active",
+        roster_min_members: league.roster_min_members,
+        roster_max_members: league.roster_max_members,
+        lineup_size: league.lineup_size,
+        substitute_size: league.substitute_size,
+        started_at: "",
+        ended_at: ""
+      }
+    }
+
+    assert_redirected_to league_path(locale: :ja, id: league)
+    assert_equal "active", league.reload.status
+  end
+
   test "downloading without a fresh export queues background generation" do
     login_as!(@organizer_account, password: @password)
 
