@@ -334,7 +334,7 @@ module MatchExports
               #{left_players.map { |n| %(<div class="player-tag">#{h n}</div>) }.join}
             </div>
           </div>
-          <div class="versus-center">#{h I18n.t("labels.vs")}</div>
+          <div class="versus-center">VS</div>
           <div class="versus-team away">
             <div class="team-name">#{h match.away_team.display_name}</div>
             <div class="player-list">
