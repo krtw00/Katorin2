@@ -1,6 +1,7 @@
 <%= render "shared/errors", record: league %>
+<% form_url = league.persisted? ? league_path(locale: I18n.locale, id: league) : leagues_path(locale: I18n.locale) %>
 
-<%= form_with model: league, class: "stack" do |form| %>
+<%= form_with model: league, url: form_url, class: "stack" do |form| %>
   <div class="field-grid">
     <div class="field">
       <%= form.label :name, t("leagues.form.name") %>

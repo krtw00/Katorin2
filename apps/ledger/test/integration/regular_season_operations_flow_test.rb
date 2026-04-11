@@ -161,6 +161,10 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       substitute_size: 1
     )
 
+    get edit_league_path(locale: :ja, id: league)
+    assert_response :success
+    assert_select %(form[action="#{league_path(locale: :ja, id: league)}"])
+
     patch league_path(locale: :ja, id: league), params: {
       league: {
         name: league.name,
