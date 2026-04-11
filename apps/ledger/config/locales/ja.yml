@@ -99,14 +99,14 @@ ja:
       created: チームを作成しました。
       updated: チームを更新しました。
       deleted: チームを削除しました。
-      delete_blocked: このチームは対戦で使われているため削除できません。公開後の離脱は状態をドロップに変更してください。
+      delete_blocked: このチームは対戦で使われているため削除できません。実施中の離脱は状態をドロップに変更してください。
     team_imports:
       created: "CSVを取り込みました。チーム %{created_teams}件追加 / %{updated_teams}件更新、メンバー %{created_participants}件追加 / %{updated_participants}件更新。"
     participants:
       created: メンバーを作成しました。
       updated: メンバーを更新しました。
       deleted: メンバーを削除しました。
-      delete_blocked: このメンバーは試合結果で使われているため削除できません。公開後は削除せず残します。
+      delete_blocked: このメンバーは試合結果で使われているため削除できません。実施中は削除せず残します。
     phases:
       created: フェーズを作成しました。
       updated: フェーズを更新しました。
@@ -249,7 +249,7 @@ ja:
       block: ブロック
       no_block: 未設定
       status: 状態
-      status_hint: "%{draft_label} のリーグでは削除できます。公開後の離脱は %{withdrawn_label} を使います。"
+      status_hint: "%{draft_label} のリーグでは削除できます。実施中の離脱は %{withdrawn_label} を使います。"
       notes: メモ
     delete_confirm: このチームを削除します。よろしいですか？
     delete_hint: 対戦で未使用のチームだけ削除できます。
@@ -580,7 +580,7 @@ ja:
     league:
       status:
         draft: 下書き
-        active: 公開中
+        active: 実施中
         completed: 完了
     organizer_member:
       role:
