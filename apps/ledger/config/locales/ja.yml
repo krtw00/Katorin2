@@ -709,7 +709,7 @@ ja:
         board_result:
           attributes:
             base:
-              invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-2, 0-2 のいずれかで入力してください。
+              invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-1, 1-2, 0-2 のいずれかで入力してください。
   helpers:
     submit:
       create: "%{model}を作成"
