@@ -269,6 +269,58 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal [team_a, team_b, nil], match.rounds.order(:number).map(&:winner_team)
   end
 
+  test "result entry stays saved when export refresh enqueue fails" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Export Retry League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Retry Team A")
+    team_b = create_team_record_with_members!(league:, name: "Retry Team B")
+    match = week.matches.create!(
+      league: league,
+      phase: phase,
+      block: block,
+      home_team: team_a,
+      away_team: team_b,
+      scheduled_on: Date.new(2026, 4, 11),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    manager = Object.new
+    manager.define_singleton_method(:enqueue_refresh!) { raise StandardError, "job queue unavailable" }
+
+    original_new = MatchExports::ResultCardExportManager.method(:new)
+    MatchExports::ResultCardExportManager.define_singleton_method(:new) { |_| manager }
+
+    begin
+      patch match_result_entry_path(locale: :ja, match_id: match), params: {
+        result_entry: {
+          rounds: result_payload(match)
+        }
+      }
+    ensure
+      MatchExports::ResultCardExportManager.define_singleton_method(:new, original_new)
+    end
+
+    assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+    assert_equal I18n.t("flash.matches.results_updated_with_export"), flash[:notice]
+    assert_equal I18n.t("flash.matches.export_refresh_failed_non_blocking"), flash[:alert]
+
+    match.reload
+    assert_equal "confirmed", match.status
+    assert_equal [2, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
+  end
+
   test "organizer can create a tournament phase before setting participant count" do
     login_as!(@organizer_account, password: @password)
 

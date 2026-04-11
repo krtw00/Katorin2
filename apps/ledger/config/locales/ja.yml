@@ -143,6 +143,7 @@ ja:
       lineup_updated: オーダーを更新しました。
       results_updated: 対戦結果を更新しました。
       results_updated_with_export: 対戦結果を更新しました。画像生成をバックグラウンドで開始しました。
+      export_refresh_failed_non_blocking: 対戦結果は保存しましたが、画像更新の開始に失敗しました。時間をおいて再度保存してください。
       export_generation_started: 画像生成を開始しました。少し待ってから再度ダウンロードしてください。
       export_refresh_started: 最新画像への更新を開始しました。少し待ってから再度ダウンロードしてください。
       export_failed: 対戦画像の出力に失敗しました。時間をおいて再度お試しください。
