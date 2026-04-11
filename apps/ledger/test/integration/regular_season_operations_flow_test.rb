@@ -175,6 +175,9 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to league_path(locale: :ja, id: league)
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, "実施中"
     assert_equal "active", league.reload.status
   end
 
