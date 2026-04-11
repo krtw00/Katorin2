@@ -3,7 +3,14 @@ require "stringio"
 require "test_helper"
 
 class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
+    @original_queue_adapter = ActiveJob::Base.queue_adapter
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
+
     @password = "password"
     @organizer_account = OrganizerAccount.create!(
       display_name: "E2E Organizer",
@@ -23,6 +30,12 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       active: true
     )
     @organizer_account.ensure_default_stage_assets!
+  end
+
+  teardown do
+    clear_enqueued_jobs
+    clear_performed_jobs
+    ActiveJob::Base.queue_adapter = @original_queue_adapter
   end
 
   test "organizer can run the regular season flow end to end" do
@@ -108,11 +121,13 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to dashboard_path(locale: :ja)
 
-    patch match_result_entry_path(locale: :ja, match_id: match), params: {
-      result_entry: {
-        rounds: result_payload(match)
+    assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
+      patch match_result_entry_path(locale: :ja, match_id: match), params: {
+        result_entry: {
+          rounds: result_payload(match)
+        }
       }
-    }
+    end
     assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
 
     match.reload
@@ -123,13 +138,54 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal 3, match.rounds.count
     assert_equal 9, match.rounds.sum { |round| round.board_results.count }
 
-    get download_match_result_card_export_path(locale: :ja, match_id: match)
+    MatchExports::GenerateResultCardJob.perform_now(match.id)
+    clear_enqueued_jobs
+
+    assert_no_enqueued_jobs only: MatchExports::GenerateResultCardJob do
+      get download_match_result_card_export_path(locale: :ja, match_id: match)
+    end
     assert_response :success
     assert_equal "image/png", response.media_type
     assert_includes response.headers["Content-Disposition"], "attachment"
   end
 
-  test "match export timeout shows a localized alert instead of raw exception text" do
+  test "organizer can reopen a completed league by changing it back to active" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Reopenable League",
+      status: "completed",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+
+    get edit_league_path(locale: :ja, id: league)
+    assert_response :success
+    assert_select %(form[action="#{league_path(locale: :ja, id: league)}"])
+
+    patch league_path(locale: :ja, id: league), params: {
+      league: {
+        name: league.name,
+        status: "active",
+        roster_min_members: league.roster_min_members,
+        roster_max_members: league.roster_max_members,
+        lineup_size: league.lineup_size,
+        substitute_size: league.substitute_size,
+        started_at: "",
+        ended_at: ""
+      }
+    }
+
+    assert_redirected_to league_path(locale: :ja, id: league)
+    follow_redirect!
+    assert_response :success
+    assert_includes response.body, "実施中"
+    assert_equal "active", league.reload.status
+  end
+
+  test "downloading without a fresh export queues background generation" do
     login_as!(@organizer_account, password: @password)
 
     league = @organizer_account.leagues.create!(
@@ -156,28 +212,61 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       status: "scheduled"
     )
 
-    timeout_renderer = Object.new
-    def timeout_renderer.render!
-      raise Ferrum::TimeoutError, "Timed out waiting for response."
-    end
-
-    renderer_singleton = MatchExports::ResultCardRenderer.singleton_class
-    original_new = MatchExports::ResultCardRenderer.method(:new)
-    renderer_singleton.send(:define_method, :new) do |*|
-      timeout_renderer
-    end
-
-    begin
+    assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
       get download_match_result_card_export_path(locale: :ja, match_id: match)
-    ensure
-      renderer_singleton.send(:define_method, :new, original_new)
     end
 
     assert_redirected_to match_path(locale: :ja, id: match)
     follow_redirect!
     assert_response :success
-    assert_includes response.body, "対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。"
-    refute_includes response.body, "Timed out waiting for response"
+    assert_includes response.body, "画像生成を開始しました。少し待ってから再度ダウンロードしてください。"
+
+    export = match.exports.find_by!(export_type: MatchExports::ResultCardRenderer::EXPORT_TYPE)
+    assert_equal "pending", export.status
+  end
+
+  test "organizer can confirm a regular season match at 1-1 when all rounds are completed" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Draw League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Draw Team A")
+    team_b = create_team_record_with_members!(league:, name: "Draw Team B")
+    match = week.matches.create!(
+      league: league,
+      phase: phase,
+      block: block,
+      home_team: team_a,
+      away_team: team_b,
+      scheduled_on: Date.new(2026, 4, 11),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    patch match_result_entry_path(locale: :ja, match_id: match), params: {
+      result_entry: {
+        rounds: draw_result_payload(match)
+      }
+    }
+
+    assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+
+    match.reload
+    assert_equal "confirmed", match.status
+    assert_equal [1, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
+    assert_nil match.match_result.winner_team
+    assert_equal "confirmed", match.match_result.result_status
+    assert_equal [true, true, true], match.rounds.order(:number).map(&:confirmed?)
+    assert_equal [team_a, team_b, nil], match.rounds.order(:number).map(&:winner_team)
   end
 
   test "organizer can create a tournament phase before setting participant count" do
@@ -830,6 +919,17 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       "1" => round_payload(home:, away:, scores: [[2, 0], [2, 1], [0, 2]], suffix: "R1"),
       "2" => round_payload(home:, away:, scores: [[2, 0], [2, 1], [0, 2]], suffix: "R2"),
       "3" => round_payload(home:, away:, scores: [[0, 2], [1, 2], [2, 0]], suffix: "R3")
+    }
+  end
+
+  def draw_result_payload(match)
+    home = match.home_team.participants.order(:position)
+    away = match.away_team.participants.order(:position)
+
+    {
+      "1" => round_payload(home:, away:, scores: [[2, 0], [2, 1], [0, 2]], suffix: "D1"),
+      "2" => round_payload(home:, away:, scores: [[0, 2], [1, 2], [2, 0]], suffix: "D2"),
+      "3" => round_payload(home:, away:, scores: [[2, 0], [0, 2], [1, 1]], suffix: "D3")
     }
   end
 

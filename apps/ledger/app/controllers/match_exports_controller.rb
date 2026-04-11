@@ -2,9 +2,15 @@ class MatchExportsController < ApplicationController
   before_action :set_match
 
   def download
-    MatchExports::ResultCardRenderer.new(@match).render!
-    set_export
-    send_export_file(disposition: :attachment)
+    export_manager = MatchExports::ResultCardExportManager.new(@match)
+    @export = export_manager.downloadable_export
+
+    if @export.present?
+      return send_export_file(disposition: :attachment)
+    end
+
+    export_manager.enqueue_refresh!
+    redirect_to match_path(id: @match), notice: export_pending_message(export_manager.state)
   rescue StandardError => error
     Rails.logger.error("Match export failed for #{@match.id}: #{error.class}: #{error.message}")
     redirect_to match_path(id: @match), alert: export_error_message(error)
@@ -26,10 +32,6 @@ class MatchExportsController < ApplicationController
         rounds: [:winner_team, { board_results: %i[home_participant away_participant] }]
       )
       .first!
-  end
-
-  def set_export
-    @export = @match.exports.find_by!(export_type: MatchExports::ResultCardRenderer::EXPORT_TYPE)
   end
 
   def send_export_file(disposition:)
@@ -56,6 +58,15 @@ class MatchExportsController < ApplicationController
       t("flash.matches.export_timeout")
     else
       t("flash.matches.export_failed")
+    end
+  end
+
+  def export_pending_message(state)
+    case state.to_sym
+    when :stale
+      t("flash.matches.export_refresh_started")
+    else
+      t("flash.matches.export_generation_started")
     end
   end
 end
