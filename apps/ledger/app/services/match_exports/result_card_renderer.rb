@@ -389,7 +389,7 @@ module MatchExports
 
     def round_result_html(round)
       home_label, away_label =
-        case round&.winner_team_id
+        case resolved_round_winner_team_id(round)
         when match.home_team_id then ["W", "L"]
         when match.away_team_id then ["L", "W"]
         else ["-", "-"]
@@ -403,9 +403,7 @@ module MatchExports
     end
 
     def footer_html
-      result = match.match_result
-      home_score = result&.home_round_wins.to_i
-      away_score = result&.away_round_wins.to_i
+      home_score, away_score = resolved_match_score
       <<~HTML
         <div class="footer">
           <div class="footer-team home">#{h match.home_team.display_name}</div>
@@ -429,6 +427,38 @@ module MatchExports
 
     def week_label
       match.bracket_match? ? match.bracket_slot_label : match.week.display_name
+    end
+
+    def resolved_round_winner_team_id(round)
+      return nil unless round
+      return round.winner_team_id if round.winner_team_id.present?
+
+      boards = round.board_results.to_a
+      return nil unless boards.size == 3
+      return nil unless boards.all?(&:confirmed_score?)
+
+      home_wins = boards.count { |board| resolved_board_winner_side(board) == "home" }
+      away_wins = boards.count { |board| resolved_board_winner_side(board) == "away" }
+
+      if home_wins > away_wins
+        match.home_team_id
+      elsif away_wins > home_wins
+        match.away_team_id
+      end
+    end
+
+    def resolved_match_score
+      rounds = match.rounds.index_by(&:number)
+      round_winners = (1..3).map { |round_number| resolved_round_winner_team_id(rounds[round_number]) }
+
+      [
+        round_winners.count(match.home_team_id),
+        round_winners.count(match.away_team_id)
+      ]
+    end
+
+    def resolved_board_winner_side(board)
+      board.winner_side.presence || board.inferred_winner_side
     end
 
     def scheduled_label
