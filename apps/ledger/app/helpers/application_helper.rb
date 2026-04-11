@@ -109,6 +109,25 @@ module ApplicationHelper
     match.week.display_name
   end
 
+  def result_card_export_status_label(state)
+    t("matches.result_card_status.#{state}")
+  end
+
+  def result_card_export_status_tone(state)
+    case state.to_sym
+    when :generated
+      "success"
+    when :pending, :stale
+      "warning"
+    else
+      "neutral"
+    end
+  end
+
+  def result_card_export_hint(state)
+    t("matches.result_card_hint.#{state}")
+  end
+
   def locale_switcher_path(locale)
     route_params = request.path_parameters.symbolize_keys.except(:format)
     route_params = { controller: "sessions", action: "new" } if route_params[:controller].blank? || route_params[:action].blank?

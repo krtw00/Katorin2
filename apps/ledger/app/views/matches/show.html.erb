@@ -38,6 +38,13 @@
   </div>
 </section>
 
+<% if @match.ready_for_result_entry? %>
+  <p class="muted">
+    <%= status_badge(result_card_export_status_label(@result_card_export_state), result_card_export_status_tone(@result_card_export_state)) %>
+    <%= result_card_export_hint(@result_card_export_state) %>
+  </p>
+<% end %>
+
 <section class="dashboard-grid">
   <article class="panel">
     <h2><%= t("matches.progress") %></h2>

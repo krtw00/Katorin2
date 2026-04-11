@@ -58,38 +58,50 @@
 
           <% entry[:boards].each do |board| %>
             <div class="result-entry-row">
-              <div class="result-entry-row__board">#<%= board.board_number %></div>
-
-              <div class="field field--compact">
-                <label class="sr-only"><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "home")) %></label>
-                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_participant_id]", options_from_collection_for_select(@home_participant_options, :id, :display_name, board.home_participant_id), include_blank: t("matches.form.select_prompt"), aria: { label: t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "home")) } %>
+              <div class="result-entry-cell result-entry-cell--board" data-label="<%= t("labels.board") %>">
+                <div class="result-entry-row__board">#<%= board.board_number %></div>
               </div>
 
-              <div class="field field--compact">
-                <label class="sr-only"><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "home")) %></label>
-                <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_deck_name]", board.home_deck_name, placeholder: t("matches.result_entry.deck_placeholder"), aria: { label: t("matches.result_entry.deck_name", team: match_side_name(@match, "home")) } %>
-              </div>
-
-              <div class="result-entry-score">
+              <div class="result-entry-cell" data-label="<%= t("matches.result_entry.member_short", team: match_side_name(@match, "home")) %>">
                 <div class="field field--compact">
-                  <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) %></label>
-                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_game_wins]", options_for_select(game_win_options, board.home_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) } %>
-                </div>
-                <span class="result-entry-score__sep">-</span>
-                <div class="field field--compact">
-                  <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) %></label>
-                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_game_wins]", options_for_select(game_win_options, board.away_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) } %>
+                  <label class="sr-only"><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "home")) %></label>
+                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_participant_id]", options_from_collection_for_select(@home_participant_options, :id, :display_name, board.home_participant_id), include_blank: t("matches.form.select_prompt"), aria: { label: t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "home")) } %>
                 </div>
               </div>
 
-              <div class="field field--compact">
-                <label class="sr-only"><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "away")) %></label>
-                <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_deck_name]", board.away_deck_name, placeholder: t("matches.result_entry.deck_placeholder"), aria: { label: t("matches.result_entry.deck_name", team: match_side_name(@match, "away")) } %>
+              <div class="result-entry-cell" data-label="<%= t("matches.result_entry.deck_short", team: match_side_name(@match, "home")) %>">
+                <div class="field field--compact">
+                  <label class="sr-only"><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "home")) %></label>
+                  <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_deck_name]", board.home_deck_name, placeholder: t("matches.result_entry.deck_placeholder"), aria: { label: t("matches.result_entry.deck_name", team: match_side_name(@match, "home")) } %>
+                </div>
               </div>
 
-              <div class="field field--compact">
-                <label class="sr-only"><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "away")) %></label>
-                <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_participant_id]", options_from_collection_for_select(@away_participant_options, :id, :display_name, board.away_participant_id), include_blank: t("matches.form.select_prompt"), aria: { label: t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "away")) } %>
+              <div class="result-entry-cell" data-label="<%= t("labels.score") %>">
+                <div class="result-entry-score">
+                  <div class="field field--compact">
+                    <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) %></label>
+                    <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][home_game_wins]", options_for_select(game_win_options, board.home_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "home")) } %>
+                  </div>
+                  <span class="result-entry-score__sep">-</span>
+                  <div class="field field--compact">
+                    <label class="sr-only"><%= t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) %></label>
+                    <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_game_wins]", options_for_select(game_win_options, board.away_game_wins), include_blank: false, class: "result-entry-score__select", aria: { label: t("matches.result_entry.game_wins", team: match_side_name(@match, "away")) } %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-entry-cell" data-label="<%= t("matches.result_entry.deck_short", team: match_side_name(@match, "away")) %>">
+                <div class="field field--compact">
+                  <label class="sr-only"><%= t("matches.result_entry.deck_name", team: match_side_name(@match, "away")) %></label>
+                  <%= text_field_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_deck_name]", board.away_deck_name, placeholder: t("matches.result_entry.deck_placeholder"), aria: { label: t("matches.result_entry.deck_name", team: match_side_name(@match, "away")) } %>
+                </div>
+              </div>
+
+              <div class="result-entry-cell" data-label="<%= t("matches.result_entry.member_short", team: match_side_name(@match, "away")) %>">
+                <div class="field field--compact">
+                  <label class="sr-only"><%= t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "away")) %></label>
+                  <%= select_tag "result_entry[rounds][#{round.number}][boards][#{board.board_number}][away_participant_id]", options_from_collection_for_select(@away_participant_options, :id, :display_name, board.away_participant_id), include_blank: t("matches.form.select_prompt"), aria: { label: t("matches.result_entry.board_member", number: board.board_number, team: match_side_name(@match, "away")) } %>
+                </div>
               </div>
             </div>
           <% end %>

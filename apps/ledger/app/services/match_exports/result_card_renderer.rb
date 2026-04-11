@@ -51,6 +51,10 @@ module MatchExports
       export
     end
 
+    def fresh_export_available?
+      fresh?
+    end
+
     private
 
     attr_reader :match

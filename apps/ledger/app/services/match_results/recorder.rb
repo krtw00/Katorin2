@@ -93,6 +93,7 @@ module MatchResults
 
     def persist_match_result!(round_summaries)
       confirmed_rounds = round_summaries.select { |summary| summary[:confirmed] && summary[:winner_team_id].present? }
+      confirmed_round_count = round_summaries.count { |summary| summary[:confirmed] }
       home_round_wins = confirmed_rounds.count { |summary| summary[:winner_team_id] == match.home_team_id }
       away_round_wins = confirmed_rounds.count { |summary| summary[:winner_team_id] == match.away_team_id }
       any_input = round_summaries.any? { |summary| summary[:confirmed] || summary[:winner_team_id].present? } || match.rounds.exists?
@@ -112,7 +113,7 @@ module MatchResults
         elsif away_round_wins > home_round_wins
           match.away_team
         end
-      result.result_status = match_confirmed?(home_round_wins, away_round_wins) ? "confirmed" : "partial"
+      result.result_status = match_confirmed?(home_round_wins, away_round_wins, confirmed_round_count) ? "confirmed" : "partial"
       result.decision_type = "normal"
       result.confirmed_at = result.result_status == "confirmed" ? Time.current : nil
       result.save!
@@ -142,8 +143,11 @@ module MatchResults
       nil
     end
 
-    def match_confirmed?(home_round_wins, away_round_wins)
-      home_round_wins >= 2 || away_round_wins >= 2
+    def match_confirmed?(home_round_wins, away_round_wins, confirmed_round_count)
+      return true if home_round_wins >= 2 || away_round_wins >= 2
+      return false if match.bracket_match?
+
+      confirmed_round_count == ROUND_COUNT
     end
   end
 end
