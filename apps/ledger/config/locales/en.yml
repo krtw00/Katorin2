@@ -143,6 +143,7 @@ en:
       lineup_updated: Order updated.
       results_updated: Match result updated.
       results_updated_with_export: Match result updated. Background image generation has started.
+      export_refresh_failed_non_blocking: Match result was saved, but image refresh could not be started. Please try saving again in a moment.
       export_generation_started: Image generation has started. Please wait a moment and try downloading again.
       export_refresh_started: Refreshing the latest image has started. Please wait a moment and try downloading again.
       export_failed: Failed to generate the match image. Please try again in a moment.
