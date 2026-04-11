@@ -28,6 +28,22 @@ class BoardResultTest < ActiveSupport::TestCase
     end
   end
 
+  test "1-1 is treated as a confirmed draw without winner_side" do
+    round = create_round_for_board_result_test!
+
+    board_result = round.board_results.build(
+      board_number: 1,
+      home_game_wins: 1,
+      away_game_wins: 1,
+      result_status: "confirmed",
+      winner_side: BoardResult.infer_winner_side(1, 1)
+    )
+
+    assert board_result.valid?
+    assert_nil board_result.winner_side
+    assert board_result.confirmed_score?
+  end
+
   private
 
   def create_round_for_board_result_test!

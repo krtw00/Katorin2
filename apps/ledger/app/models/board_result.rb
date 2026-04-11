@@ -23,7 +23,7 @@ class BoardResult < ApplicationRecord
   end
 
   def confirmed_score?
-    valid_confirmed_score?(home_game_wins, away_game_wins)
+    self.class.valid_confirmed_score?(home_game_wins, away_game_wins)
   end
 
   def inferred_winner_side
@@ -32,6 +32,7 @@ class BoardResult < ApplicationRecord
 
   def self.infer_winner_side(home_game_wins, away_game_wins)
     return nil unless valid_confirmed_score?(home_game_wins, away_game_wins)
+    return nil if home_game_wins == away_game_wins
 
     home_game_wins > away_game_wins ? "home" : "away"
   end
@@ -39,7 +40,7 @@ class BoardResult < ApplicationRecord
   def self.valid_confirmed_score?(home_game_wins, away_game_wins)
     return false if home_game_wins.nil? || away_game_wins.nil?
 
-    [[2, 0], [2, 1], [1, 2], [0, 2]].include?([home_game_wins, away_game_wins])
+    [[2, 0], [2, 1], [1, 1], [1, 2], [0, 2]].include?([home_game_wins, away_game_wins])
   end
 
   private

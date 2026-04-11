@@ -709,7 +709,7 @@ en:
         board_result:
           attributes:
             base:
-              invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-2, or 0-2.
+              invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-1, 1-2, or 0-2.
   helpers:
     submit:
       create: "Create %{model}"
