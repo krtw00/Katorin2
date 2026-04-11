@@ -10,13 +10,20 @@ class MatchResultEntriesController < ApplicationController
     MatchResults::Recorder.new(@match, result_entry_params).save!
     @match.update_column(:judge_name, current_organizer_member.display_name)
     Brackets::ProgressionSync.new(@match).sync!
-    MatchExports::ResultCardExportManager.new(@match).enqueue_refresh!
-    redirect_to edit_match_result_entry_path(match_id: @match), notice: t("flash.matches.results_updated_with_export")
+    export_refresh_failed = enqueue_result_card_refresh_failed?
+
+    redirect_to(
+      edit_match_result_entry_path(match_id: @match),
+      notice: t("flash.matches.results_updated_with_export"),
+      alert: export_refresh_failed ? t("flash.matches.export_refresh_failed_non_blocking") : nil
+    )
   rescue Brackets::ProgressionSync::LockedError => error
+    Rails.logger.warn("Result entry progression sync blocked for match=#{@match.id}: #{error.message}")
     flash.now[:alert] = error.message
     set_result_form_state
     render :edit, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => error
+    log_record_invalid(error)
     flash.now[:alert] = error.record.errors.full_messages.to_sentence
     set_result_form_state
     render :edit, status: :unprocessable_entity
@@ -55,5 +62,21 @@ class MatchResultEntriesController < ApplicationController
     return {} unless params[:result_entry].is_a?(ActionController::Parameters)
 
     params.require(:result_entry).permit!.to_h
+  end
+
+  def enqueue_result_card_refresh_failed?
+    MatchExports::ResultCardExportManager.new(@match).enqueue_refresh!
+    false
+  rescue StandardError => error
+    Rails.logger.error("Result card refresh enqueue failed for match=#{@match.id}: #{error.class}: #{error.message}")
+    true
+  end
+
+  def log_record_invalid(error)
+    record = error.record
+    messages = record&.errors&.full_messages&.join(" / ")
+    Rails.logger.warn(
+      "Result entry save failed for match=#{@match.id}: #{error.class} on #{record&.class || 'unknown'}: #{messages.presence || error.message}"
+    )
   end
 end
