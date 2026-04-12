@@ -952,6 +952,10 @@ h2 {
   gap: 0.75rem;
 }
 
+.result-entry-form {
+  gap: 1.25rem;
+}
+
 .result-entry-table__header,
 .result-entry-row {
   display: grid;
@@ -1138,10 +1142,18 @@ h2 {
     display: none;
   }
 
+  .result-entry-form-panel {
+    padding: 1.35rem;
+  }
+
+  .result-entry-form .panel--nested {
+    padding: 1.15rem;
+  }
+
   .result-entry-row {
     grid-template-columns: 1fr;
-    gap: 0.85rem;
-    padding: 1rem;
+    gap: 1rem;
+    padding: 1.15rem;
     border: 1px solid var(--line);
     border-radius: 0.9rem;
     background: #fff;
