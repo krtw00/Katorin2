@@ -959,7 +959,7 @@ h2 {
 .result-entry-table__header,
 .result-entry-row {
   display: grid;
-  grid-template-columns: 3.25rem minmax(0, 1.5fr) minmax(0, 1.1fr) 10.75rem minmax(0, 1.1fr) minmax(0, 1.5fr);
+  grid-template-columns: 4.75rem minmax(0, 1.5fr) minmax(0, 1.1fr) 10.75rem minmax(0, 1.1fr) minmax(0, 1.5fr);
   gap: 0.75rem;
   align-items: center;
 }
@@ -989,7 +989,9 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 4.75rem;
   min-height: 2.6rem;
+  padding: 0 0.85rem;
   border-radius: 0.75rem;
   background: #fff;
   border: 1px solid var(--line);
@@ -1179,6 +1181,10 @@ h2 {
 
   .result-entry-cell--board::before {
     margin-bottom: 0.1rem;
+  }
+
+  .result-entry-row__board {
+    min-width: 5.25rem;
   }
 
 
