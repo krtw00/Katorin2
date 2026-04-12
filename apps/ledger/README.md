@@ -31,11 +31,15 @@ bin/dev
 - `production`
   - Cloud Run: `katorin2`
   - Cloud SQL: `katorin2` @ `main-pg`
+  - DB user: `katorin2_prod_app`
 - `staging`
   - Cloud Run: `katorin2-staging`
   - Cloud SQL: `katorin2-staging` @ `main-pg`
+  - DB user: `katorin2_staging_app`
 
-アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。Cloud Run service と Secret Manager secret も環境ごとに分離する。
+アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。Cloud Run service と Secret Manager secret も環境ごとに分離する。DB ログインユーザーも service ごとに分離し、他サービスと共有しない。
+
+共通の DB ユーザー運用は [docs/service-db-users.md](../../docs/service-db-users.md) を参照。
 
 ## Required Env
 
