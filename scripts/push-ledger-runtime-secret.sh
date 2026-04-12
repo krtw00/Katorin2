@@ -19,6 +19,12 @@ if [[ ! -f "$RUNTIME_ENV_FILE" ]]; then
   exit 1
 fi
 
+LEDGER_DATABASE_USERNAME_VALUE="$(awk -F': *' '/^LEDGER_DATABASE_USERNAME:/ {print $2; exit}' "$RUNTIME_ENV_FILE")"
+if [[ "$LEDGER_DATABASE_USERNAME_VALUE" == "app-user" ]]; then
+  echo "LEDGER_DATABASE_USERNAME must be a service-specific login, not app-user" >&2
+  exit 1
+fi
+
 if ! gcloud secrets describe "$RUNTIME_ENV_SECRET" --project "$GOOGLE_CLOUD_PROJECT" >/dev/null 2>&1; then
   gcloud secrets create "$RUNTIME_ENV_SECRET" \
     --project "$GOOGLE_CLOUD_PROJECT" \
