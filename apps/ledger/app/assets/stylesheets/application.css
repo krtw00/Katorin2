@@ -911,6 +911,33 @@ h2 {
   white-space: nowrap;
 }
 
+.record-row__action-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.record-row__action-link--lineup,
+.record-row__action-link--lineup:visited {
+  border-color: rgba(180, 35, 24, 0.16);
+  color: #b42318;
+  background: rgba(180, 35, 24, 0.1);
+}
+
+.record-row__action-link--result,
+.record-row__action-link--result:visited {
+  border-color: rgba(37, 99, 235, 0.18);
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+}
+
 .panel--nested {
   padding: 1rem;
   background: var(--bg-deep);
