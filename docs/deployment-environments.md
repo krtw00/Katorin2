@@ -8,16 +8,19 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
   - 実運用
   - Cloud Run service: `katorin2`
   - DB: Cloud SQL `katorin2` @ `main-pg`
+  - DB user: `katorin2_prod_app`
 - `staging`
   - demo / 検証
   - Cloud Run service: `katorin2-staging`
   - DB: Cloud SQL `katorin2-staging` @ `main-pg`
+  - DB user: `katorin2_staging_app`
 
 設計原則:
 
 - 1つのランタイムが本番DBとdemo DBを動的に切り替えない
 - `同じアプリを2環境へデプロイ` し、DB も完全に分離する
 - Cloud Run service と runtime secret も環境ごとに分ける
+- DB ログインユーザーは service ごとに分け、他サービスと共有しない
 - staging がデモ環境を兼ねる（デモデータは staging のみ）
 - production にはデモデータを入れない
 
@@ -53,6 +56,13 @@ runtime env は `Secret Manager` を正本にする。既定 secret 名:
 
 - `katorin2-ledger-runtime-production`
 - `katorin2-ledger-runtime-staging`
+
+runtime env の推奨 DB ユーザー:
+
+- `production`
+  - `LEDGER_DATABASE_USERNAME=katorin2_prod_app`
+- `staging`
+  - `LEDGER_DATABASE_USERNAME=katorin2_staging_app`
 
 secret 更新:
 
@@ -93,4 +103,7 @@ staging / production の切り分け:
 
 - `production` は `katorin2` service と `katorin2-ledger-runtime-production` secret を使う
 - `staging` は `katorin2-staging` service と `katorin2-ledger-runtime-staging` secret を使う
+- `katorin2` 系の job も対応する service 専用 DB ユーザーを使う
 - custom domain や edge proxy は repo 外のインフラ設定として扱い、この repo では Cloud Run deploy だけを管理する
+
+service ごとの DB ユーザー対応は `docs/service-db-users.md` を正本にする。

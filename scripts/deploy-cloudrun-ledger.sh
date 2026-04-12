@@ -79,6 +79,12 @@ for key in LEDGER_DATABASE_HOST LEDGER_DATABASE_USERNAME LEDGER_DATABASE_PASSWOR
   fi
 done
 
+LEDGER_DATABASE_USERNAME_VALUE="$(awk -F': *' '/^LEDGER_DATABASE_USERNAME:/ {print $2; exit}' "$RUNTIME_ENV_FILE")"
+if [[ "$LEDGER_DATABASE_USERNAME_VALUE" == "app-user" ]]; then
+  echo "LEDGER_DATABASE_USERNAME must be a service-specific login, not app-user" >&2
+  exit 1
+fi
+
 IMAGE="${GOOGLE_CLOUD_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REGISTRY_REPOSITORY}/${CLOUD_RUN_SERVICE}:${APP_ENV}-ledger-$(git rev-parse --short HEAD)"
 
 gcloud builds submit \

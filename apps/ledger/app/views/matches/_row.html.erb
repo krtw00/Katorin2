@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class="record-row__meta">
-    <%= status_badge translated_enum("enums.match.status", match.status), "neutral" %>
+    <%= match_status_badge(match) %>
     <% if match.ready_for_result_entry? %>
       <%= link_to t("matches.lineup.short"), edit_match_lineup_path(match_id: match), class: "inline-link" %>
       <%= link_to t("matches.result_entry.short"), edit_match_result_entry_path(match_id: match), class: "inline-link" %>

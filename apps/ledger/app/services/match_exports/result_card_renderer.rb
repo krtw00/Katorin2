@@ -245,8 +245,9 @@ module MatchExports
               font-weight: 900;
               line-height: 1;
             }
-            .win { color: #ef4444; }
-            .lose { color: #2563eb; }
+            .round-result__label--win { color: #ef4444; }
+            .round-result__label--lose { color: #2563eb; }
+            .round-result__label--pending { color: #64748b; }
 
             .footer {
               background: #0f172a;
@@ -394,10 +395,22 @@ module MatchExports
         when match.away_team_id then ["L", "W"]
         else ["-", "-"]
         end
+      home_label_class =
+        case home_label
+        when "W" then "round-result__label--win"
+        when "L" then "round-result__label--lose"
+        else "round-result__label--pending"
+        end
+      away_label_class =
+        case away_label
+        when "W" then "round-result__label--win"
+        when "L" then "round-result__label--lose"
+        else "round-result__label--pending"
+        end
       <<~HTML
         <div class="round-result">
-          <span class="win">#{home_label}</span>
-          <span class="lose">#{away_label}</span>
+          <span class="#{home_label_class}">#{home_label}</span>
+          <span class="#{away_label_class}">#{away_label}</span>
         </div>
       HTML
     end

@@ -40,6 +40,25 @@ module ApplicationHelper
     status_badge(translated_enum("enums.organizer_member.role", member.role), tone)
   end
 
+  def match_status_badge(match)
+    return if match.blank?
+
+    tone = case match.status
+           when "scheduled"
+             "info"
+           when "in_progress"
+             "danger"
+           when "result_pending"
+             "warning"
+           when "confirmed"
+             "success"
+           else
+             "neutral"
+           end
+
+    status_badge(translated_enum("enums.match.status", match.status), tone)
+  end
+
   def enum_options(scope, values)
     values.map { |value| [translated_enum(scope, value), value] }
   end

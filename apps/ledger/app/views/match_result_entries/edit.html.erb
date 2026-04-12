@@ -34,8 +34,8 @@
   <% end %>
 </section>
 
-<section class="panel">
-  <%= form_with url: match_result_entry_path(match_id: @match), method: :patch, scope: :result_entry, class: "stack" do |form| %>
+<section class="panel result-entry-form-panel">
+  <%= form_with url: match_result_entry_path(match_id: @match), method: :patch, scope: :result_entry, class: "stack result-entry-form" do |form| %>
     <% @round_entries.each do |entry| %>
       <% round = entry[:round] %>
       <article class="panel panel--nested">
