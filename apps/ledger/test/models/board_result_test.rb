@@ -44,6 +44,16 @@ class BoardResultTest < ActiveSupport::TestCase
     assert board_result.confirmed_score?
   end
 
+  test "1-0 is treated as a confirmed home win" do
+    assert BoardResult.valid_confirmed_score?(1, 0)
+    assert_equal "home", BoardResult.infer_winner_side(1, 0)
+  end
+
+  test "0-1 is treated as a confirmed away win" do
+    assert BoardResult.valid_confirmed_score?(0, 1)
+    assert_equal "away", BoardResult.infer_winner_side(0, 1)
+  end
+
   private
 
   def create_round_for_board_result_test!
