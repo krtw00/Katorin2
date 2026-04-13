@@ -101,3 +101,8 @@ gcloud run deploy "$CLOUD_RUN_SERVICE" \
   --port 8080 \
   --add-cloudsql-instances "$CLOUD_SQL_INSTANCE" \
   --env-vars-file "$RUNTIME_ENV_FILE"
+
+gcloud run services update-traffic "$CLOUD_RUN_SERVICE" \
+  --project "$GOOGLE_CLOUD_PROJECT" \
+  --region "$GOOGLE_CLOUD_REGION" \
+  --to-latest

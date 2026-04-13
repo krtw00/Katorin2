@@ -40,7 +40,7 @@ class BoardResult < ApplicationRecord
   def self.valid_confirmed_score?(home_game_wins, away_game_wins)
     return false if home_game_wins.nil? || away_game_wins.nil?
 
-    [[2, 0], [2, 1], [1, 1], [1, 2], [0, 2]].include?([home_game_wins, away_game_wins])
+    [[2, 0], [2, 1], [1, 0], [1, 1], [0, 1], [1, 2], [0, 2]].include?([home_game_wins, away_game_wins])
   end
 
   private
