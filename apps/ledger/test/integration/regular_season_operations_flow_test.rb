@@ -269,6 +269,47 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal [team_a, team_b, nil], match.rounds.order(:number).map(&:winner_team)
   end
 
+  test "organizer can save 1-0 and 0-1 board scores" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Short Score League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Short Team A")
+    team_b = create_team_record_with_members!(league:, name: "Short Team B")
+    match = week.matches.create!(
+      league: league,
+      phase: phase,
+      block: block,
+      home_team: team_a,
+      away_team: team_b,
+      scheduled_on: Date.new(2026, 4, 13),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    patch match_result_entry_path(locale: :ja, match_id: match), params: {
+      result_entry: {
+        rounds: short_score_result_payload(match)
+      }
+    }
+
+    assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+
+    match.reload
+    assert_equal "confirmed", match.status
+    assert_equal [1, 1], [match.match_result.home_round_wins, match.match_result.away_round_wins]
+    assert_equal [[1, 0], [0, 1], [1, 1]], match.rounds.order(:number).last.board_results.order(:board_number).pluck(:home_game_wins, :away_game_wins)
+  end
+
   test "result entry stays saved when export refresh enqueue fails" do
     login_as!(@organizer_account, password: @password)
 
@@ -982,6 +1023,17 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       "1" => round_payload(home:, away:, scores: [[2, 0], [2, 1], [0, 2]], suffix: "D1"),
       "2" => round_payload(home:, away:, scores: [[0, 2], [1, 2], [2, 0]], suffix: "D2"),
       "3" => round_payload(home:, away:, scores: [[2, 0], [0, 2], [1, 1]], suffix: "D3")
+    }
+  end
+
+  def short_score_result_payload(match)
+    home = match.home_team.participants.order(:position)
+    away = match.away_team.participants.order(:position)
+
+    {
+      "1" => round_payload(home:, away:, scores: [[1, 0], [1, 0], [0, 1]], suffix: "S1"),
+      "2" => round_payload(home:, away:, scores: [[0, 1], [0, 1], [1, 0]], suffix: "S2"),
+      "3" => round_payload(home:, away:, scores: [[1, 0], [0, 1], [1, 1]], suffix: "S3")
     }
   end
 
