@@ -102,6 +102,14 @@ module Standings
           round_board_diff = s[:board_wins] - s[:board_losses]
           match_game_diff = s[:game_wins] - s[:game_losses]
 
+          ranking_values = [
+            points,
+            goal_diff,
+            round_board_diff,
+            match_game_diff,
+            s[:board_wins]
+          ]
+
           {
             team: team,
             wins: s[:wins],
@@ -112,18 +120,19 @@ module Standings
             round_board_diff: round_board_diff,
             match_game_diff: match_game_diff,
             board_wins_total: s[:board_wins],
-            ranking_score: points * 10000 + round_board_diff * 1000 + match_game_diff * 100 + s[:board_wins] * 10
+            ranking_values: ranking_values,
+            ranking_score: weighted_ranking_score(ranking_values)
           }
         end
 
         # スコア降順ソート
-        rows.sort_by! { |r| -r[:ranking_score] }
+        rows.sort_by! { |r| r[:ranking_values].map { |value| -value } }
 
         # 順位付与（同スコアは同順位）
         rows.each_with_index do |row, i|
           row[:rank] = if i == 0
                          1
-                       elsif row[:ranking_score] == rows[i - 1][:ranking_score]
+                       elsif row[:ranking_values] == rows[i - 1][:ranking_values]
                          rows[i - 1][:rank]
                        else
                          i + 1
@@ -144,6 +153,18 @@ module Standings
         board_wins: 0, board_losses: 0,
         game_wins: 0, game_losses: 0
       }
+    end
+
+    def weighted_ranking_score(values)
+      weights = [
+        1_000_000_000_000,
+        1_000_000_000,
+        1_000_000,
+        1_000,
+        1
+      ]
+
+      values.zip(weights).sum { |value, weight| value * weight }
     end
   end
 end
