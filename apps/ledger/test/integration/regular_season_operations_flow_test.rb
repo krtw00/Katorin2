@@ -714,6 +714,49 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to leagues_path(locale: :ja)
   end
 
+  test "organizer can delete a participant that is still referenced by a lineup" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Lineup Delete League",
+      status: "active",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "Week 1", stage_asset: regular_stage_asset, position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    home_team = create_team_record_with_members!(league:, name: "Lineup Home")
+    away_team = create_team_record_with_members!(league:, name: "Lineup Away")
+    participant = home_team.participants.order(:position).first
+    match = week.matches.create!(
+      league:,
+      phase:,
+      home_team:,
+      away_team:,
+      scheduled_on: Date.new(2026, 4, 14),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+    match.match_lineup_members.create!(
+      team: home_team,
+      participant:,
+      side: "home",
+      role: "main",
+      slot_number: 1
+    )
+
+    assert_difference("Participant.count", -1) do
+      assert_difference("MatchLineupMember.count", -1) do
+        delete league_team_participant_path(locale: :ja, league_id: league, team_id: home_team, id: participant)
+      end
+    end
+
+    assert_redirected_to league_team_path(locale: :ja, league_id: league, id: home_team)
+    assert_nil match.reload.match_lineup_members.find_by(participant_id: participant.id)
+  end
+
   test "organizer can create participants with member_id and role and see them on team details" do
     login_as!(@organizer_account, password: @password)
 
