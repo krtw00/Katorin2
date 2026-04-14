@@ -47,8 +47,8 @@ class MatchExports::ResultCardRendererTest < ActiveSupport::TestCase
     round_one_html = renderer.send(:round_result_html, match.rounds.find_by!(number: 1))
     footer_html = renderer.send(:footer_html)
 
-    assert_includes round_one_html, '<span class="win">W</span>'
-    assert_includes round_one_html, '<span class="lose">L</span>'
+    assert_includes round_one_html, '<span class="round-result__label--win">W</span>'
+    assert_includes round_one_html, '<span class="round-result__label--lose">L</span>'
     assert_includes footer_html, '<div class="footer-score">2 - 0</div>'
   end
 
