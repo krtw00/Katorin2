@@ -33,11 +33,12 @@ bin/dev
   - Cloud SQL: `katorin2` @ `main-pg`
   - DB user: `katorin2_prod_app`
 - `staging`
-  - Cloud Run: `katorin2-staging`
-  - Cloud SQL: `katorin2-staging` @ `main-pg`
+  - codenica-vps docker (`/opt/katorin2-staging/`)
+  - codenica-vps Postgres docker: `katorin2_staging`
   - DB user: `katorin2_staging_app`
+  - URL: <https://katorin2-staging.codenica.dev>
 
-アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。Cloud Run service と Secret Manager secret も環境ごとに分離する。DB ログインユーザーも service ごとに分離し、他サービスと共有しない。
+アプリは 1 つの DB を見る。demo データはテーブル内フラグでなく、`staging` 環境そのものに閉じ込める。production と staging はランタイムも DB も完全に分離する。DB ログインユーザーも service ごとに分離し、他サービスと共有しない。
 
 共通の DB ユーザー運用は [docs/service-db-users.md](../../docs/service-db-users.md) を参照。
 
@@ -68,6 +69,8 @@ bin/dev
 
 ## Deploy
 
+production (Cloud Run):
+
 ```bash
 GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
 APP_ENV=production \
@@ -75,9 +78,4 @@ RUNTIME_ENV_FILE=/path/to/ledger.runtime.production.yaml \
 bash scripts/deploy-cloudrun-ledger.sh
 ```
 
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=staging \
-RUNTIME_ENV_FILE=/path/to/ledger.runtime.staging.yaml \
-bash scripts/deploy-cloudrun-ledger.sh
-```
+staging (codenica-vps): `../../docs/deployment-environments.md` を参照。 image push は Cloud Build、 反映は VPS 上で `docker compose pull && /opt/katorin2-staging/up.sh`。

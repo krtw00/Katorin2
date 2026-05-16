@@ -2,7 +2,7 @@ name: Deploy to Google
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -17,7 +17,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      APP_ENV: ${{ github.ref == 'refs/heads/staging' && 'staging' || 'production' }}
+      APP_ENV: production
       GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT || 'oauthsetting-484201' }}
       GOOGLE_CLOUD_REGION: ${{ vars.GOOGLE_CLOUD_REGION || 'asia-northeast1' }}
       ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}

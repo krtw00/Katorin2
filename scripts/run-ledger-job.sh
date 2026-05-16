@@ -11,20 +11,13 @@ APP_NAME="${APP_NAME:-katorin2}"
 TASK_NAME="${TASK_NAME:-seed}"
 JOB_COMMAND="${JOB_COMMAND:-./bin/rails db:seed}"
 
-case "$APP_ENV" in
-  production)
-    DEFAULT_CLOUD_RUN_SERVICE="$APP_NAME"
-    DEFAULT_CLOUD_RUN_JOB="${APP_NAME}-${TASK_NAME}"
-    ;;
-  staging)
-    DEFAULT_CLOUD_RUN_SERVICE="${APP_NAME}-staging"
-    DEFAULT_CLOUD_RUN_JOB="${APP_NAME}-staging-${TASK_NAME}"
-    ;;
-  *)
-    DEFAULT_CLOUD_RUN_SERVICE="${APP_NAME}-${APP_ENV}"
-    DEFAULT_CLOUD_RUN_JOB="${APP_NAME}-${APP_ENV}-${TASK_NAME}"
-    ;;
-esac
+if [[ "$APP_ENV" != "production" ]]; then
+  echo "This script supports APP_ENV=production only. staging now runs on codenica-vps (see docs/deployment-environments.md)." >&2
+  exit 1
+fi
+
+DEFAULT_CLOUD_RUN_SERVICE="$APP_NAME"
+DEFAULT_CLOUD_RUN_JOB="${APP_NAME}-${TASK_NAME}"
 
 : "${GOOGLE_CLOUD_PROJECT:?GOOGLE_CLOUD_PROJECT is required}"
 : "${GOOGLE_CLOUD_REGION:=asia-northeast1}"

@@ -13,13 +13,13 @@
 
 | Service | Database | DB user | Secret / config source |
 |---|---|---|---|
-| `katorin2` | `katorin2` | `katorin2_prod_app` | `katorin2-ledger-runtime-production` |
-| `katorin2-staging` | `katorin2-staging` | `katorin2_staging_app` | `katorin2-ledger-runtime-staging` |
-| `katorin2-*` jobs | `katorin2` / `katorin2-staging` | service と同じ | Cloud Run Job env |
-| `duel-log-api` | `duellog` | `duel_log_app` | `duel-log-database-url` |
-| `duel-log-api-staging` | `duellog-staging` | `duel_log_staging_app` | `duel-log-staging-database-url` |
-| `konbu` | `konbu` | `konbu_app` | `konbu-database-url` |
-| `shadova-log` | `shadova` | `shadova_log_app` | `shadova-log-db-password` + `DB_USERNAME` |
+| `katorin2` (Cloud Run, production) | Cloud SQL `katorin2` | `katorin2_prod_app` | `katorin2-ledger-runtime-production` |
+| `katorin2-staging` (codenica-vps docker) | codenica-vps Postgres `katorin2_staging` | `katorin2_staging_app` | `/opt/katorin2-staging/secrets.enc.env` (sops/age) |
+| `katorin2-*` jobs (production) | Cloud SQL `katorin2` | service と同じ | Cloud Run Job env |
+| `duel-log-api` | Cloud SQL `duellog` | `duel_log_app` | `duel-log-database-url` |
+| `duel-log-api-staging` (codenica-vps docker) | codenica-vps Postgres `duellog_staging` | `duel_log_staging_app` | `/opt/duel-log-api-staging/secrets.enc.env` (sops/age) |
+| `konbu` | Cloud SQL `konbu` | `konbu_app` | `konbu-database-url` |
+| `shadova-log` | Cloud SQL `shadova` | `shadova_log_app` | `shadova-log-db-password` + `DB_USERNAME` |
 
 補足:
 
