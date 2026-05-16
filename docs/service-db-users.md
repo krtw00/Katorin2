@@ -15,10 +15,9 @@ service ごとに DB ログインユーザーを分離して運用する。 kato
 |---|---|---|---|
 | `katorin2` (codenica-vps docker, production) | codenica-vps Postgres `katorin2` | `katorin2_prod_app` | `/opt/katorin2/secrets.enc.env` (sops/age) |
 | `katorin2-staging` (codenica-vps docker) | codenica-vps Postgres `katorin2_staging` | `katorin2_staging_app` | `/opt/katorin2-staging/secrets.enc.env` (sops/age) |
-| `duel-log-api` (Cloud Run, production) | Cloud SQL `duellog` | `duel_log_app` | `duel-log-database-url` (VPS 移行予定) |
+| `duel-log-api` (codenica-vps docker, production) | codenica-vps Postgres `duellog` | `duel_log_app` | `/opt/duel-log-api/secrets.enc.env` (sops/age) |
 | `duel-log-api-staging` (codenica-vps docker) | codenica-vps Postgres `duellog_staging` | `duel_log_staging_app` | `/opt/duel-log-api-staging/secrets.enc.env` (sops/age) |
 | `konbu` | Cloud SQL `konbu` | `konbu_app` | `konbu-database-url` (VPS 移行対象外、 課金導線あり) |
-| `shadova-log` | Cloud SQL `shadova` | `shadova_log_app` | `shadova-log-db-password` + `DB_USERNAME` |
 
 補足:
 

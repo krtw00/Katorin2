@@ -36,5 +36,4 @@ docker-compose.override.yml
 .devhive/
 .devhive.yaml
 .serena/
-CLAUDE.md
 .claude/
