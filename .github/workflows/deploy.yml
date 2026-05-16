@@ -1,0 +1,85 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: katorin2-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT || 'oauthsetting-484201' }}
+      GOOGLE_CLOUD_REGION: asia-northeast1
+      ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}
+      IMAGE_NAME: katorin2
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.GOOGLE_CLOUD_PROJECT }}
+
+      - name: Build & push image to Artifact Registry
+        id: build
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          IMAGE_TAG="${GOOGLE_CLOUD_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REGISTRY_REPOSITORY}/${IMAGE_NAME}:production-ledger-${SHORT_SHA}"
+          gcloud builds submit \
+            --project "$GOOGLE_CLOUD_PROJECT" \
+            --config deploy/google/cloudbuild.ledger.yaml \
+            --substitutions=_IMAGE="$IMAGE_TAG"
+          DIGEST=$(gcloud artifacts docker images describe "$IMAGE_TAG" --format='value(image_summary.digest)')
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Built: $IMAGE_TAG @ $DIGEST"
+
+      - name: Deploy to codenica-vps
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GCLOUD_TOKEN: ${{ steps.auth.outputs.access_token }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: GCLOUD_TOKEN,IMAGE_DIGEST
+          script: |
+            set -euo pipefail
+            cd /opt/katorin2
+
+            echo "$GCLOUD_TOKEN" | docker login -u oauth2accesstoken --password-stdin https://asia-northeast1-docker.pkg.dev
+
+            sed -i.bak -E "s|katorin2@sha256:[a-f0-9]+|katorin2@${IMAGE_DIGEST}|" docker-compose.yml
+
+            docker compose pull
+            ./up.sh
+
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS http://127.0.0.1:8012/up >/dev/null 2>&1; then
+                echo "deploy OK (attempt $i)"
+                exit 0
+              fi
+              sleep 3
+            done
+            echo "health check failed after 30s"
+            docker logs katorin2 --tail 50
+            exit 1

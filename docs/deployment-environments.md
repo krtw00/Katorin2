@@ -1,17 +1,18 @@
 # Deployment Environments
 
-Katorin2 Ledger は `production` と `staging` を別環境として運用する。
+Katorin2 Ledger は `production` と `staging` を別環境として運用する。 両方とも codenica-vps (133.18.124.75) 上で稼働する。
 
 方針:
 
 - `production`
   - 実運用
-  - Cloud Run service: `katorin2`
-  - DB: Cloud SQL `katorin2` @ `main-pg`
+  - codenica-vps 上の docker container (`/opt/katorin2/`, port 8012)
+  - DB: codenica-vps Postgres docker (`katorin2`)
   - DB user: `katorin2_prod_app`
+  - 公開 URL: <https://katorin2.codenica.dev> (Caddy 経由)
 - `staging`
   - demo / 検証
-  - codenica-vps (133.18.124.75) 上の docker container
+  - codenica-vps 上の docker container (`/opt/katorin2-staging/`, port 8002)
   - DB: codenica-vps Postgres docker (`katorin2_staging`)
   - DB user: `katorin2_staging_app`
   - 公開 URL: <https://katorin2-staging.codenica.dev> (Caddy 経由)
@@ -26,37 +27,32 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
 
 ## production deploy
 
-`main` branch への push で `.github/workflows/deploy-google.yml` が走り、 Cloud Run service `katorin2` を更新する。 手動実行する場合:
+`main` branch への push で `.github/workflows/deploy.yml` が走る。 流れ:
+
+1. Cloud Build で `Dockerfile.cloudrun` (image 名は歴史的、 中身は VPS でも動く Rails 本番 image) を `production-ledger-<short_sha>` tag で AR に push
+2. SSH (`ubuntu@codenica-vps`) で `/opt/katorin2/docker-compose.yml` の image digest を sed 置換
+3. `docker compose pull && ./up.sh` で再起動 (entrypoint で `db:prepare` = migration 自動実行)
+4. `http://127.0.0.1:8012/up` の health check で deploy 完了確認
+
+VPS 上の構成: `/opt/katorin2/{docker-compose.yml, secrets.enc.env, up.sh}`、 image SHA pin あり、 sops/age 暗号化。 secret 編集は Mac で:
 
 ```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=production \
-bash scripts/deploy-cloudrun-ledger.sh
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt \
+  sops /opt/katorin2/secrets.enc.env
+# 編集後 scp で VPS に上書き
 ```
 
-runtime env は Secret Manager `katorin2-ledger-runtime-production` を正本にする。 推奨値:
-
-```yaml
-LEDGER_DATABASE_USERNAME: katorin2_prod_app
-APP_HOST: katorin2.codenica.dev
-```
-
-secret 更新:
+migration は entrypoint で自動実行されるので明示 job 不要。 任意で手動実行する場合:
 
 ```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=production \
-RUNTIME_ENV_FILE=/path/to/ledger.runtime.production.yaml \
-bash scripts/push-ledger-runtime-secret.sh
+ssh codenica-vps "cd /opt/katorin2 && docker compose run --rm app ./bin/rails db:migrate"
 ```
 
-migration / one-shot job:
+完全停止 / 再起動:
 
 ```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=production \
-JOB_COMMAND="./bin/rails db:migrate" \
-bash scripts/run-ledger-job.sh
+ssh codenica-vps "cd /opt/katorin2 && docker compose down && rm -f .env"
+ssh codenica-vps "cd /opt/katorin2 && ./up.sh"
 ```
 
 ## staging deploy (codenica-vps)
@@ -97,7 +93,7 @@ staging の現在値: `LEDGER_SEED_PROFILE=demo`、 `APP_HOST=katorin2-staging.c
 
 ## branch 方針
 
-- `main` から production deploy
-- `staging` branch は integration 用に残しているが、 自動 deploy は紐付かない (Cloud Run staging は廃止済)
+- `main` から production deploy (`.github/workflows/deploy.yml`)
+- `staging` branch は integration 用に残しているが、 自動 deploy は紐付かない (staging は手動 deploy のみ)
 
 service ごとの DB ユーザー対応は `docs/service-db-users.md` を正本にする。
