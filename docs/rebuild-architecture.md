@@ -65,9 +65,10 @@ Phase 1 の推奨スタック:
 
 ## DB
 
-Cloud SQL (PostgreSQL 17) インスタンス `main-pg` を使用。
-環境ごとに別データベース（`katorin2`, `katorin2-staging`）で分離。
-Cloud Run からは Unix socket 経由で接続。
+PostgreSQL 17 を使用。 環境ごとに別データベースで分離する。
+
+- production: Cloud SQL `main-pg` の `katorin2` database (Cloud Run から Unix socket 接続)
+- staging: codenica-vps Postgres docker の `katorin2_staging` database (同じ docker network 経由で接続)
 
 ## 認証方針
 
