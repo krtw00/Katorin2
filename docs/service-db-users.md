@@ -1,24 +1,23 @@
 # Service DB Users
 
-`main-pg` は service ごとに DB ログインユーザーを分離して運用する。
+service ごとに DB ログインユーザーを分離して運用する。 katorin2 系は 2026-05-16 で完全に codenica-vps Postgres に集約済 (Cloud SQL `main-pg` は konbu のみが残置)。
 
 運用ルール:
 
-- Cloud Run service / job ごとに専用ログインユーザーを使う
+- service / job ごとに専用ログインユーザーを使う
 - 共有ログインを新規に作らない
-- 既存オブジェクト owner は `app-user` に残してよいが、`app-user` は `NOLOGIN` に保つ
-- 新しい service を追加する時は `scripts/provision-cloudsql-service-user.sh` を使って専用ユーザーを作る
+- 既存オブジェクト owner は service ユーザー (`katorin2_prod_app` 等) でよい
+- 新しい service を追加する時は `psql -U postgres` で role + DB を作成 (provision script は Cloud SQL 専用のため使わない)
 
 現在の対応表:
 
 | Service | Database | DB user | Secret / config source |
 |---|---|---|---|
-| `katorin2` (Cloud Run, production) | Cloud SQL `katorin2` | `katorin2_prod_app` | `katorin2-ledger-runtime-production` |
+| `katorin2` (codenica-vps docker, production) | codenica-vps Postgres `katorin2` | `katorin2_prod_app` | `/opt/katorin2/secrets.enc.env` (sops/age) |
 | `katorin2-staging` (codenica-vps docker) | codenica-vps Postgres `katorin2_staging` | `katorin2_staging_app` | `/opt/katorin2-staging/secrets.enc.env` (sops/age) |
-| `katorin2-*` jobs (production) | Cloud SQL `katorin2` | service と同じ | Cloud Run Job env |
-| `duel-log-api` | Cloud SQL `duellog` | `duel_log_app` | `duel-log-database-url` |
+| `duel-log-api` (Cloud Run, production) | Cloud SQL `duellog` | `duel_log_app` | `duel-log-database-url` (VPS 移行予定) |
 | `duel-log-api-staging` (codenica-vps docker) | codenica-vps Postgres `duellog_staging` | `duel_log_staging_app` | `/opt/duel-log-api-staging/secrets.enc.env` (sops/age) |
-| `konbu` | Cloud SQL `konbu` | `konbu_app` | `konbu-database-url` |
+| `konbu` | Cloud SQL `konbu` | `konbu_app` | `konbu-database-url` (VPS 移行対象外、 課金導線あり) |
 | `shadova-log` | Cloud SQL `shadova` | `shadova_log_app` | `shadova-log-db-password` + `DB_USERNAME` |
 
 補足:
