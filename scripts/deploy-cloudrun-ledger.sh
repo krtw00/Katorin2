@@ -10,34 +10,19 @@ APP_ENV="${APP_ENV:-production}"
 APP_NAME="${APP_NAME:-katorin2}"
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
 
-if [[ "${ALLOW_BRANCH_MISMATCH:-0}" != "1" ]]; then
-  case "$APP_ENV" in
-    production)
-      [[ "$CURRENT_BRANCH" == "main" ]] || {
-        echo "production deploys must run from main (current: ${CURRENT_BRANCH:-unknown})" >&2
-        exit 1
-      }
-      ;;
-    staging)
-      [[ "$CURRENT_BRANCH" == "staging" ]] || {
-        echo "staging deploys must run from staging (current: ${CURRENT_BRANCH:-unknown})" >&2
-        exit 1
-      }
-      ;;
-  esac
+if [[ "$APP_ENV" != "production" ]]; then
+  echo "This script supports APP_ENV=production only. staging now runs on codenica-vps (see docs/deployment-environments.md)." >&2
+  exit 1
 fi
 
-case "$APP_ENV" in
-  production)
-    DEFAULT_CLOUD_RUN_SERVICE="$APP_NAME"
-    ;;
-  staging)
-    DEFAULT_CLOUD_RUN_SERVICE="${APP_NAME}-staging"
-    ;;
-  *)
-    DEFAULT_CLOUD_RUN_SERVICE="${APP_NAME}-${APP_ENV}"
-    ;;
-esac
+if [[ "${ALLOW_BRANCH_MISMATCH:-0}" != "1" ]]; then
+  [[ "$CURRENT_BRANCH" == "main" ]] || {
+    echo "production deploys must run from main (current: ${CURRENT_BRANCH:-unknown})" >&2
+    exit 1
+  }
+fi
+
+DEFAULT_CLOUD_RUN_SERVICE="$APP_NAME"
 
 : "${GOOGLE_CLOUD_PROJECT:?GOOGLE_CLOUD_PROJECT is required}"
 : "${GOOGLE_CLOUD_REGION:=asia-northeast1}"
