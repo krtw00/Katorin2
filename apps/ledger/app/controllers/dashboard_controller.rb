@@ -7,6 +7,7 @@ class DashboardController < ApplicationController
       .includes(:phase, :week, :home_team, :away_team)
 
     @today_matches = base_scope.where(scheduled_on: @today).order(:scheduled_time)
+    @in_progress_matches = base_scope.in_progress.order(:scheduled_on, :scheduled_time)
     @result_pending_matches = base_scope.result_pending.order(:scheduled_on, :scheduled_time)
   end
 end
