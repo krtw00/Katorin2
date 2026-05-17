@@ -43,7 +43,7 @@ jobs:
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version-file: apps/ledger/.ruby-version
+          ruby-version: ".ruby-version"
           bundler-cache: true
           working-directory: apps/ledger
 
