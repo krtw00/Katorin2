@@ -48,4 +48,4 @@ jobs:
           working-directory: apps/ledger
 
       - name: Run tests
-        run: bin/rails test
+        run: bin/rails db:test:prepare test
