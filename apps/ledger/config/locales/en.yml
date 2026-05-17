@@ -533,6 +533,8 @@ en:
       no_winner: Unselected
       board_summary: "Board %{number}: %{home} vs %{away} / Winner %{winner}"
       board_summary_with_score: "Board %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
+      withdrawn_note: "This match involves a withdrawn team. Member and deck for the withdrawn side (%{teams}) may be left blank to confirm the result."
+      withdrawn_team_label: "%{team} (withdrawn)"
     form:
       home_team: Home team
       away_team: Away team

@@ -36,6 +36,10 @@
 
 <section class="panel result-entry-form-panel">
   <%= form_with url: match_result_entry_path(match_id: @match), method: :patch, scope: :result_entry, class: "stack result-entry-form" do |form| %>
+    <% withdrawn_team_labels = [@match.home_team, @match.away_team].compact.select { |team| team.status == "withdrawn" }.map { |team| t("matches.result_entry.withdrawn_team_label", team: team.display_name) } %>
+    <% if withdrawn_team_labels.any? %>
+      <p class="muted"><%= t("matches.result_entry.withdrawn_note", teams: withdrawn_team_labels.join(" / ")) %></p>
+    <% end %>
     <% @round_entries.each do |entry| %>
       <% round = entry[:round] %>
       <article class="panel panel--nested">
