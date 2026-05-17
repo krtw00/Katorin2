@@ -48,14 +48,33 @@ class MatchResultEntriesController < ApplicationController
     @home_participant_options = @match.participant_options_for_result("home")
     @away_participant_options = @match.participant_options_for_result("away")
     @match_result = @match.match_result
+    lineup_defaults = build_lineup_defaults
     @round_entries = (1..3).map do |round_number|
       round = @match.rounds.find { |existing_round| existing_round.number == round_number } || Round.new(number: round_number, result_status: "partial")
       boards = (1..3).map do |board_number|
-        round.board_results.find { |existing_board| existing_board.board_number == board_number } || BoardResult.new(board_number: board_number, result_status: "partial")
+        board = round.board_results.find { |existing_board| existing_board.board_number == board_number } || BoardResult.new(board_number: board_number, result_status: "partial")
+        apply_lineup_defaults!(board, lineup_defaults[board_number])
+        board
       end
 
       { round: round, boards: boards }
     end
+  end
+
+  def build_lineup_defaults
+    @match.match_lineup_members.each_with_object({}) do |member, hash|
+      next unless member.role == "main"
+
+      hash[member.slot_number] ||= {}
+      hash[member.slot_number][member.side] = member.participant_id
+    end
+  end
+
+  def apply_lineup_defaults!(board, defaults)
+    return if defaults.blank?
+
+    board.home_participant_id ||= defaults["home"]
+    board.away_participant_id ||= defaults["away"]
   end
 
   def result_entry_params

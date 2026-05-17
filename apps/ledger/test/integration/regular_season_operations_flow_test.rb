@@ -121,6 +121,27 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to dashboard_path(locale: :ja)
 
+    get edit_match_result_entry_path(locale: :ja, match_id: match)
+    assert_response :success
+    home_main = team_a.participants.order(:position).first(3)
+    away_main = team_b.participants.order(:position).first(3)
+    home_main.each_with_index do |participant, index|
+      board_number = index + 1
+      assert_match(
+        %r{<select [^>]*name="result_entry\[rounds\]\[1\]\[boards\]\[#{board_number}\]\[home_participant_id\]"[^>]*>.*?<option selected="selected" value="#{participant.id}">}m,
+        response.body,
+        "expected home board ##{board_number} to default to lineup main participant"
+      )
+    end
+    away_main.each_with_index do |participant, index|
+      board_number = index + 1
+      assert_match(
+        %r{<select [^>]*name="result_entry\[rounds\]\[1\]\[boards\]\[#{board_number}\]\[away_participant_id\]"[^>]*>.*?<option selected="selected" value="#{participant.id}">}m,
+        response.body,
+        "expected away board ##{board_number} to default to lineup main participant"
+      )
+    end
+
     assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
       patch match_result_entry_path(locale: :ja, match_id: match), params: {
         result_entry: {
