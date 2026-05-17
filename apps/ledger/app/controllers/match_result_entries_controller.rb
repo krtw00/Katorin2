@@ -53,7 +53,7 @@ class MatchResultEntriesController < ApplicationController
       round = @match.rounds.find { |existing_round| existing_round.number == round_number } || Round.new(number: round_number, result_status: "partial")
       boards = (1..3).map do |board_number|
         board = round.board_results.find { |existing_board| existing_board.board_number == board_number } || BoardResult.new(board_number: board_number, result_status: "partial")
-        apply_lineup_defaults!(board, lineup_defaults[board_number])
+        apply_lineup_defaults!(board, lineup_defaults[board_number]) if round_number == 1
         board
       end
 
