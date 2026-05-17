@@ -37,3 +37,6 @@ docker-compose.override.yml
 .devhive.yaml
 .serena/
 .claude/
+
+# session handoff (= 個人 snapshot、 global CLAUDE.md 規約準拠)
+docs/sessions/
