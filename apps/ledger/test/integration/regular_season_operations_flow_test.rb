@@ -308,6 +308,65 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_equal [team_a, team_b, nil], match.rounds.order(:number).map(&:winner_team)
   end
 
+  test "organizer can confirm a regular season match when the opponent team is withdrawn" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Withdrawn League",
+      status: "draft",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    team_a = create_team_record_with_members!(league:, name: "Active Team A")
+    team_b = create_team_record_with_members!(league:, name: "Withdrawn Team B")
+    team_b.update!(status: "withdrawn")
+    match = week.matches.create!(
+      league: league,
+      phase: phase,
+      block: block,
+      home_team: team_a,
+      away_team: team_b,
+      scheduled_on: Date.new(2026, 4, 12),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    get edit_match_result_entry_path(locale: :ja, match_id: match)
+    assert_response :success
+    assert_includes response.body, "辞退チームを含む試合です"
+
+    home_main = team_a.participants.order(:position).first(3)
+    patch match_result_entry_path(locale: :ja, match_id: match), params: {
+      result_entry: {
+        rounds: {
+          "1" => withdrawn_round_payload(home_main, suffix: "W1"),
+          "2" => withdrawn_round_payload(home_main, suffix: "W2")
+        }
+      }
+    }
+    assert_redirected_to edit_match_result_entry_path(locale: :ja, match_id: match)
+
+    match.reload
+    assert_equal "confirmed", match.status
+    assert_equal team_a, match.match_result.winner_team
+    assert_equal [2, 0], [match.match_result.home_round_wins, match.match_result.away_round_wins]
+    rounds = match.rounds.order(:number)
+    assert_equal 2, rounds.count
+    assert_equal [true, true], rounds.map(&:confirmed?)
+    rounds.each do |round|
+      round.board_results.each do |board|
+        assert_nil board.away_participant_id, "withdrawn side participant must remain nil"
+        assert_nil board.away_deck_name, "withdrawn side deck must remain nil"
+        assert_equal "confirmed", board.result_status
+      end
+    end
+  end
+
   test "organizer can save 1-0 and 0-1 board scores" do
     login_as!(@organizer_account, password: @password)
 
@@ -1198,6 +1257,25 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       "away_deck_name" => away_deck,
       "home_game_wins" => score[0],
       "away_game_wins" => score[1]
+    }
+  end
+
+  def withdrawn_round_payload(home_main, suffix:)
+    {
+      "boards" => {
+        "1" => withdrawn_board_payload(home_main[0], "#{suffix} Deck A1"),
+        "2" => withdrawn_board_payload(home_main[1], "#{suffix} Deck A2"),
+        "3" => withdrawn_board_payload(home_main[2], "#{suffix} Deck A3")
+      }
+    }
+  end
+
+  def withdrawn_board_payload(home_participant, home_deck)
+    {
+      "home_participant_id" => home_participant.id,
+      "home_deck_name" => home_deck,
+      "home_game_wins" => 2,
+      "away_game_wins" => 0
     }
   end
 

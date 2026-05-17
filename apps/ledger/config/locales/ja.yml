@@ -533,6 +533,8 @@ ja:
       no_winner: 未選択
       board_summary: "卓 %{number}: %{home} 対 %{away} / 勝者 %{winner}"
       board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
+      withdrawn_note: "辞退チームを含む試合です。辞退側 (%{teams}) の選手とデッキは未入力のままで結果確定できます。"
+      withdrawn_team_label: "%{team} (辞退)"
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

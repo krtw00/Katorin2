@@ -128,11 +128,15 @@ module MatchResults
     end
 
     def board_complete?(home_participant_id, away_participant_id, home_deck_name, away_deck_name, home_game_wins, away_game_wins)
-      home_participant_id.present? &&
-        away_participant_id.present? &&
-        home_deck_name.present? &&
-        away_deck_name.present? &&
+      side_inputs_complete?(match.home_team, home_participant_id, home_deck_name) &&
+        side_inputs_complete?(match.away_team, away_participant_id, away_deck_name) &&
         BoardResult.valid_confirmed_score?(home_game_wins, away_game_wins)
+    end
+
+    def side_inputs_complete?(team, participant_id, deck_name)
+      return true if team&.status == "withdrawn"
+
+      participant_id.present? && deck_name.present?
     end
 
     def integer_or_nil(value)
