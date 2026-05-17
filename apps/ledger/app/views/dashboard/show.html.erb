@@ -7,6 +7,9 @@
     <p class="muted"><%= t("dashboard.lede") %></p>
     <div class="hero-metrics">
       <span class="metric-chip"><strong><%= @today_matches.count %></strong><span><%= t("dashboard.metrics.today_matches") %></span></span>
+      <% if @in_progress_matches.any? %>
+        <span class="metric-chip metric-chip--live"><strong><%= @in_progress_matches.count %></strong><span><%= t("dashboard.metrics.in_progress") %></span></span>
+      <% end %>
       <span class="metric-chip"><strong><%= @result_pending_matches.count %></strong><span><%= t("dashboard.metrics.result_pending") %></span></span>
     </div>
   </div>
@@ -20,6 +23,19 @@
     <% end %>
   </div>
 </section>
+
+<% if @in_progress_matches.any? %>
+  <section class="dashboard-live">
+    <article class="panel panel--live">
+      <h2 class="panel--live__title"><span class="panel--live__pulse" aria-hidden="true"></span><%= t("dashboard.sections.in_progress") %></h2>
+      <ul class="record-list">
+        <% @in_progress_matches.each do |match| %>
+          <li><%= render "matches/row", match: match %></li>
+        <% end %>
+      </ul>
+    </article>
+  </section>
+<% end %>
 
 <section class="dashboard-grid">
   <article class="panel">

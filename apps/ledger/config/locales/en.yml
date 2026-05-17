@@ -170,9 +170,11 @@ en:
     lede: Prioritize matches that need action now.
     metrics:
       today_matches: Today's matches
+      in_progress: In progress
       result_pending: Result pending
     sections:
       today_matches: Today's matches
+      in_progress: Matches in progress
       result_pending: Result pending
       leagues: Leagues
     empty:

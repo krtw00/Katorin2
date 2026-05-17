@@ -22,7 +22,12 @@ module StandingsExports
         browser_path: ENV["CHROMIUM_PATH"],
         window_size: [1024, 800],
         timeout: BROWSER_TIMEOUT,
-        args: ["--no-sandbox", "--disable-gpu"]
+        process_timeout: BROWSER_TIMEOUT,
+        browser_options: {
+          "no-sandbox" => nil,
+          "disable-gpu" => nil,
+          "disable-dev-shm-usage" => nil
+        }
       )
       begin
         page = browser.create_page

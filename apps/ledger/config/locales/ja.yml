@@ -170,9 +170,11 @@ ja:
     lede: いま処理すべき対戦を優先表示します。
     metrics:
       today_matches: 今日の対戦
+      in_progress: 進行中
       result_pending: 結果未確定
     sections:
       today_matches: 今日の対戦
+      in_progress: 進行中の対戦
       result_pending: 結果未確定
       leagues: リーグ
     empty:
