@@ -1,8 +1,12 @@
 <%= render "shared/errors", record: participant %>
 
 <% participant_form_url = participant.persisted? ? league_team_participant_path(league_id: league, team_id: team, id: participant) : league_team_participants_path(league_id: league, team_id: team) %>
+<% return_to = local_assigns[:return_to] %>
 
 <%= form_with model: participant, url: participant_form_url, class: "stack" do |form| %>
+  <% if return_to.present? %>
+    <%= hidden_field_tag :return_to, return_to %>
+  <% end %>
   <div class="field">
     <%= form.label :display_name, t("participants.form.display_name") %>
     <%= form.text_field :display_name, required: true %>

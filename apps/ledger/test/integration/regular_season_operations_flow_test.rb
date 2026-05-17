@@ -735,6 +735,67 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to leagues_path(locale: :ja)
   end
 
+  test "lineup edit shows add participant buttons that return the user to lineup edit" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Lineup Add Participant League",
+      status: "active",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "Week 1", stage_asset: regular_stage_asset, position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    home_team = create_team_record_with_members!(league:, name: "Lineup Add Home")
+    away_team = create_team_record_with_members!(league:, name: "Lineup Add Away")
+    match = week.matches.create!(
+      league:,
+      phase:,
+      home_team:,
+      away_team:,
+      scheduled_on: Date.new(2026, 4, 15),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    get edit_match_lineup_path(locale: :ja, match_id: match)
+    assert_response :success
+    expected_return_to = edit_match_lineup_path(locale: :ja, match_id: match)
+    encoded_return_to = ERB::Util.url_encode(expected_return_to)
+    assert_includes response.body, new_league_team_participant_path(locale: :ja, league_id: league, team_id: home_team, return_to: expected_return_to)
+    assert_includes response.body, new_league_team_participant_path(locale: :ja, league_id: league, team_id: away_team, return_to: expected_return_to)
+    assert_includes response.body, "このチームに選手を追加"
+    assert_match(/return_to=#{Regexp.escape(encoded_return_to)}/, response.body)
+
+    assert_difference("Participant.count", 1) do
+      post league_team_participants_path(locale: :ja, league_id: league, team_id: home_team), params: {
+        participant: {
+          display_name: "Mid-flow Player",
+          position: 5,
+          status: "active",
+          notes: ""
+        },
+        return_to: expected_return_to
+      }
+    end
+    assert_redirected_to expected_return_to
+
+    assert_difference("Participant.count", 1) do
+      post league_team_participants_path(locale: :ja, league_id: league, team_id: home_team), params: {
+        participant: {
+          display_name: "Open Redirect Probe",
+          position: 6,
+          status: "active",
+          notes: ""
+        },
+        return_to: "//evil.example.com/lineups"
+      }
+    end
+    assert_redirected_to league_team_path(locale: :ja, league_id: league, id: home_team)
+  end
+
   test "organizer can delete a participant that is still referenced by a lineup" do
     login_as!(@organizer_account, password: @password)
 

@@ -513,6 +513,7 @@ ja:
       sub_slot: "サブ %{number}"
       empty: まだ登録されていません。
       summary: "%{role} %{number}: %{name}"
+      add_participant: このチームに選手を追加
     result_entry:
       title: 対戦結果入力
       short: 結果入力

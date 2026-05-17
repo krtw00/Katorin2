@@ -513,6 +513,7 @@ en:
       sub_slot: "Sub %{number}"
       empty: Not set yet.
       summary: "%{role} %{number}: %{name}"
+      add_participant: Add a participant to this team
     result_entry:
       title: Match result entry
       short: Result

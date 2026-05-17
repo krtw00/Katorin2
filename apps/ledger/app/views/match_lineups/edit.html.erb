@@ -32,7 +32,10 @@
   <%= form_with url: match_lineup_path(match_id: @match), method: :patch, scope: :lineup, class: "stack" do %>
     <div class="dashboard-grid">
       <article class="panel panel--nested">
-        <h2><%= @match.home_team.display_name %></h2>
+        <div class="panel-header">
+          <h2><%= @match.home_team.display_name %></h2>
+          <%= link_to t("matches.lineup.add_participant"), new_league_team_participant_path(league_id: @match.league, team_id: @match.home_team, return_to: edit_match_lineup_path(match_id: @match)), class: "button button--small" %>
+        </div>
         <div class="stack stack--compact">
           <% @home_entries.each_with_index do |entry, index| %>
             <div class="field-grid">
@@ -48,7 +51,10 @@
       </article>
 
       <article class="panel panel--nested">
-        <h2><%= @match.away_team.display_name %></h2>
+        <div class="panel-header">
+          <h2><%= @match.away_team.display_name %></h2>
+          <%= link_to t("matches.lineup.add_participant"), new_league_team_participant_path(league_id: @match.league, team_id: @match.away_team, return_to: edit_match_lineup_path(match_id: @match)), class: "button button--small" %>
+        </div>
         <div class="stack stack--compact">
           <% @away_entries.each_with_index do |entry, index| %>
             <div class="field-grid">

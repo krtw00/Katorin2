@@ -6,14 +6,16 @@ class ParticipantsController < ApplicationController
 
   def new
     @participant = @team.participants.new(status: "active")
+    @return_to = safe_return_to(params[:return_to])
   end
 
   def create
     @participant = @team.participants.new(participant_params)
     @participant.league = @league
+    @return_to = safe_return_to(params[:return_to])
 
     if @participant.save
-      redirect_to league_team_path(league_id: @league, id: @team), notice: t("flash.participants.created")
+      redirect_to @return_to.presence || league_team_path(league_id: @league, id: @team), notice: t("flash.participants.created")
     else
       @participants = @team.participants.order(:position, :created_at)
       render "teams/show", status: :unprocessable_entity
@@ -56,5 +58,13 @@ class ParticipantsController < ApplicationController
 
   def participant_params
     params.require(:participant).permit(:display_name, :member_id, :participant_role, :position, :status, :notes)
+  end
+
+  def safe_return_to(value)
+    return nil if value.blank?
+    return nil unless value.start_with?("/")
+    return nil if value.start_with?("//")
+
+    value
   end
 end
