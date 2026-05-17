@@ -46,8 +46,9 @@ GitHub 側:
   - direct push 可
   - PR 任意
 - `main`
-  - direct push 禁止
+  - direct push 禁止 (admin も bypass 不可、 `enforce_admins=true`)
   - PR 経由のみ
+  - CI (`test` job) 緑が merge 必須
 
 deploy 対応:
 
