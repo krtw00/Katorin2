@@ -18,7 +18,7 @@ DB は UI より先に、`運営が記録する事実` を固定する。
 - `Match` が日時と進行情報を持つ
 - `Round` が試合内ラウンドを持つ
 - 画像出力に必要な情報は `Round` とその下位結果まで持つ
-- Phase 2 の報告照合は、公式記録と別テーブルに分離する
+- 将来チーム報告レイヤーを追加する場合も、 公式記録と別テーブルに分離する方針を維持する (= 必要時に Plane Issue で再起票)
 
 状態定義の詳細は `status-model.md` を正本とする。
 
@@ -307,77 +307,9 @@ DB は UI より先に、`運営が記録する事実` を固定する。
 - `created_at`
 - `updated_at`
 
-## Phase 2 用の予約テーブル
+## Phase 1 で投入済みテーブル
 
-### team_match_reports
-
-役割:
-
-- チーム側のラウンドごと結果報告
-
-最低限のカラム:
-
-- `id`
-- `match_id`
-- `team_id`
-- `submitted_at`
-- `status`
-- `created_at`
-- `updated_at`
-
-### team_round_reports
-
-役割:
-
-- チーム報告のラウンド単位データ
-
-最低限のカラム:
-
-- `id`
-- `team_match_report_id`
-- `round_number`
-- `result_status`
-- `created_at`
-- `updated_at`
-
-### team_board_reports
-
-役割:
-
-- チーム報告の卓単位データ
-
-最低限のカラム:
-
-- `id`
-- `team_round_report_id`
-- `board_number`
-- `reported_winner_side`
-- `reported_home_deck_name`
-- `reported_away_deck_name`
-- `created_at`
-- `updated_at`
-
-### report_diffs
-
-役割:
-
-- 両チーム報告と公式記録の差分
-
-最低限のカラム:
-
-- `id`
-- `match_id`
-- `scope_type`
-- `scope_id`
-- `diff_type`
-- `severity`
-- `resolved_at`
-- `created_at`
-- `updated_at`
-
-## 最初の migration に入れる対象
-
-Phase 1 の初期 migration は次だけでよい。
+Phase 1 の初期 migration で投入済み:
 
 - `organizer_accounts`
 - `leagues`
@@ -392,4 +324,8 @@ Phase 1 の初期 migration は次だけでよい。
 - `board_results`
 - `exports`
 
-Phase 2 用の報告系は、初期 migration に入れず後から足す。
+## 拡張ポイント
+
+`leagues.rule_module_key` および `phases.rule_module_key / ranking_rule_key` は、 Phase 2 PoC (= Core / WMGP module 分離) で実際に切り替え対象として使う。 PoC 着手前は WMGP 直結値が入っている前提でよい。
+
+将来チーム報告レイヤーを追加する場合は、 公式記録テーブルとは別に `team_*_reports` / `report_diffs` 系を新規 migration で足す。 本 doc に予約テーブルは置かない (= 必要時に Plane Issue で再起票)。
