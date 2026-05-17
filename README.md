@@ -24,6 +24,13 @@ bin/setup
 bin/dev
 ```
 
+## Test
+
+```bash
+cd apps/ledger
+bin/rails test
+```
+
 ## Deploy
 
 Use the Rails deploy helper from the repository root:
