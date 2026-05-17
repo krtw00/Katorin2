@@ -27,6 +27,8 @@
   - Phase 1 完了 → Phase 2 PoC → Phase 3 別リーグ展開 までの展開方針
 - `deployment-environments.md`
   - production / staging 分離方針と deploy 手順
+- `staging-on-demand.md`
+  - staging の on-demand 起動 + 本番 snapshot restore 運用
 - `git-workflow.md`
   - `main / staging / feature/*` のブランチ運用
 

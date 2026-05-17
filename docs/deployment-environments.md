@@ -59,6 +59,8 @@ ssh codenica-vps "cd /opt/katorin2 && ./up.sh"
 
 staging は codenica-vps 上で docker compose 経由で稼働する。 構成は `/opt/katorin2-staging/{docker-compose.yml, secrets.enc.env, up.sh}`。 詳細は [`docs/migrations/cloud-to-vps-2026-05.md`](https://github.com/krtw00/Katorin2/blob/main/docs/migrations/cloud-to-vps-2026-05.md) ではなく `~/dev/docs/migrations/cloud-to-vps-2026-05.md` (= dev 機ローカル) を参照。
 
+staging は常時起動せず on-demand 運用に変更した。 起動 / 停止と本番 DB snapshot の自動 restore 手順は [`docs/staging-on-demand.md`](staging-on-demand.md) を参照。
+
 image の更新フロー:
 
 1. ローカル/CI でコード修正 → Cloud Build で Artifact Registry に push:
