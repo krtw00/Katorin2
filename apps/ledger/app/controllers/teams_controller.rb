@@ -8,6 +8,7 @@ class TeamsController < ApplicationController
   end
 
   def show
+    @return_to = safe_return_to(params[:return_to])
     load_team_detail_state
   end
 
@@ -62,5 +63,13 @@ class TeamsController < ApplicationController
 
   def team_params
     params.require(:team).permit(:display_name, :status, :notes)
+  end
+
+  def safe_return_to(value)
+    return nil if value.blank?
+    return nil unless value.start_with?("/")
+    return nil if value.start_with?("//")
+
+    value
   end
 end

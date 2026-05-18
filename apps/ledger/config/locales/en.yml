@@ -256,6 +256,7 @@ en:
       notes: Notes
     delete_confirm: Delete this team?
     delete_hint: Only teams that are not used in matches can be deleted.
+    back_to_result_entry: Back to result entry
   participants:
     eyebrow: Members
     title_new: "Add member to %{team}"
@@ -535,6 +536,7 @@ en:
       board_summary_with_score: "Board %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
       withdrawn_note: "This match involves a withdrawn team. Member and deck for the withdrawn side (%{teams}) may be left blank to confirm the result."
       withdrawn_team_label: "%{team} (withdrawn)"
+      manage_team: "Manage %{team}"
     form:
       home_team: Home team
       away_team: Away team
