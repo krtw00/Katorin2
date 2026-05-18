@@ -757,3 +757,22 @@ en:
       round_board_diff: BRD
       match_game_diff: MGD
       board_wins_total: BWT
+  decks:
+    usage:
+      title: Deck usage summary
+      scope_note: Aggregated decks recorded across matches in this week.
+      empty: No deck usage data for this week yet.
+      download_csv: Download CSV
+      win_rate_unavailable: "-"
+      columns:
+        deck_name: Deck name
+        user_count: Users
+        wins: Wins
+        losses: Losses
+        win_rate: Win rate
+      csv:
+        deck_name: Deck name
+        user_count: Users
+        wins: Wins
+        losses: Losses
+        win_rate: Win rate

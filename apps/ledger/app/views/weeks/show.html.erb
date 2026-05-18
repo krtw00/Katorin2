@@ -22,6 +22,49 @@
 </section>
 
 <section class="stack">
+  <article class="panel">
+    <div class="panel-header">
+      <div>
+        <h2><%= t("decks.usage.title") %></h2>
+        <p class="muted"><%= t("decks.usage.scope_note") %></p>
+      </div>
+      <% if @deck_usage_summary.entries.any? %>
+        <div class="page-actions">
+          <%= link_to t("decks.usage.download_csv"), deck_usage_csv_phase_week_path(phase_id: @phase, id: @week, format: :csv), class: "button" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @deck_usage_summary.entries.any? %>
+      <div class="table-scroll">
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th><%= t("decks.usage.columns.deck_name") %></th>
+              <th><%= t("decks.usage.columns.user_count") %></th>
+              <th><%= t("decks.usage.columns.wins") %></th>
+              <th><%= t("decks.usage.columns.losses") %></th>
+              <th><%= t("decks.usage.columns.win_rate") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @deck_usage_summary.entries.each do |entry| %>
+              <tr>
+                <td><%= entry.deck_name %></td>
+                <td><%= entry.user_count %></td>
+                <td><%= entry.wins %></td>
+                <td><%= entry.losses %></td>
+                <td><%= entry.win_rate.nil? ? t("decks.usage.win_rate_unavailable") : number_to_percentage(entry.win_rate * 100, precision: 1) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="empty-copy"><%= t("decks.usage.empty") %></p>
+    <% end %>
+  </article>
+
   <% if @matches.any? %>
     <% @block_sections.each do |block, matches| %>
       <article class="panel">

@@ -1,7 +1,7 @@
 class WeeksController < ApplicationController
   before_action :set_phase
   before_action :ensure_regular_phase
-  before_action :set_week, only: %i[show edit update destroy]
+  before_action :set_week, only: %i[show edit update destroy deck_usage_csv]
   before_action :admin_or_above!, only: %i[new create edit update destroy]
 
   def show
@@ -11,6 +11,14 @@ class WeeksController < ApplicationController
     if grouped.key?(nil)
       @block_sections << [nil, grouped.delete(nil)]
     end
+    @deck_usage_summary = Decks::UsageSummary.new(@week)
+  end
+
+  def deck_usage_csv
+    csv = Decks::UsageSummary.new(@week).to_csv
+    send_data csv,
+      filename: "deck-usage-#{@phase.id}-week-#{@week.number}.csv",
+      type: "text/csv; charset=utf-8"
   end
 
   def new

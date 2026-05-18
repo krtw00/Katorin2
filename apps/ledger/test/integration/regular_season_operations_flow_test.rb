@@ -917,6 +917,69 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "結果入力に戻る"
   end
 
+  test "week show displays deck usage summary and exposes a working csv download" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Deck Usage League",
+      status: "active",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    block = phase.blocks.create!(league:, name: "Block A", position: 1)
+    empty_week = phase.weeks.create!(league:, number: 1, position: 1)
+    populated_week = phase.weeks.create!(league:, number: 2, position: 2)
+    home_team = create_team_record_with_members!(league:, name: "Deck Home")
+    away_team = create_team_record_with_members!(league:, name: "Deck Away")
+    match = populated_week.matches.create!(
+      league:,
+      phase:,
+      block:,
+      home_team:,
+      away_team:,
+      scheduled_on: Date.new(2026, 4, 20),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+    round = match.rounds.create!(number: 1, result_status: "confirmed", home_team:, away_team:)
+    round.board_results.create!(
+      board_number: 1,
+      home_participant: home_team.participants.first,
+      away_participant: away_team.participants.first,
+      home_deck_name: "Aggregator Deck",
+      away_deck_name: "Defender Deck",
+      home_game_wins: 2,
+      away_game_wins: 0,
+      winner_side: "home",
+      result_status: "confirmed"
+    )
+
+    get phase_week_path(locale: :ja, phase_id: phase, id: empty_week)
+    assert_response :success
+    assert_includes response.body, "デッキ別集計"
+    assert_includes response.body, "この週の集計対象データがまだありません。"
+    refute_includes response.body, "CSV をダウンロード"
+
+    get phase_week_path(locale: :ja, phase_id: phase, id: populated_week)
+    assert_response :success
+    assert_includes response.body, "デッキ別集計"
+    assert_includes response.body, "Aggregator Deck"
+    assert_includes response.body, "Defender Deck"
+    assert_includes response.body, "CSV をダウンロード"
+    assert_includes response.body, deck_usage_csv_phase_week_path(locale: :ja, phase_id: phase, id: populated_week, format: :csv)
+
+    get deck_usage_csv_phase_week_path(locale: :ja, phase_id: phase, id: populated_week, format: :csv)
+    assert_response :success
+    assert_equal "text/csv", response.media_type
+    assert_includes response.headers["Content-Disposition"], "deck-usage-#{phase.id}-week-#{populated_week.number}.csv"
+    assert_includes response.body, "デッキ名,使用者数,勝ち,負け,勝率"
+    assert_includes response.body, "Aggregator Deck,1,1,0,1.000"
+    assert_includes response.body, "Defender Deck,1,0,1,0.000"
+  end
+
   test "organizer can delete a participant that is still referenced by a lineup" do
     login_as!(@organizer_account, password: @password)
 
