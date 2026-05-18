@@ -49,6 +49,20 @@ GitHub 側:
   - direct push 禁止 (admin も bypass 不可、 `enforce_admins=true`)
   - PR 経由のみ
   - CI (`test` job) 緑が merge 必須
+  - **main への PR は head=`staging` 以外を CI で reject** (`branch-base-check` workflow)
+    - `feature/*` から main への直 PR は `branch-base-check` が fail して merge 不可
+    - 必ず `feature/* -> staging -> main` の 2 段を経由する
+
+緊急時の例外 (= staging を経由できない hotfix):
+
+通常は hotfix も `staging` 経由で出す (= `staging` を一旦 main に揃えてから `feature/hotfix-*` を切る)。 どうしても staging を経由できない場合だけ次の手順で一時的に bypass する:
+
+1. GitHub 設定 (`Settings -> Branches -> main`) で required status checks から `branch-base-check` を一時除外する
+2. hotfix branch -> main で PR を作って merge
+3. main を staging に揃え直す (= `staging` を `main` に reset hard + force push)
+4. required status checks に `branch-base-check` を戻す
+
+例外操作は事後に Plane Issue に経緯を残す。
 
 deploy 対応:
 

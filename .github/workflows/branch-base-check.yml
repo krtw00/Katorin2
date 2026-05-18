@@ -1,0 +1,22 @@
+name: branch-base-check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  require-staging-head:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require staging as PR head
+        if: github.head_ref != 'staging'
+        run: |
+          echo "::error::main は staging からの PR のみ受け付けます (現在の head: ${{ github.head_ref }})"
+          exit 1
+      - name: OK
+        if: github.head_ref == 'staging'
+        run: |
+          echo "head=staging, OK"
