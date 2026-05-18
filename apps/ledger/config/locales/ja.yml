@@ -363,9 +363,6 @@ ja:
     labels:
       phase_kind: フェーズ種別
       participant_scope: 参加対象
-      group_count: ブロック数
-      round_count: 回戦数
-      bracket_size: ブラケット人数
       advancement: 勝ち上がり
     form:
       key: キー
@@ -379,10 +376,6 @@ ja:
       phase_kind: フェーズ種別
       participant_scope: 参加対象
       advancement_rule: 勝ち上がり
-      group_count: ブロック数
-      round_count: 回戦数
-      bracket_size: ブラケット人数
-      advancement_value: 勝ち上がり人数
       ranking_rule_key: 順位ルールキー
       match_rule_key: 対戦ルールキー
   phases:
@@ -736,10 +729,6 @@ ja:
       top_n_per_group: 各組上位
       top_n_overall: 総合上位
       manual: 手動
-    summary:
-      group_count: "%{count}ブロック"
-      round_count: "%{count}回戦"
-      bracket_size: "%{count}チーム"
   standings:
     eyebrow: 順位表
     title: "%{phase} 順位表"
