@@ -64,7 +64,11 @@ Rails.application.routes.draw do
           delete :unassign_team
         end
       end
-      resources :weeks, only: %i[show new create edit update destroy]
+      resources :weeks, only: %i[show new create edit update destroy] do
+        member do
+          get :deck_usage_csv
+        end
+      end
     end
 
     resources :weeks, only: [] do

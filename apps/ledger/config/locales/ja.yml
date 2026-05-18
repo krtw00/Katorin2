@@ -757,3 +757,22 @@ ja:
       round_board_diff: ラウンド得失点
       match_game_diff: マッチ得失点
       board_wins_total: ラウンド総得点
+  decks:
+    usage:
+      title: デッキ別集計
+      scope_note: この週の対戦で記録されたデッキの集計です。
+      empty: この週の集計対象データがまだありません。
+      download_csv: CSV をダウンロード
+      win_rate_unavailable: "-"
+      columns:
+        deck_name: デッキ名
+        user_count: 使用者数
+        wins: 勝ち
+        losses: 負け
+        win_rate: 勝率
+      csv:
+        deck_name: デッキ名
+        user_count: 使用者数
+        wins: 勝ち
+        losses: 負け
+        win_rate: 勝率
