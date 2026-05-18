@@ -256,6 +256,7 @@ ja:
       notes: メモ
     delete_confirm: このチームを削除します。よろしいですか？
     delete_hint: 対戦で未使用のチームだけ削除できます。
+    back_to_result_entry: 結果入力に戻る
   participants:
     eyebrow: メンバー
     title_new: "%{team} にメンバー追加"
@@ -535,6 +536,7 @@ ja:
       board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
       withdrawn_note: "辞退チームを含む試合です。辞退側 (%{teams}) の選手とデッキは未入力のままで結果確定できます。"
       withdrawn_team_label: "%{team} (辞退)"
+      manage_team: "%{team} を管理"
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

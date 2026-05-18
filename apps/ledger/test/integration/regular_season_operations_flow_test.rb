@@ -873,6 +873,50 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to league_team_path(locale: :ja, league_id: league, id: home_team)
   end
 
+  test "result entry shows manage team links that return the user to result entry" do
+    login_as!(@organizer_account, password: @password)
+
+    league = @organizer_account.leagues.create!(
+      name: "Result Entry Manage Team League",
+      status: "active",
+      roster_min_members: 4,
+      roster_max_members: 8,
+      lineup_size: 3,
+      substitute_size: 1
+    )
+    phase = league.phases.create!(name: "予選 1", stage_asset: regular_stage_asset, position: 1)
+    week = phase.weeks.create!(league:, number: 1, position: 1)
+    home_team = create_team_record_with_members!(league:, name: "Result Entry Home")
+    away_team = create_team_record_with_members!(league:, name: "Result Entry Away")
+    match = week.matches.create!(
+      league:,
+      phase:,
+      home_team:,
+      away_team:,
+      scheduled_on: Date.new(2026, 4, 16),
+      scheduled_time: Time.zone.parse("20:00"),
+      status: "scheduled"
+    )
+
+    get edit_match_result_entry_path(locale: :ja, match_id: match)
+    assert_response :success
+    expected_return_to = edit_match_result_entry_path(locale: :ja, match_id: match)
+    encoded_return_to = ERB::Util.url_encode(expected_return_to)
+    assert_includes response.body, league_team_path(locale: :ja, league_id: league, id: home_team, return_to: expected_return_to)
+    assert_includes response.body, league_team_path(locale: :ja, league_id: league, id: away_team, return_to: expected_return_to)
+    assert_includes response.body, "を管理"
+    assert_match(/return_to=#{Regexp.escape(encoded_return_to)}/, response.body)
+
+    get league_team_path(locale: :ja, league_id: league, id: home_team, return_to: expected_return_to)
+    assert_response :success
+    assert_includes response.body, "結果入力に戻る"
+    assert_includes response.body, %(href="#{expected_return_to}")
+
+    get league_team_path(locale: :ja, league_id: league, id: home_team, return_to: "//evil.example.com/result-entries")
+    assert_response :success
+    refute_includes response.body, "結果入力に戻る"
+  end
+
   test "organizer can delete a participant that is still referenced by a lineup" do
     login_as!(@organizer_account, password: @password)
 

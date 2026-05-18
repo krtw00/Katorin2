@@ -14,6 +14,9 @@
     <p class="muted"><%= [translated_enum("enums.team.status", @team.status), @team.block&.name, t("labels.participants_count", count: @participants.size)].compact.join(" / ") %></p>
   </div>
   <div class="page-actions">
+    <% if @return_to.present? %>
+      <%= link_to t("teams.back_to_result_entry"), @return_to, class: "button button--primary" %>
+    <% end %>
     <%= link_to t("actions.back"), league_teams_path(league_id: @league), class: "button" %>
     <% if can_manage? %>
       <%= link_to t("actions.edit"), edit_league_team_path(league_id: @league, id: @team), class: "button" %>

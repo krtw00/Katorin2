@@ -17,6 +17,12 @@
     <p class="muted"><%= match_title_text(@match) %></p>
   </div>
   <div class="page-actions">
+    <% if @match.home_team.present? %>
+      <%= link_to t("matches.result_entry.manage_team", team: @match.home_team.display_name), league_team_path(league_id: @match.league, id: @match.home_team, return_to: edit_match_result_entry_path(match_id: @match)), class: "button" %>
+    <% end %>
+    <% if @match.away_team.present? %>
+      <%= link_to t("matches.result_entry.manage_team", team: @match.away_team.display_name), league_team_path(league_id: @match.league, id: @match.away_team, return_to: edit_match_result_entry_path(match_id: @match)), class: "button" %>
+    <% end %>
     <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
     <%= link_to t("actions.edit"), edit_match_path(id: @match), class: "button" %>
   </div>
