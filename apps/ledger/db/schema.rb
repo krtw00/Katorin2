@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_18_082100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -204,8 +204,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
     t.string "email", null: false
     t.string "login_id", null: false
     t.string "password_digest", null: false
-    t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
+    t.string "reset_password_token"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_organizer_accounts_on_email", unique: true
     t.index ["login_id"], name: "index_organizer_accounts_on_login_id", unique: true
@@ -233,8 +233,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
     t.string "member_id"
     t.string "name", null: false
     t.text "notes"
-    t.integer "position"
     t.string "participant_role", default: "member", null: false
+    t.integer "position"
     t.string "status", default: "active", null: false
     t.uuid "team_id", null: false
     t.datetime "updated_at", null: false
@@ -271,7 +271,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
     t.uuid "match_id", null: false
     t.text "notes"
     t.integer "number", null: false
-    t.text "order_change_note"
     t.string "result_status", default: "partial", null: false
     t.datetime "updated_at", null: false
     t.uuid "winner_team_id"
@@ -286,13 +285,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
   create_table "stage_assets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "advancement_rule", default: "none", null: false
-    t.integer "advancement_value"
-    t.integer "bracket_size"
     t.datetime "created_at", null: false
     t.text "description_en"
     t.text "description_ja"
     t.string "format", null: false
-    t.integer "group_count"
     t.string "key", null: false
     t.string "match_rule_key"
     t.string "name_en", null: false
@@ -301,7 +297,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000000) do
     t.string "participant_scope", default: "all_teams", null: false
     t.string "phase_kind", default: "regular_season", null: false
     t.string "ranking_rule_key"
-    t.integer "round_count"
     t.datetime "updated_at", null: false
     t.index ["organizer_account_id", "key"], name: "index_stage_assets_on_organizer_account_id_and_key", unique: true
     t.index ["organizer_account_id"], name: "index_stage_assets_on_organizer_account_id"

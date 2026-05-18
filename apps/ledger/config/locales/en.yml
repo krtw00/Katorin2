@@ -363,9 +363,6 @@ en:
     labels:
       phase_kind: Phase kind
       participant_scope: Participant scope
-      group_count: Group count
-      round_count: Round count
-      bracket_size: Bracket size
       advancement: Advancement
     form:
       key: Key
@@ -379,10 +376,6 @@ en:
       phase_kind: Phase kind
       participant_scope: Participant scope
       advancement_rule: Advancement rule
-      group_count: Group count
-      round_count: Round count
-      bracket_size: Bracket size
-      advancement_value: Advancement value
       ranking_rule_key: Ranking rule key
       match_rule_key: Match rule key
   phases:
@@ -736,10 +729,6 @@ en:
       top_n_per_group: Top per group
       top_n_overall: Top overall
       manual: Manual
-    summary:
-      group_count: "%{count} groups"
-      round_count: "%{count} rounds"
-      bracket_size: "%{count} teams"
   standings:
     eyebrow: Standings
     title: "%{phase} Standings"
