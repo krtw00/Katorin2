@@ -22,6 +22,10 @@ module Wmgp
       def standings
         ::Standings::Calculator
       end
+
+      def standings_ranking(_ranking_rule_key = nil)
+        @standings_ranking ||= ::Wmgp::Rules::StandingsRanking.new
+      end
     end
 
     class Renderers
