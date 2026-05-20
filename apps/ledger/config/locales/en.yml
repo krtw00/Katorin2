@@ -254,6 +254,8 @@ en:
       status: Status
       status_hint: "Draft leagues allow deletion. After publishing, use %{withdrawn_label} when a team drops."
       notes: Notes
+      icon: Team icon
+      icon_hint: Shown above the team name on the score sheet. A near-square image works best.
     delete_confirm: Delete this team?
     delete_hint: Only teams that are not used in matches can be deleted.
     back_to_result_entry: Back to result entry

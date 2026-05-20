@@ -52,6 +52,27 @@ class MatchExports::ResultCardRendererTest < ActiveSupport::TestCase
     assert_includes footer_html, '<div class="footer-score">2 - 0</div>'
   end
 
+  test "versus header omits team icon when none is attached" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+
+    html = MatchExports::ResultCardRenderer.new(match).send(:versus_html)
+
+    assert_not_includes html, "team-icon"
+  end
+
+  test "versus header embeds team icon as data uri when attached" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+    match.home_team.icon.attach(
+      io: StringIO.new(one_by_one_png),
+      filename: "home_icon.png",
+      content_type: "image/png"
+    )
+
+    html = MatchExports::ResultCardRenderer.new(match.reload).send(:versus_html)
+
+    assert_includes html, %(<img class="team-icon" src="data:image/png;base64,)
+  end
+
   private
 
   def create_match_for_renderer_test!(home_name:, away_name:)
@@ -92,6 +113,12 @@ class MatchExports::ResultCardRendererTest < ActiveSupport::TestCase
       away_game_wins: score[1],
       result_status: "confirmed",
       winner_side: winner_side
+    )
+  end
+
+  def one_by_one_png
+    Base64.decode64(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
     )
   end
 end

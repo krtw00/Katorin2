@@ -62,7 +62,7 @@ class TeamsController < ApplicationController
   end
 
   def team_params
-    params.require(:team).permit(:display_name, :status, :notes)
+    params.require(:team).permit(:display_name, :status, :notes, :icon)
   end
 
   def safe_return_to(value)

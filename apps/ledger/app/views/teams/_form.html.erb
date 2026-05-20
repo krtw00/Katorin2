@@ -23,6 +23,19 @@
     <%= form.text_area :notes, rows: 4 %>
   </div>
 
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :icon, t("teams.form.icon") %>
+      <%= form.file_field :icon, accept: "image/png,image/jpeg,image/webp" %>
+      <p class="ghost-note"><%= t("teams.form.icon_hint") %></p>
+      <% if team.icon.attached? %>
+        <div class="image-preview-card">
+          <%= image_tag team.icon, alt: t("teams.form.icon"), class: "image-preview-card__image" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <div class="page-actions">
     <%= link_to t("actions.back"), team.persisted? ? league_team_path(league_id: league, id: team) : league_teams_path(league_id: league), class: "button" %>
     <%= form.submit(team.persisted? ? t("teams.submit_update") : t("teams.submit_create"), class: "button button--primary") %>
