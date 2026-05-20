@@ -46,6 +46,19 @@
     <% if withdrawn_team_labels.any? %>
       <p class="muted"><%= t("matches.result_entry.withdrawn_note", teams: withdrawn_team_labels.join(" / ")) %></p>
     <% end %>
+
+    <div class="field">
+      <label for="result_entry_decision_type"><%= t("matches.result_entry.decision_type_label") %></label>
+      <%= select_tag "result_entry[decision_type]",
+            options_for_select(
+              (MatchResult.decision_types.keys - %w[bye]).map { |key| [translated_enum("enums.match_result.decision_type", key), key] },
+              @match_result&.decision_type || "normal"
+            ),
+            include_blank: false,
+            id: "result_entry_decision_type" %>
+      <p class="muted"><%= t("matches.result_entry.decision_type_hint") %></p>
+    </div>
+
     <% @round_entries.each do |entry| %>
       <% round = entry[:round] %>
       <article class="panel panel--nested">

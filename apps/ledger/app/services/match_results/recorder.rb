@@ -114,7 +114,7 @@ module MatchResults
           match.away_team
         end
       result.result_status = match_confirmed?(home_round_wins, away_round_wins, confirmed_round_count) ? "confirmed" : "partial"
-      result.decision_type = "normal"
+      result.decision_type = decision_type
       result.confirmed_at = result.result_status == "confirmed" ? Time.current : nil
       result.save!
 
@@ -135,8 +135,19 @@ module MatchResults
 
     def side_inputs_complete?(team, participant_id, deck_name)
       return true if team&.status == "withdrawn"
+      return true if decision_lenient?
 
       participant_id.present? && deck_name.present?
+    end
+
+    def decision_type
+      value = payload["decision_type"].presence
+      MatchResult.decision_types.key?(value) ? value : "normal"
+    end
+
+    # 失格・没収・no-game では運営が選手名・デッキ未入力でも結果を確定できる
+    def decision_lenient?
+      decision_type.in?(%w[forfeit_match disqualification no_game])
     end
 
     def integer_or_nil(value)
