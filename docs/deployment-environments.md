@@ -104,6 +104,25 @@ seed profile:
 
 staging の現在値: `LEDGER_SEED_PROFILE=demo`、 `APP_HOST=katorin2-staging.codenica.dev`。
 
+## Active Storage (添付ファイルの永続化)
+
+Active Storage は `DiskService` (`/rails/storage`)。 これを **永続ボリュームにマウントしないと、 デプロイ (`docker compose up` でコンテナ再作成) のたびに blob 実体ファイルが全消失**する (DB の添付レコードだけ残り画像が壊れる)。 KAT-34。
+
+staging (`/opt/katorin2-staging/docker-compose.yml`) / production (`/opt/katorin2/docker-compose.yml`) とも、 app service に名前付きボリュームを割り当てる:
+
+```yaml
+services:
+  app:
+    volumes:
+      - katorin2_staging_storage:/rails/storage   # prod は katorin2_storage
+volumes:
+  katorin2_staging_storage:
+```
+
+- image digest の sed 置換 (deploy.yml / deploy-staging.yml) とは非干渉なので、 ボリューム設定は deploy をまたいで残る。
+- 生成済みカード (`public/generated`) は派生データなのでボリューム不要 (デプロイ後の初回 download で自動再生成される)。
+- VPS の compose は repo 管理外。 新規ホスト構築時はこのボリューム設定を忘れないこと。
+
 ## branch 方針
 
 - `main` から production deploy (`.github/workflows/deploy.yml`) と staging deploy (`.github/workflows/deploy-staging.yml`) が並列に走る
