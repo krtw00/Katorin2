@@ -615,6 +615,10 @@ ja:
         void: 無効
       decision_type:
         normal: 通常
+        bye: 不戦勝 (BYE)
+        forfeit_match: 没収試合
+        disqualification: 失格
+        no_game: ノーゲーム
     match_lineup_member:
       role:
         main: メイン
