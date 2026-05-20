@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_18_082100) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_21_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -231,6 +231,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_18_082100) do
     t.string "display_name", null: false
     t.uuid "league_id", null: false
     t.string "member_id"
+    t.string "member_ids", default: [], null: false, array: true
     t.string "name", null: false
     t.text "notes"
     t.string "participant_role", default: "member", null: false

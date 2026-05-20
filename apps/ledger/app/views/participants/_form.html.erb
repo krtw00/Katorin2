@@ -12,12 +12,15 @@
     <%= form.text_field :display_name, required: true %>
   </div>
 
-  <div class="field-grid">
-    <div class="field">
-      <%= form.label :member_id, t("participants.form.member_id") %>
-      <%= form.text_field :member_id %>
-    </div>
+  <% member_ids = Array(participant.member_ids).reject(&:blank?) %>
+  <div class="field">
+    <%= form.label :member_ids, t("participants.form.member_ids") %>
+    <% Participant::MAX_MEMBER_IDS.times do |index| %>
+      <%= text_field_tag "participant[member_ids][]", member_ids[index], id: "participant_member_ids_#{index}", aria: { label: t("participants.form.member_ids_nth", number: index + 1) } %>
+    <% end %>
+  </div>
 
+  <div class="field-grid">
     <div class="field">
       <%= form.label :participant_role, t("participants.form.participant_role") %>
       <%= form.select :participant_role, enum_options("enums.participant.participant_role", Participant::PARTICIPANT_ROLES.values) %>
@@ -32,7 +35,7 @@
   <div class="field-grid">
     <div class="field">
       <%= form.label :status, t("participants.form.status") %>
-      <%= form.select :status, enum_options("enums.participant.status", %w[active inactive]) %>
+      <%= form.select :status, enum_options("enums.participant.status", %w[active inactive withdrawn]) %>
     </div>
   </div>
 
