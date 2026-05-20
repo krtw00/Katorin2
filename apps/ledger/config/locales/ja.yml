@@ -534,6 +534,8 @@ ja:
       withdrawn_note: "辞退チームを含む試合です。辞退側 (%{teams}) の選手とデッキは未入力のままで結果確定できます。"
       withdrawn_team_label: "%{team} (辞退)"
       manage_team: "%{team} を管理"
+      decision_type_label: 判定種別
+      decision_type_hint: 失格・没収・ノーゲームの場合は選手名・デッキ未入力でも結果を確定できます。
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

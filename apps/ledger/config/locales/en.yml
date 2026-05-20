@@ -534,6 +534,8 @@ en:
       withdrawn_note: "This match involves a withdrawn team. Member and deck for the withdrawn side (%{teams}) may be left blank to confirm the result."
       withdrawn_team_label: "%{team} (withdrawn)"
       manage_team: "Manage %{team}"
+      decision_type_label: Decision type
+      decision_type_hint: For disqualification, forfeit, or no-game results, member and deck may be left blank to confirm the result.
     form:
       home_team: Home team
       away_team: Away team
