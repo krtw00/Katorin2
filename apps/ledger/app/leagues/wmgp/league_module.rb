@@ -34,7 +34,7 @@ module Wmgp
       end
 
       def standings_table
-        ::StandingsExports::TableRenderer
+        ::Wmgp::Renderers::StandingsTable
       end
     end
 

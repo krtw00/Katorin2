@@ -8,7 +8,7 @@ class RuleModules::RegistryTest < ActiveSupport::TestCase
     assert_equal "wmgp", rule_module.key
     assert_equal Standings::Calculator, rule_module.rules.standings
     assert_equal Wmgp::Renderers::MatchResultCard, rule_module.renderers.match_result_card
-    assert_equal StandingsExports::TableRenderer, rule_module.renderers.standings_table
+    assert_equal Wmgp::Renderers::StandingsTable, rule_module.renderers.standings_table
   end
 
   test "fetching unknown key raises KeyError" do
