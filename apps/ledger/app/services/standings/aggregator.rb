@@ -41,7 +41,7 @@ module Standings
     def collect_match_stats(team_stats)
       matches = phase.matches
         .joins(:match_result)
-        .where.not(match_results: { decision_type: "bye" })
+        .where.not(match_results: { decision_type: %w[bye no_game] })
         .includes(:match_result, rounds: :board_results)
 
       matches.each do |match|
