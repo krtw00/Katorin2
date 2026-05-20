@@ -73,6 +73,73 @@ class MatchExports::ResultCardRendererTest < ActiveSupport::TestCase
     assert_includes html, %(<img class="team-icon" src="data:image/png;base64,)
   end
 
+  test "last_source_change is nil when no rounds, match_result, or team icons exist" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+    renderer = MatchExports::ResultCardRenderer.new(match.reload)
+
+    assert_nil renderer.send(:last_source_change)
+  end
+
+  test "last_source_change reflects home team icon attachment time" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+    before_attach = Time.current
+    match.home_team.icon.attach(
+      io: StringIO.new(one_by_one_png),
+      filename: "home_icon.png",
+      content_type: "image/png"
+    )
+    attachment = match.home_team.reload.icon.attachment
+
+    renderer = MatchExports::ResultCardRenderer.new(match.reload)
+    result = renderer.send(:last_source_change)
+
+    assert_not_nil result
+    assert_operator result, :>=, before_attach
+    assert_operator result, :>=, attachment.created_at
+  end
+
+  test "last_source_change reflects away team icon attachment time" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+    before_attach = Time.current
+    match.away_team.icon.attach(
+      io: StringIO.new(one_by_one_png),
+      filename: "away_icon.png",
+      content_type: "image/png"
+    )
+    attachment = match.away_team.reload.icon.attachment
+
+    renderer = MatchExports::ResultCardRenderer.new(match.reload)
+    result = renderer.send(:last_source_change)
+
+    assert_not_nil result
+    assert_operator result, :>=, before_attach
+    assert_operator result, :>=, attachment.created_at
+  end
+
+  test "last_source_change returns most recent among rounds, match_result, and team icons" do
+    match = create_match_for_renderer_test!(home_name: "Alpha Team", away_name: "Beta Team")
+    match.rounds.create!(
+      number: 1,
+      home_team: match.home_team,
+      away_team: match.away_team,
+      result_status: "partial",
+      winner_team: nil
+    )
+    match.home_team.icon.attach(
+      io: StringIO.new(one_by_one_png),
+      filename: "home_icon.png",
+      content_type: "image/png"
+    )
+    icon_attached_at = match.home_team.reload.icon.attachment.created_at
+
+    renderer = MatchExports::ResultCardRenderer.new(match.reload)
+    result = renderer.send(:last_source_change)
+
+    assert_not_nil result
+    assert_operator result, :>=, match.rounds.maximum(:updated_at)
+    assert_operator result, :>=, icon_attached_at
+  end
+
   private
 
   def create_match_for_renderer_test!(home_name:, away_name:)

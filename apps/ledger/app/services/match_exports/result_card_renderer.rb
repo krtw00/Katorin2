@@ -78,13 +78,19 @@ module MatchExports
       export = match.exports.find_by(export_type: EXPORT_TYPE)
       return false unless export&.generated_at
 
-      last_change = [
-        match.match_result&.updated_at,
-        match.rounds.maximum(:updated_at)
-      ].compact.max
-      return true unless last_change
+      last = last_source_change
+      return true unless last
 
-      export.generated_at >= last_change
+      export.generated_at >= last
+    end
+
+    def last_source_change
+      [
+        match.match_result&.updated_at,
+        match.rounds.maximum(:updated_at),
+        match.home_team&.icon&.attachment&.created_at,
+        match.away_team&.icon&.attachment&.created_at
+      ].compact.max
     end
 
     def h(value)
