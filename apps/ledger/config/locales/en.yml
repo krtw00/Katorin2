@@ -615,6 +615,10 @@ en:
         void: Void
       decision_type:
         normal: Standard
+        bye: Bye
+        forfeit_match: Forfeit
+        disqualification: Disqualification
+        no_game: No game
     match_lineup_member:
       role:
         main: Main
