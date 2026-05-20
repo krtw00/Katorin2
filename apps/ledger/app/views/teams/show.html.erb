@@ -8,10 +8,15 @@
 ]) %>
 
 <section class="page-header">
-  <div>
-    <p class="eyebrow"><%= t("teams.eyebrow") %></p>
-    <h1><%= @team.display_name %></h1>
-    <p class="muted"><%= [translated_enum("enums.team.status", @team.status), @team.block&.name, t("labels.participants_count", count: @participants.size)].compact.join(" / ") %></p>
+  <div class="team-show-header">
+    <% if @team.icon.attached? %>
+      <%= image_tag @team.icon, alt: @team.display_name, class: "team-show-icon" %>
+    <% end %>
+    <div>
+      <p class="eyebrow"><%= t("teams.eyebrow") %></p>
+      <h1><%= @team.display_name %></h1>
+      <p class="muted"><%= [translated_enum("enums.team.status", @team.status), @team.block&.name, t("labels.participants_count", count: @participants.size)].compact.join(" / ") %></p>
+    </div>
   </div>
   <div class="page-actions">
     <% if @return_to.present? %>
