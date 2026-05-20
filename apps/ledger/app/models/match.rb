@@ -62,6 +62,15 @@ class Match < ApplicationRecord
     lineup_members_for(side).any?
   end
 
+  # MD ID (member_ids) 未登録の lineup participant を抽出する。
+  # ルールブック rule4 (MDid 未登録アカウントでのプレイは失格) の入力前リスク可視化用。
+  def lineup_participants_missing_member_ids
+    match_lineup_members
+      .filter_map(&:participant)
+      .uniq
+      .select { |participant| participant.member_ids.blank? }
+  end
+
   def participant_options_for_result(side)
     lineup_participants = lineup_participants_for(side)
     return lineup_participants if lineup_participants.any?
