@@ -269,6 +269,8 @@ ja:
     form:
       display_name: メンバー名
       member_id: メンバーID
+      member_ids: メンバーID（最大3件）
+      member_ids_nth: "メンバーID %{number}"
       participant_role: ロール
       position: 並び順
       status: 状態
@@ -626,6 +628,7 @@ ja:
       status:
         active: 有効
         inactive: 非表示
+        withdrawn: 脱退 / ドロップ
       participant_role:
         leader: リーダー
         sub_leader: サブリーダー
@@ -652,6 +655,7 @@ ja:
       participant:
         display_name: メンバー名
         member_id: メンバーID
+        member_ids: メンバーID
         participant_role: ロール
         position: 並び順
         status: 状態
@@ -713,6 +717,11 @@ ja:
           attributes:
             base:
               invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-0, 1-1, 0-1, 1-2, 0-2 のいずれかで入力してください。
+        participant:
+          attributes:
+            member_ids:
+              too_many: は最大 %{count} 件までです。
+              duplicate: "`%{value}` は同じリーグ内ですでに使われています。"
   helpers:
     submit:
       create: "%{model}を作成"

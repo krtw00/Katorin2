@@ -36,7 +36,13 @@ module TeamImports
       "有効化" => "active",
       "inactive" => "inactive",
       "hidden" => "inactive",
-      "非表示" => "inactive"
+      "非表示" => "inactive",
+      "withdrawn" => "withdrawn",
+      "dropped" => "withdrawn",
+      "drop" => "withdrawn",
+      "辞退" => "withdrawn",
+      "脱退" => "withdrawn",
+      "ドロップ" => "withdrawn"
     }.freeze
 
     PARTICIPANT_ROLE_ALIASES = {
@@ -190,6 +196,8 @@ module TeamImports
           end
 
           if member_spec.member_id.present? && participant.member_id != member_spec.member_id
+            # CSV は単一 ID。member_ids が primary なので先頭に反映し、member_id は同期で追従させる。
+            participant.member_ids = [member_spec.member_id]
             participant.member_id = member_spec.member_id
             participant_changed = true
           end

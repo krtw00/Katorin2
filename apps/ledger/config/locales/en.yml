@@ -269,6 +269,8 @@ en:
     form:
       display_name: Member name
       member_id: Member ID
+      member_ids: Member IDs (up to 3)
+      member_ids_nth: "Member ID %{number}"
       participant_role: Role
       position: Position
       status: Status
@@ -626,6 +628,7 @@ en:
       status:
         active: Active
         inactive: Hidden
+        withdrawn: Withdrawn / Dropped
       participant_role:
         leader: Leader
         sub_leader: Sub-leader
@@ -652,6 +655,7 @@ en:
       participant:
         display_name: Member name
         member_id: Member ID
+        member_ids: Member IDs
         participant_role: Role
         position: Position
         status: Status
@@ -713,6 +717,11 @@ en:
           attributes:
             base:
               invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-0, 1-1, 0-1, 1-2, or 0-2.
+        participant:
+          attributes:
+            member_ids:
+              too_many: allows up to %{count} entries.
+              duplicate: "`%{value}` is already used within the same league."
   helpers:
     submit:
       create: "Create %{model}"
