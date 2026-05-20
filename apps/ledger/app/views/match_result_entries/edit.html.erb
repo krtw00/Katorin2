@@ -28,6 +28,13 @@
   </div>
 </section>
 
+<% if @participants_missing_member_ids.present? %>
+  <div class="flash flash--warning" role="alert">
+    <strong><%= t("matches.result_entry.md_id_warning.heading") %></strong>
+    <p class="muted"><%= t("matches.result_entry.md_id_warning.body", players: @participants_missing_member_ids.map(&:display_name).join(" / ")) %></p>
+  </div>
+<% end %>
+
 <section class="panel">
   <% if @match_result.present? %>
     <div class="kv-list">

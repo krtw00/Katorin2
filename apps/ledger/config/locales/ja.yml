@@ -536,6 +536,9 @@ ja:
       manage_team: "%{team} を管理"
       decision_type_label: 判定種別
       decision_type_hint: 失格・没収・ノーゲームの場合は選手名・デッキ未入力でも結果を確定できます。
+      md_id_warning:
+        heading: MD ID 未登録の選手がいます
+        body: "%{players} は MD ID が未登録です。ルール4により、MD ID を登録していないアカウントでのプレイは失格対象となります。試合前に登録状況を確認してください。"
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

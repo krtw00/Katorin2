@@ -48,6 +48,7 @@ class MatchResultEntriesController < ApplicationController
     @home_participant_options = @match.participant_options_for_result("home")
     @away_participant_options = @match.participant_options_for_result("away")
     @match_result = @match.match_result
+    @participants_missing_member_ids = @match.lineup_participants_missing_member_ids
     lineup_defaults = build_lineup_defaults
     @round_entries = (1..3).map do |round_number|
       round = @match.rounds.find { |existing_round| existing_round.number == round_number } || Round.new(number: round_number, result_status: "partial")
