@@ -30,11 +30,11 @@ module Wmgp
 
     class Renderers
       def match_result_card
-        ::MatchExports::ResultCardRenderer
+        ::Wmgp::Renderers::MatchResultCard
       end
 
       def standings_table
-        ::StandingsExports::TableRenderer
+        ::Wmgp::Renderers::StandingsTable
       end
     end
 
