@@ -7,7 +7,7 @@ class RuleModules::RegistryTest < ActiveSupport::TestCase
     assert_kind_of Wmgp::LeagueModule, rule_module
     assert_equal "wmgp", rule_module.key
     assert_equal Standings::Calculator, rule_module.rules.standings
-    assert_equal MatchExports::ResultCardRenderer, rule_module.renderers.match_result_card
+    assert_equal Wmgp::Renderers::MatchResultCard, rule_module.renderers.match_result_card
     assert_equal StandingsExports::TableRenderer, rule_module.renderers.standings_table
   end
 
