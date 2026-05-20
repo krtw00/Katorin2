@@ -154,6 +154,21 @@ module MatchExports
             }
             .versus-team.home { flex-direction: row; }
             .versus-team.away { flex-direction: row-reverse; }
+            .team-block {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 8px;
+              overflow: hidden;
+            }
+            .team-icon {
+              width: 72px;
+              height: 72px;
+              object-fit: contain;
+              border-radius: 8px;
+              background: #fff;
+              flex-shrink: 0;
+            }
             .team-name {
               color: #fff;
               font-size: 28px;
@@ -335,14 +350,20 @@ module MatchExports
       <<~HTML
         <div class="versus">
           <div class="versus-team home">
-            <div class="team-name">#{h match.home_team.display_name}</div>
+            <div class="team-block">
+              #{team_icon_html(match.home_team)}
+              <div class="team-name">#{h match.home_team.display_name}</div>
+            </div>
             <div class="player-list">
               #{left_players.map { |n| %(<div class="player-tag">#{h n}</div>) }.join}
             </div>
           </div>
           <div class="versus-center">VS</div>
           <div class="versus-team away">
-            <div class="team-name">#{h match.away_team.display_name}</div>
+            <div class="team-block">
+              #{team_icon_html(match.away_team)}
+              <div class="team-name">#{h match.away_team.display_name}</div>
+            </div>
             <div class="player-list">
               #{right_players.map { |n| %(<div class="player-tag">#{h n}</div>) }.join}
             </div>
@@ -489,6 +510,18 @@ module MatchExports
     def header_image_data_uri
       blob = match.league.header_image.blob
       encoded = Base64.strict_encode64(match.league.header_image.download)
+      "data:#{blob.content_type};base64,#{encoded}"
+    end
+
+    def team_icon_html(team)
+      return "" unless team.icon.attached?
+
+      %(<img class="team-icon" src="#{team_icon_data_uri(team)}" alt="">)
+    end
+
+    def team_icon_data_uri(team)
+      blob = team.icon.blob
+      encoded = Base64.strict_encode64(team.icon.download)
       "data:#{blob.content_type};base64,#{encoded}"
     end
   end

@@ -254,6 +254,8 @@ ja:
       status: 状態
       status_hint: "%{draft_label} のリーグでは削除できます。実施中の離脱は %{withdrawn_label} を使います。"
       notes: メモ
+      icon: チームアイコン
+      icon_hint: スコアシートのチーム名の上に表示します。正方形に近い画像を推奨。
     delete_confirm: このチームを削除します。よろしいですか？
     delete_hint: 対戦で未使用のチームだけ削除できます。
     back_to_result_entry: 結果入力に戻る
