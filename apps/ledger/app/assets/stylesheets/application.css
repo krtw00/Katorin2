@@ -1324,3 +1324,36 @@ h2 {
 /* positive/negative diff coloring */
 .standings-table td.standings-plus { color: var(--success); }
 .standings-table td.standings-minus { color: var(--danger); }
+
+/* ── Team icon display ── */
+.team-thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.team-thumb {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.team-show-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.team-show-icon {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  background: #fff;
+  border: 1px solid var(--line);
+}
