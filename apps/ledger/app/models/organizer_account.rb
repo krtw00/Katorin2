@@ -47,7 +47,7 @@ class OrganizerAccount < ApplicationRecord
     definition = RuleSets::Registry.fetch(RuleSets::Registry.default_key)
 
     Array(definition["stages"]).each do |stage|
-      key = "wmgp_#{stage.fetch('key')}"
+      key = "#{definition.fetch('key')}_#{stage.fetch('key')}"
       template = stage_assets.find_or_initialize_by(key:)
       next if template.persisted?
 

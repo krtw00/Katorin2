@@ -110,7 +110,7 @@ class Phase < ApplicationRecord
   end
 
   def assign_default_rule_module_key
-    self.rule_module_key = stage_asset&.match_rule_key.presence || stage_asset&.key.presence || "wmgp" if rule_module_key.blank?
+    self.rule_module_key = stage_asset&.match_rule_key.presence || stage_asset&.key.presence || ::RuleSets::Registry.default_key if rule_module_key.blank?
   end
 
   def assign_default_name

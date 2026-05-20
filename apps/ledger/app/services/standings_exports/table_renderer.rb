@@ -46,7 +46,7 @@ module StandingsExports
 
     def standings_table_layout
       @standings_table_layout ||=
-        ::RuleModules::Registry.fetch(::RuleSets::Registry.default_key)
+        ::RuleModules::Registry.default
           .renderers.standings_table.new(@standings_by_block, @blocks)
     end
 

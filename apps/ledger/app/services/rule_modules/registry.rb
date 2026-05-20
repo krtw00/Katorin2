@@ -11,6 +11,10 @@ module RuleModules
         end
       end
 
+      def default
+        modules.values.first or raise(KeyError, "No rule module registered")
+      end
+
       def keys
         modules.keys
       end

@@ -22,7 +22,7 @@ module Standings
     private
 
     def resolve_ranking_rule
-      league_module = ::RuleModules::Registry.fetch(::RuleSets::Registry.default_key)
+      league_module = ::RuleModules::Registry.default
       league_module.rules.standings_ranking(@phase.ranking_rule_key)
     end
   end

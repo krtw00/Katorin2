@@ -63,7 +63,7 @@ module MatchExports
 
     def result_card_layout
       @result_card_layout ||=
-        ::RuleModules::Registry.fetch(::RuleSets::Registry.default_key)
+        ::RuleModules::Registry.default
           .renderers.match_result_card.new(match)
     end
 

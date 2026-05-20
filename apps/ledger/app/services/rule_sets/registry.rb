@@ -4,7 +4,7 @@ module RuleSets
 
     class << self
       def default_key
-        "wmgp"
+        builtin_keys.first
       end
 
       def all(organizer_account: nil)
