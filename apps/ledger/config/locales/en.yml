@@ -2,7 +2,6 @@ en:
   app:
     name: Katorin2
     application_name: Ledger
-    ledger_name: WMGP Ledger
   locales:
     ja: Japanese
     en: English
@@ -155,7 +154,6 @@ en:
     errors:
       title: Please review the highlighted fields.
   home:
-    eyebrow: WMGP Ledger
     title: Katorin2
     lede: A ledger for league management, result tracking, and image export while keeping Discord operations unchanged.
     features_title: Ledger

@@ -2,7 +2,6 @@ ja:
   app:
     name: Katorin2
     application_name: 台帳
-    ledger_name: WMGP台帳
   locales:
     ja: 日本語
     en: English
@@ -155,7 +154,6 @@ ja:
     errors:
       title: 入力内容を確認してください。
   home:
-    eyebrow: WMGP台帳
     title: Katorin2
     lede: Discord の運用はそのままに、リーグ管理、結果整理、画像出力をまとめる運営台帳です。
     features_title: 台帳

@@ -1,9 +1,14 @@
 module Wmgp
   class LeagueModule < ::RuleModules::Base
     KEY = "wmgp".freeze
+    DISPLAY_NAME = { ja: "WMGP台帳", en: "WMGP Ledger" }.freeze
 
     def key
       KEY
+    end
+
+    def display_name(locale = I18n.locale)
+      DISPLAY_NAME.fetch(locale.to_sym) { DISPLAY_NAME.fetch(:en) }
     end
 
     def rules
