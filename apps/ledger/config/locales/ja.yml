@@ -229,6 +229,8 @@ ja:
       header_image: 背景画像
       header_image_hint: 対戦画像の背景に使います。素材がなければ未設定のままでバニラ背景を使います。
       identifier_hint: 大会番号は保存時に自動で割り当てます。
+      discord_webhook_url: Discord webhook URL
+      discord_webhook_url_hint: 試合結果カード PNG を自動投稿する Discord チャンネルの webhook URL。Discord 側の「チャンネルの編集 → 連携サービス → ウェブフック」で取得します。空欄にすると自動投稿しません。
     header_image:
       title: 背景画像
       ready: 現在の対戦画像背景です。
@@ -655,6 +657,7 @@ ja:
         status: 状態
         started_at: 開始日
         ended_at: 終了日
+        discord_webhook_url: Discord webhook URL
       team:
         display_name: チーム名
         status: 状態
@@ -724,6 +727,10 @@ ja:
           attributes:
             base:
               invalid_game_score_pattern: ゲーム数は 2-0, 2-1, 1-0, 1-1, 0-1, 1-2, 0-2 のいずれかで入力してください。
+        league:
+          attributes:
+            discord_webhook_url:
+              invalid: "は Discord 公式 webhook URL の形式で入力してください (https://discord.com/api/webhooks/.../...)。"
         participant:
           attributes:
             member_ids:
