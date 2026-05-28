@@ -13,11 +13,14 @@ class League < ApplicationRecord
   before_validation :assign_serial_number, on: :create
   before_validation :assign_slug
 
+  DISCORD_WEBHOOK_URL_FORMAT = %r{\Ahttps://discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]+\z}
+
   validates :name, :slug, :serial_number, presence: true
   validates :roster_min_members, :roster_max_members, :lineup_size, :substitute_size, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :roster_config_consistent
   validates :slug, uniqueness: true
   validates :serial_number, numericality: { only_integer: true, greater_than: 0 }, uniqueness: { scope: :organizer_account_id }
+  validates :discord_webhook_url, format: { with: DISCORD_WEBHOOK_URL_FORMAT }, allow_blank: true, length: { maximum: 500 }
 
   def draft_status?
     status == "draft"

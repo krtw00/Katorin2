@@ -67,6 +67,14 @@
     </div>
   </div>
 
+  <div class="field-grid">
+    <div class="field">
+      <%= form.label :discord_webhook_url, t("leagues.form.discord_webhook_url") %>
+      <%= form.url_field :discord_webhook_url, placeholder: "https://discord.com/api/webhooks/..." %>
+      <p class="ghost-note"><%= t("leagues.form.discord_webhook_url_hint") %></p>
+    </div>
+  </div>
+
   <div class="page-actions">
     <%= link_to t("actions.back"), league.persisted? ? league_path(id: league) : leagues_path, class: "button" %>
     <%= form.submit class: "button button--primary" %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_21_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -107,6 +107,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_21_000000) do
 
   create_table "leagues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "discord_webhook_url"
     t.date "ended_at"
     t.integer "lineup_size", default: 3, null: false
     t.string "name", null: false
@@ -164,6 +165,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_21_000000) do
     t.uuid "bracket_round_id"
     t.string "bracket_slot"
     t.datetime "created_at", null: false
+    t.datetime "discord_notified_at"
     t.uuid "home_loser_source_match_id"
     t.uuid "home_source_match_id"
     t.uuid "home_team_id"

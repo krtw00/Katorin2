@@ -99,6 +99,14 @@ class Match < ApplicationRecord
     home_team.present? && away_team.present?
   end
 
+  # KAT-29: Discord webhook 自動投稿の eligibility 判定。
+  # confirmed 状態かつ league に webhook URL があり、 未通知のときだけ発火する。
+  def notify_discord_eligible?
+    discord_notified_at.nil? &&
+      league&.discord_webhook_url.present? &&
+      match_result&.result_status == "confirmed"
+  end
+
   private
 
   def teams_present_for_regular_match

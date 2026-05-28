@@ -229,6 +229,8 @@ en:
       header_image: Background image
       header_image_hint: Used as the background of match result images. If none is set, the default background is used.
       identifier_hint: The league number is assigned automatically on save.
+      discord_webhook_url: Discord webhook URL
+      discord_webhook_url_hint: Webhook URL of the Discord channel where match result cards are auto-posted. Get one from Discord under "Edit Channel → Integrations → Webhooks". Leave blank to disable auto-posting.
     header_image:
       title: Background image
       ready: This image is used as the match export background.
@@ -655,6 +657,7 @@ en:
         status: Status
         started_at: Start date
         ended_at: End date
+        discord_webhook_url: Discord webhook URL
       team:
         display_name: Team name
         status: Status
@@ -724,6 +727,10 @@ en:
           attributes:
             base:
               invalid_game_score_pattern: Game score must be one of 2-0, 2-1, 1-0, 1-1, 0-1, 1-2, or 0-2.
+        league:
+          attributes:
+            discord_webhook_url:
+              invalid: "must be a Discord webhook URL (https://discord.com/api/webhooks/.../...)."
         participant:
           attributes:
             member_ids:
