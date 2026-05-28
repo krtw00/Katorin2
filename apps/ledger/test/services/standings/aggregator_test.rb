@@ -88,12 +88,20 @@ class Standings::AggregatorTest < ActiveSupport::TestCase
       status: "confirmed"
     )
 
+    # KAT-28 延長: forfeit_match / disqualification は penalty_side 必須。
+    # winner_team が home なら away が没収、 反対も同様。
+    penalty_side =
+      if MatchResult::PENALTY_REQUIRED_DECISIONS.include?(decision_type.to_s)
+        (winner_team&.id == home_team.id) ? "away" : "home"
+      end
+
     match.create_match_result!(
       home_round_wins: home_round_wins,
       away_round_wins: away_round_wins,
       winner_team: winner_team,
       result_status: "confirmed",
-      decision_type: decision_type
+      decision_type: decision_type,
+      penalty_side: penalty_side
     )
 
     rounds.each_with_index do |boards, index|

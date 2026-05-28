@@ -58,7 +58,7 @@ class Wmgp::Rules::StandingsRankingTest < ActiveSupport::TestCase
   private
 
   def stats(**overrides)
-    defaults = { wins: 0, round_wins: 0, round_losses: 0, board_wins: 0, board_losses: 0, game_wins: 0, game_losses: 0 }
+    defaults = { wins: 0, round_wins: 0, round_losses: 0, board_wins: 0, board_losses: 0, game_wins: 0, game_losses: 0, forfeit_count: 0 }
     Standings::Aggregator::Stats.new(**defaults.merge(overrides))
   end
 

@@ -31,6 +31,10 @@ module Wmgp
       def standings_ranking(_ranking_rule_key = nil)
         @standings_ranking ||= ::Wmgp::Rules::StandingsRanking.new
       end
+
+      def forfeit_score_expander
+        @forfeit_score_expander ||= ::Wmgp::Rules::ForfeitScoreExpander.new
+      end
     end
 
     class Renderers

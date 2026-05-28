@@ -115,12 +115,18 @@ class MatchResults::RecorderTest < ActiveSupport::TestCase
       { "home_game_wins" => "2", "away_game_wins" => "0" }
     end.transform_keys(&:to_s)
 
-    {
+    payload = {
       "decision_type" => decision_type.to_s,
       "rounds" => {
         "1" => { "boards" => boards },
         "2" => { "boards" => boards }
       }
     }
+    # KAT-28 延長: forfeit_match / disqualification は penalty_side 必須。
+    # 既存テストは home 勝ち想定なので away を penalty_side にする (= away 0-2 で負け)。
+    if MatchResult::PENALTY_REQUIRED_DECISIONS.include?(decision_type.to_s)
+      payload["penalty_side"] = "away"
+    end
+    payload
   end
 end
