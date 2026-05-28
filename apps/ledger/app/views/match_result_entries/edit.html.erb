@@ -54,6 +54,16 @@
       <p class="muted"><%= t("matches.result_entry.withdrawn_note", teams: withdrawn_team_labels.join(" / ")) %></p>
     <% end %>
 
+    <%# KAT-31: 楽観ロック用 hidden field と最終更新者表示 %>
+    <%= hidden_field_tag "result_entry[lock_version]", @match_result&.lock_version || 0 %>
+    <% if @match_result&.updated_at %>
+      <p class="muted">
+        <%= t("matches.result_entry.last_saved",
+              judge: @match.judge_name.presence || t("labels.none"),
+              at: l(@match_result.updated_at.in_time_zone("Asia/Tokyo"), format: :short)) %>
+      </p>
+    <% end %>
+
     <div class="field">
       <label for="result_entry_decision_type"><%= t("matches.result_entry.decision_type_label") %></label>
       <%= select_tag "result_entry[decision_type]",

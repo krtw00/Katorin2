@@ -158,6 +158,7 @@ en:
       export_failed: Failed to generate the match image. Please try again in a moment.
       export_timeout: Match image generation timed out. Please wait a moment and try again.
       schedule_candidate_not_eligible: That candidate cannot be confirmed.
+      result_entry_stale: "%{judge} just saved an update. Reload to see the latest values before editing again."
     standings:
       export_failed: Failed to generate the standings image. Please try again in a moment.
       export_timeout: Standings image generation timed out. Please wait a moment and try again.
@@ -583,6 +584,7 @@ en:
       board_summary: "Board %{number}: %{home} vs %{away} / Winner %{winner}"
       board_summary_with_score: "Board %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
       withdrawn_note: "This match involves a withdrawn team. Member and deck for the withdrawn side (%{teams}) may be left blank to confirm the result."
+      last_saved: "Last saved by %{judge} at %{at}"
       withdrawn_team_label: "%{team} (withdrawn)"
       manage_team: "Manage %{team}"
       decision_type_label: Decision type

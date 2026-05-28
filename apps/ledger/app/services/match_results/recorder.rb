@@ -96,7 +96,10 @@ module MatchResults
       confirmed_round_count = round_summaries.count { |summary| summary[:confirmed] }
       home_round_wins = confirmed_rounds.count { |summary| summary[:winner_team_id] == match.home_team_id }
       away_round_wins = confirmed_rounds.count { |summary| summary[:winner_team_id] == match.away_team_id }
-      any_input = round_summaries.any? { |summary| summary[:confirmed] || summary[:winner_team_id].present? } || match.rounds.exists?
+      # KAT-28 延長: forfeit_match / disqualification は round 未入力でも 「結果あり」 とみなす (= expander が score を設定)
+      any_input = round_summaries.any? { |summary| summary[:confirmed] || summary[:winner_team_id].present? } ||
+        match.rounds.exists? ||
+        forfeit_decision?
 
       if !any_input && match.match_result&.persisted?
         match.match_result.destroy!
@@ -105,6 +108,11 @@ module MatchResults
       end
 
       result = match.match_result || match.build_match_result
+      # KAT-31: form が submit した lock_version を in-memory record に上書きし、 楽観ロック条件を成立させる。
+      # 他 judge が間に save していたら save! 時に ActiveRecord::StaleObjectError が raise する。
+      if result.persisted? && payload["lock_version"].present?
+        result.lock_version = payload["lock_version"].to_i
+      end
       result.decision_type = decision_type
       result.penalty_side = penalty_side_for_result
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_114226) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -147,6 +147,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_114226) do
     t.datetime "created_at", null: false
     t.string "decision_type", default: "normal", null: false
     t.integer "home_round_wins", default: 0, null: false
+    t.integer "lock_version", default: 0, null: false
     t.uuid "match_id", null: false
     t.text "notes"
     t.string "penalty_side"
