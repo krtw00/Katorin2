@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_28_111516) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -157,7 +157,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
     t.check_constraint "result_status::text = ANY (ARRAY['partial'::character varying::text, 'confirmed'::character varying::text, 'void'::character varying::text])", name: "match_results_result_status_inclusion"
   end
 
+  create_table "match_schedule_candidates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "match_id", null: false
+    t.text "notes"
+    t.datetime "starts_at", null: false
+    t.string "status", default: "proposed", null: false
+    t.uuid "submitter_team_id", null: false
+    t.string "submitter_tz", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id", "status"], name: "index_match_schedule_candidates_on_match_id_and_status"
+    t.index ["match_id"], name: "index_match_schedule_candidates_on_match_id"
+    t.index ["submitter_team_id"], name: "index_match_schedule_candidates_on_submitter_team_id"
+    t.check_constraint "status::text = ANY (ARRAY['proposed'::character varying, 'accepted'::character varying, 'withdrawn'::character varying]::text[])", name: "match_schedule_candidates_status_inclusion"
+  end
+
   create_table "matches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "accepted_schedule_candidate_id"
     t.uuid "away_loser_source_match_id"
     t.uuid "away_source_match_id"
     t.uuid "away_team_id"
@@ -182,6 +198,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
     t.uuid "week_id"
+    t.index ["accepted_schedule_candidate_id"], name: "index_matches_on_accepted_schedule_candidate_id"
     t.index ["away_loser_source_match_id"], name: "index_matches_on_away_loser_source_match_id"
     t.index ["away_source_match_id"], name: "index_matches_on_away_source_match_id"
     t.index ["away_team_id"], name: "index_matches_on_away_team_id"
@@ -316,12 +333,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
     t.uuid "league_id", null: false
     t.string "name", null: false
     t.text "notes"
+    t.string "schedule_token"
+    t.datetime "schedule_token_generated_at"
     t.string "short_name"
     t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.index ["block_id"], name: "index_teams_on_block_id"
     t.index ["league_id", "name"], name: "index_teams_on_league_id_and_name", unique: true
     t.index ["league_id"], name: "index_teams_on_league_id"
+    t.index ["schedule_token"], name: "index_teams_on_schedule_token", unique: true
   end
 
   create_table "weeks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -356,9 +376,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_101257) do
   add_foreign_key "match_lineup_members", "teams"
   add_foreign_key "match_results", "matches"
   add_foreign_key "match_results", "teams", column: "winner_team_id"
+  add_foreign_key "match_schedule_candidates", "matches"
+  add_foreign_key "match_schedule_candidates", "teams", column: "submitter_team_id"
   add_foreign_key "matches", "blocks"
   add_foreign_key "matches", "bracket_rounds"
   add_foreign_key "matches", "leagues"
+  add_foreign_key "matches", "match_schedule_candidates", column: "accepted_schedule_candidate_id"
   add_foreign_key "matches", "matches", column: "away_loser_source_match_id"
   add_foreign_key "matches", "matches", column: "away_source_match_id"
   add_foreign_key "matches", "matches", column: "home_loser_source_match_id"
