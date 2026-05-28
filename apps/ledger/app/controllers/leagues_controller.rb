@@ -52,6 +52,6 @@ class LeaguesController < ApplicationController
   end
 
   def league_params
-    params.require(:league).permit(:name, :status, :started_at, :ended_at, :header_image, :roster_min_members, :roster_max_members, :lineup_size, :substitute_size)
+    params.require(:league).permit(:name, :status, :started_at, :ended_at, :header_image, :roster_min_members, :roster_max_members, :lineup_size, :substitute_size, :discord_webhook_url)
   end
 end
