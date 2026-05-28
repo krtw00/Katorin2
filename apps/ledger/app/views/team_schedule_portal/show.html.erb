@@ -1,0 +1,78 @@
+<% page_title t("team_schedule_portal.show.title", team: @team.display_name) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("team_schedule_portal.eyebrow") %></p>
+    <h1><%= t("team_schedule_portal.show.title", team: @team.display_name) %></h1>
+    <p class="muted"><%= t("team_schedule_portal.show.lede", league: @team.league.name) %></p>
+  </div>
+</section>
+
+<% if @upcoming_matches.empty? %>
+  <p class="empty-copy"><%= t("team_schedule_portal.show.empty") %></p>
+<% else %>
+  <% @upcoming_matches.each do |match| %>
+    <article class="panel">
+      <header class="panel-header">
+        <h2>
+          <%= match.home_team&.display_name %> vs <%= match.away_team&.display_name %>
+          <small class="muted">/ <%= match.phase.name %> / <%= match.week&.name.presence || t("team_schedule_portal.show.no_week") %></small>
+        </h2>
+        <span><%= status_badge(translated_enum("enums.match.status", match.status), match.accepted_schedule_candidate_id.present? ? "success" : "neutral") %></span>
+      </header>
+
+      <% if match.accepted_schedule_candidate_id.present? && (accepted = match.accepted_schedule_candidate) %>
+        <p>
+          <strong><%= t("team_schedule_portal.show.confirmed_at") %>:</strong>
+          <%= display_schedule(accepted.starts_at, accepted.submitter_tz) %>
+          <span class="muted">(JST <%= accepted.starts_at.in_time_zone("Asia/Tokyo").strftime("%Y/%m/%d %H:%M") %>)</span>
+        </p>
+      <% else %>
+        <h3><%= t("team_schedule_portal.show.candidates_heading") %></h3>
+        <% active_candidates = match.schedule_candidates.reject { |c| c.withdrawn? } %>
+        <% if active_candidates.empty? %>
+          <p class="empty-copy"><%= t("team_schedule_portal.show.no_candidates") %></p>
+        <% else %>
+          <ul class="compact-list">
+            <% active_candidates.each do |candidate| %>
+              <li>
+                <strong><%= display_schedule(candidate.starts_at, candidate.submitter_tz) %></strong>
+                <span class="muted">/ <%= t("team_schedule_portal.show.submitted_by", team: candidate.submitter_team.display_name) %></span>
+                <% if candidate.notes.present? %>
+                  <p class="muted"><%= candidate.notes %></p>
+                <% end %>
+                <% if candidate.submitter_team_id == @team.id && candidate.proposed? %>
+                  <%= button_to t("team_schedule_portal.show.withdraw"),
+                    team_schedule_portal_withdraw_candidate_path(token: @team.schedule_token, match_id: match.id, id: candidate.id),
+                    method: :delete,
+                    class: "button button--ghost button--small",
+                    form: { data: { turbo_confirm: t("team_schedule_portal.show.withdraw_confirm") } } %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+
+        <h3><%= t("team_schedule_portal.show.submit_heading") %></h3>
+        <%= form_with url: team_schedule_portal_create_candidate_path(token: @team.schedule_token, match_id: match.id),
+              method: :post, scope: :candidate, class: "stack" do |form| %>
+          <div class="field-grid">
+            <div class="field">
+              <%= form.label :starts_at, t("team_schedule_portal.form.starts_at") %>
+              <%= form.datetime_local_field :starts_at, required: true %>
+            </div>
+            <div class="field">
+              <%= form.label :submitter_tz, t("team_schedule_portal.form.submitter_tz") %>
+              <%= form.select :submitter_tz, schedule_tz_choices, selected: "Asia/Tokyo" %>
+            </div>
+          </div>
+          <div class="field">
+            <%= form.label :notes, t("team_schedule_portal.form.notes") %>
+            <%= form.text_area :notes, rows: 2 %>
+          </div>
+          <%= form.submit t("team_schedule_portal.form.submit"), class: "button button--primary" %>
+        <% end %>
+      <% end %>
+    </article>
+  <% end %>
+<% end %>

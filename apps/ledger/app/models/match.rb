@@ -24,6 +24,13 @@ class Match < ApplicationRecord
   has_many :rounds, -> { order(:number) }, dependent: :destroy
   has_many :exports, dependent: :destroy
   has_many :match_lineup_members, -> { order(:side, :role, :slot_number, :created_at) }, dependent: :destroy
+  has_many :schedule_candidates,
+    -> { order(:starts_at) },
+    class_name: "MatchScheduleCandidate",
+    dependent: :destroy
+  belongs_to :accepted_schedule_candidate,
+    class_name: "MatchScheduleCandidate",
+    optional: true
 
   enum :status, STATUSES, validate: true
 

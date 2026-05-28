@@ -108,6 +108,40 @@
   </article>
 
   <article class="panel">
+    <h2><%= t("matches.schedule_candidates.title") %></h2>
+    <% candidates = @match.schedule_candidates.reject { |c| c.withdrawn? } %>
+    <% if @match.accepted_schedule_candidate_id.present? && (accepted = @match.accepted_schedule_candidate) %>
+      <p>
+        <strong><%= t("matches.schedule_candidates.confirmed_at") %>:</strong>
+        <%= display_schedule(accepted.starts_at, accepted.submitter_tz) %>
+        <span class="muted">(JST <%= accepted.starts_at.in_time_zone("Asia/Tokyo").strftime("%Y/%m/%d %H:%M") %>)</span>
+      </p>
+    <% elsif candidates.empty? %>
+      <p class="empty-copy"><%= t("matches.schedule_candidates.empty") %></p>
+    <% else %>
+      <ul class="compact-list">
+        <% candidates.each do |candidate| %>
+          <li>
+            <strong><%= display_schedule(candidate.starts_at, candidate.submitter_tz) %></strong>
+            <span class="muted">/ JST <%= candidate.starts_at.in_time_zone("Asia/Tokyo").strftime("%Y/%m/%d %H:%M") %></span>
+            <span class="muted">/ <%= t("matches.schedule_candidates.submitted_by", team: candidate.submitter_team.display_name) %></span>
+            <% if candidate.notes.present? %>
+              <p class="muted"><%= candidate.notes %></p>
+            <% end %>
+            <% if can_manage? && candidate.proposed? %>
+              <%= button_to t("matches.schedule_candidates.accept"),
+                accept_match_schedule_candidate_path(match_id: @match, id: candidate),
+                method: :post,
+                class: "button button--primary button--small",
+                form: { data: { turbo_confirm: t("matches.schedule_candidates.accept_confirm") } } %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </article>
+
+  <article class="panel">
     <h2><%= t("matches.rounds") %></h2>
     <% if @rounds.any? %>
       <ul class="compact-list">

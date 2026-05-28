@@ -7,12 +7,33 @@ class Team < ApplicationRecord
   has_many :participants, dependent: :destroy
   has_many :home_matches, class_name: "Match", foreign_key: :home_team_id, dependent: :restrict_with_exception
   has_many :away_matches, class_name: "Match", foreign_key: :away_team_id, dependent: :restrict_with_exception
+  has_many :submitted_schedule_candidates,
+    class_name: "MatchScheduleCandidate",
+    foreign_key: :submitter_team_id,
+    dependent: :destroy
 
   before_validation :assign_name
   before_validation :assign_short_name
 
   validates :name, :display_name, presence: true
   validates :name, uniqueness: { scope: :league_id }
+  validates :schedule_token, uniqueness: true, allow_nil: true
+
+  def regenerate_schedule_token!
+    update!(
+      schedule_token: SecureRandom.urlsafe_base64(24),
+      schedule_token_generated_at: Time.current
+    )
+  end
+
+  def revoke_schedule_token!
+    update!(schedule_token: nil, schedule_token_generated_at: nil)
+  end
+
+  # 自 team が関わるすべての match (home/away 問わず)。 公開 portal の表示用。
+  def all_matches
+    Match.where(home_team_id: id).or(Match.where(away_team_id: id))
+  end
 
   def destroyable?
     league.draft_status? || (home_matches.none? && away_matches.none?)
