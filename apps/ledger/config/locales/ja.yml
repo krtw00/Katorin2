@@ -158,6 +158,7 @@ ja:
       export_failed: 対戦画像の出力に失敗しました。時間をおいて再度お試しください。
       export_timeout: 対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。
       schedule_candidate_not_eligible: その候補は確定できません。
+      result_entry_stale: "%{judge} が結果を更新しました。 画面を再読み込みして最新の値を確認してから入力し直してください。"
     standings:
       export_failed: 順位表画像の出力に失敗しました。時間をおいて再度お試しください。
       export_timeout: 順位表画像の出力がタイムアウトしました。少し待ってから再度お試しください。
@@ -583,6 +584,7 @@ ja:
       board_summary: "卓 %{number}: %{home} 対 %{away} / 勝者 %{winner}"
       board_summary_with_score: "卓 %{number}: %{home} (%{home_deck}) %{home_score} - %{away_score} (%{away_deck}) %{away}"
       withdrawn_note: "辞退チームを含む試合です。辞退側 (%{teams}) の選手とデッキは未入力のままで結果確定できます。"
+      last_saved: "最終更新: %{judge} / %{at}"
       withdrawn_team_label: "%{team} (辞退)"
       manage_team: "%{team} を管理"
       decision_type_label: 判定種別

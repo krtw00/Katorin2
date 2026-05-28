@@ -17,6 +17,12 @@ class MatchResultEntriesController < ApplicationController
       notice: t("flash.matches.results_updated_with_export"),
       alert: export_refresh_failed ? t("flash.matches.export_refresh_failed_non_blocking") : nil
     )
+  rescue ActiveRecord::StaleObjectError => error
+    Rails.logger.warn("Result entry stale for match=#{@match.id}: #{error.message}")
+    @match.reload
+    flash.now[:alert] = t("flash.matches.result_entry_stale", judge: @match.judge_name.presence || t("labels.none"))
+    set_result_form_state
+    render :edit, status: :conflict
   rescue Brackets::ProgressionSync::LockedError => error
     Rails.logger.warn("Result entry progression sync blocked for match=#{@match.id}: #{error.message}")
     flash.now[:alert] = error.message
