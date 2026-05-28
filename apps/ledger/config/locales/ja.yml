@@ -99,6 +99,16 @@ ja:
       updated: チームを更新しました。
       deleted: チームを削除しました。
       delete_blocked: このチームは対戦で使われているため削除できません。実施中の離脱は状態をドロップに変更してください。
+      schedule_token:
+        created: スケジュール token を発行しました。共有 URL をチームに渡してください。
+        revoked: スケジュール token を取消しました。
+    team_schedule_portal:
+      candidate_created: 候補日時を提出しました。
+      candidate_withdrawn: 候補日時を取下げました。
+      cannot_withdraw_other_team: 他チームの候補は取下げできません。
+      cannot_withdraw_accepted: 確定済みの候補は取下げできません。
+    match_schedule_candidates:
+      accepted: 候補日時を確定しました。試合日時に反映しました。
     team_imports:
       created: "CSVを取り込みました。チーム %{created_teams}件追加 / %{updated_teams}件更新、メンバー %{created_participants}件追加 / %{updated_participants}件更新。"
     participants:
@@ -147,6 +157,7 @@ ja:
       export_refresh_started: 最新画像への更新を開始しました。少し待ってから再度ダウンロードしてください。
       export_failed: 対戦画像の出力に失敗しました。時間をおいて再度お試しください。
       export_timeout: 対戦画像の出力がタイムアウトしました。少し待ってから再度お試しください。
+      schedule_candidate_not_eligible: その候補は確定できません。
     standings:
       export_failed: 順位表画像の出力に失敗しました。時間をおいて再度お試しください。
       export_timeout: 順位表画像の出力がタイムアウトしました。少し待ってから再度お試しください。
@@ -259,6 +270,36 @@ ja:
     delete_confirm: このチームを削除します。よろしいですか？
     delete_hint: 対戦で未使用のチームだけ削除できます。
     back_to_result_entry: 結果入力に戻る
+    schedule_token:
+      title: スケジュール提出 token
+      lede: チームに渡す共有 URL を発行します。受け取った人は認証なしで候補日時を提出できます。
+      share_url: 共有 URL
+      generated_at: 発行日時
+      empty: まだ token は発行されていません。
+      generate: token を発行
+      regenerate: 再発行
+      regenerate_confirm: 古い URL は無効になります。再発行しますか？
+      revoke: 取消
+      revoke_confirm: token を取消すると共有 URL は無効になります。よろしいですか？
+  team_schedule_portal:
+    eyebrow: スケジュール提出
+    show:
+      title: "%{team} の試合スケジュール"
+      lede: "%{league} の対戦カードに候補日時を提出できます。"
+      empty: 対戦カードはまだありません。
+      no_week: 週未割当
+      confirmed_at: 確定済み日時
+      candidates_heading: 候補日時
+      no_candidates: 候補はまだ提出されていません。
+      submitted_by: 提出元 %{team}
+      submit_heading: 候補を提出する
+      withdraw: 取下げ
+      withdraw_confirm: この候補を取下げますか？
+    form:
+      starts_at: 開始日時
+      submitter_tz: タイムゾーン
+      notes: 補足 (任意)
+      submit: 候補を提出
   participants:
     eyebrow: メンバー
     title_new: "%{team} にメンバー追加"
@@ -494,6 +535,13 @@ ja:
     rounds: ラウンド
     empty_result: 公式結果はまだありません。
     empty_rounds: ラウンドはまだありません。
+    schedule_candidates:
+      title: 日時候補
+      empty: 候補はまだ提出されていません。
+      submitted_by: 提出元 %{team}
+      confirmed_at: 確定済み日時
+      accept: 確定する
+      accept_confirm: この候補日時で確定します。他候補は取下げ扱いになります。よろしいですか？
     delete_confirm: この対戦カードを削除します。よろしいですか？
     delete_hint: 結果が入っていない対戦だけ削除できます。下書きリーグではオーダーごと削除します。
     round_wins: ラウンド勝数

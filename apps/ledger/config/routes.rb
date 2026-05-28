@@ -36,12 +36,20 @@ Rails.application.routes.draw do
     resources :organizer_members, only: %i[index new create edit update destroy]
     resources :stage_assets, only: %i[index new create edit update destroy]
 
+    # KAT-25: 公開 (認証不要) の team schedule portal。 token-based access
+    get "schedule/:token", to: "team_schedule_portal#show", as: :team_schedule_portal
+    post "schedule/:token/matches/:match_id/candidates",
+      to: "team_schedule_portal#create_candidate", as: :team_schedule_portal_create_candidate
+    delete "schedule/:token/matches/:match_id/candidates/:id",
+      to: "team_schedule_portal#withdraw_candidate", as: :team_schedule_portal_withdraw_candidate
+
     resources :leagues, only: %i[index show new create edit update destroy] do
       resource :team_import, only: %i[new create], controller: "team_imports" do
         get :template
       end
       resources :teams, only: %i[index show new create edit update destroy] do
         resources :participants, only: %i[new create edit update destroy]
+        resource :schedule_token, only: %i[create destroy], controller: "team_schedule_tokens"
       end
       resources :phases, only: %i[show new create edit update destroy] do
         member do
@@ -80,6 +88,9 @@ Rails.application.routes.draw do
       resource :result_entry, only: %i[edit update], controller: "match_result_entries"
       resource :result_card_export, only: [], controller: "match_exports" do
         get :download, on: :member
+      end
+      resources :schedule_candidates, only: [], controller: "match_schedule_candidates" do
+        post :accept, on: :member
       end
     end
   end

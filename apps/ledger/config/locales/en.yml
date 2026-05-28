@@ -98,6 +98,16 @@ en:
       created: Team created.
       updated: Team updated.
       deleted: Team deleted.
+      schedule_token:
+        created: Schedule token issued. Share the URL with the team.
+        revoked: Schedule token revoked.
+    team_schedule_portal:
+      candidate_created: Candidate slot submitted.
+      candidate_withdrawn: Candidate slot withdrawn.
+      cannot_withdraw_other_team: You cannot withdraw another team's candidate.
+      cannot_withdraw_accepted: Confirmed candidates cannot be withdrawn.
+    match_schedule_candidates:
+      accepted: Candidate confirmed and written back to match schedule.
       delete_blocked: This team cannot be deleted because it is already used in matches. Use the dropped status after publishing.
     team_imports:
       created: "CSV imported. Teams: %{created_teams} added / %{updated_teams} updated. Members: %{created_participants} added / %{updated_participants} updated."
@@ -147,6 +157,7 @@ en:
       export_refresh_started: Refreshing the latest image has started. Please wait a moment and try downloading again.
       export_failed: Failed to generate the match image. Please try again in a moment.
       export_timeout: Match image generation timed out. Please wait a moment and try again.
+      schedule_candidate_not_eligible: That candidate cannot be confirmed.
     standings:
       export_failed: Failed to generate the standings image. Please try again in a moment.
       export_timeout: Standings image generation timed out. Please wait a moment and try again.
@@ -259,6 +270,36 @@ en:
     delete_confirm: Delete this team?
     delete_hint: Only teams that are not used in matches can be deleted.
     back_to_result_entry: Back to result entry
+    schedule_token:
+      title: Schedule submission token
+      lede: Issue a shareable URL for this team. Holders can submit candidate datetimes without authentication.
+      share_url: Share URL
+      generated_at: Generated at
+      empty: No token issued yet.
+      generate: Issue token
+      regenerate: Regenerate
+      regenerate_confirm: The previous URL will stop working. Continue?
+      revoke: Revoke
+      revoke_confirm: Revoking the token disables the shared URL. Continue?
+  team_schedule_portal:
+    eyebrow: Schedule submission
+    show:
+      title: "%{team} match schedule"
+      lede: "Submit candidate datetimes for matches in %{league}."
+      empty: No matches yet.
+      no_week: No week assigned
+      confirmed_at: Confirmed datetime
+      candidates_heading: Candidate datetimes
+      no_candidates: No candidates submitted yet.
+      submitted_by: Submitted by %{team}
+      submit_heading: Submit a candidate
+      withdraw: Withdraw
+      withdraw_confirm: Withdraw this candidate?
+    form:
+      starts_at: Start datetime
+      submitter_tz: Timezone
+      notes: Notes (optional)
+      submit: Submit candidate
   participants:
     eyebrow: Members
     title_new: "Add member to %{team}"
@@ -494,6 +535,13 @@ en:
     rounds: Rounds
     empty_result: No official result yet.
     empty_rounds: No rounds yet.
+    schedule_candidates:
+      title: Candidate datetimes
+      empty: No candidates submitted yet.
+      submitted_by: Submitted by %{team}
+      confirmed_at: Confirmed datetime
+      accept: Confirm
+      accept_confirm: Confirm this candidate? Other candidates will be marked withdrawn.
     delete_confirm: Delete this match?
     delete_hint: Only matches without results can be deleted. Draft leagues remove order data together.
     round_wins: Round wins
