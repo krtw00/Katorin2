@@ -267,6 +267,9 @@ ja:
       notes: メモ
       icon: チームアイコン
       icon_hint: スコアシートのチーム名の上に表示します。正方形に近い画像を推奨。
+      drop_kind: DROP 種別
+      drop_kind_none: なし
+      drop_kind_hint: 状態が「辞退 / ドロップ」 のときに区別します。 強制 (運営判断) / 自主 (チーム申告)。
     delete_confirm: このチームを削除します。よろしいですか？
     delete_hint: 対戦で未使用のチームだけ削除できます。
     back_to_result_entry: 結果入力に戻る
@@ -584,6 +587,10 @@ ja:
       manage_team: "%{team} を管理"
       decision_type_label: 判定種別
       decision_type_hint: 失格・没収・ノーゲームの場合は選手名・デッキ未入力でも結果を確定できます。
+      penalty_side_label: 没収/失格を受ける側
+      penalty_side_hint: 選んだ側に 0-2 を自動セットし、 順位の得失点を -1 します。
+      penalty_side_home: "%{team} (ホーム)"
+      penalty_side_away: "%{team} (アウェイ)"
       md_id_warning:
         heading: MD ID 未登録の選手がいます
         body: "%{players} は MD ID が未登録です。ルール4により、MD ID を登録していないアカウントでのプレイは失格対象となります。試合前に登録状況を確認してください。"
@@ -672,6 +679,9 @@ ja:
         forfeit_match: 没収試合
         disqualification: 失格
         no_game: ノーゲーム
+      penalty_side:
+        home: ホーム
+        away: アウェイ
     match_lineup_member:
       role:
         main: メイン
@@ -681,6 +691,9 @@ ja:
         active: 有効
         inactive: 非表示
         withdrawn: 辞退 / ドロップ
+      drop_kind:
+        forced: 強制 DROP
+        voluntary: 自主 DROP
     participant:
       status:
         active: 有効

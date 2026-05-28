@@ -16,7 +16,8 @@ module Wmgp
 
       def build_row(team, stats)
         points = stats.wins * WIN_POINT
-        goal_diff = stats.round_wins - stats.round_losses
+        # KAT-28 延長: forfeit_match / disqualification を受けた回数だけ goal_diff から減算 (= -1 ペナルティ)
+        goal_diff = stats.round_wins - stats.round_losses - stats.forfeit_count
         round_board_diff = stats.board_wins - stats.board_losses
         match_game_diff = stats.game_wins - stats.game_losses
 
@@ -38,6 +39,7 @@ module Wmgp
           round_board_diff: round_board_diff,
           match_game_diff: match_game_diff,
           board_wins_total: stats.board_wins,
+          forfeit_count: stats.forfeit_count,
           ranking_values: ranking_values,
           ranking_score: weighted_ranking_score(ranking_values)
         }

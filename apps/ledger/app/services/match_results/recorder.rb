@@ -105,6 +105,20 @@ module MatchResults
       end
 
       result = match.match_result || match.build_match_result
+      result.decision_type = decision_type
+      result.penalty_side = penalty_side_for_result
+
+      # KAT-28 延長: forfeit_match / disqualification は WMGP module の expander で
+      # round_wins を自動セット (= victim 2-0 / forfeiter 0-2)。 status は強制 confirmed
+      if forfeit_decision? && result.penalty_side.present?
+        expanded = forfeit_score_expander.expand(
+          decision_type: result.decision_type,
+          penalty_side: result.penalty_side
+        )
+        home_round_wins = expanded[:home_round_wins]
+        away_round_wins = expanded[:away_round_wins]
+      end
+
       result.home_round_wins = home_round_wins
       result.away_round_wins = away_round_wins
       result.winner_team =
@@ -113,13 +127,34 @@ module MatchResults
         elsif away_round_wins > home_round_wins
           match.away_team
         end
-      result.result_status = match_confirmed?(home_round_wins, away_round_wins, confirmed_round_count) ? "confirmed" : "partial"
-      result.decision_type = decision_type
+
+      result_status =
+        if forfeit_decision? && result.penalty_side.present?
+          "confirmed"
+        else
+          match_confirmed?(home_round_wins, away_round_wins, confirmed_round_count) ? "confirmed" : "partial"
+        end
+      result.result_status = result_status
       result.confirmed_at = result.result_status == "confirmed" ? Time.current : nil
       result.save!
 
       match.status = result.result_status == "confirmed" ? "confirmed" : "result_pending"
       match.save!
+    end
+
+    def forfeit_decision?
+      MatchResult::PENALTY_REQUIRED_DECISIONS.include?(decision_type)
+    end
+
+    def penalty_side_for_result
+      return nil unless forfeit_decision?
+
+      value = payload["penalty_side"].presence
+      %w[home away].include?(value) ? value : nil
+    end
+
+    def forfeit_score_expander
+      ::RuleModules::Registry.default.rules.forfeit_score_expander
     end
 
     def reset_match_state!

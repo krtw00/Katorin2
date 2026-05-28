@@ -62,10 +62,27 @@
               @match_result&.decision_type || "normal"
             ),
             include_blank: false,
-            id: "result_entry_decision_type" %>
+            id: "result_entry_decision_type",
+            data: { result_entry_target: "decisionType" } %>
       <p class="muted"><%= t("matches.result_entry.decision_type_hint") %></p>
     </div>
 
+    <div class="field" data-result-entry-target="penaltySideField" style="<%= (@match_result && MatchResult::PENALTY_REQUIRED_DECISIONS.include?(@match_result.decision_type)) ? "" : "display: none" %>">
+      <label for="result_entry_penalty_side"><%= t("matches.result_entry.penalty_side_label") %></label>
+      <%= select_tag "result_entry[penalty_side]",
+            options_for_select(
+              [
+                [t("matches.result_entry.penalty_side_home", team: match_side_name(@match, "home")), "home"],
+                [t("matches.result_entry.penalty_side_away", team: match_side_name(@match, "away")), "away"],
+              ],
+              @match_result&.penalty_side
+            ),
+            include_blank: t("matches.form.select_prompt"),
+            id: "result_entry_penalty_side" %>
+      <p class="muted"><%= t("matches.result_entry.penalty_side_hint") %></p>
+    </div>
+
+    <div data-result-entry-target="roundsContainer" style="<%= (@match_result && MatchResult::PENALTY_REQUIRED_DECISIONS.include?(@match_result.decision_type)) ? "display: none" : "" %>">
     <% @round_entries.each do |entry| %>
       <% round = entry[:round] %>
       <article class="panel panel--nested">
@@ -138,6 +155,7 @@
         </div>
       </article>
     <% end %>
+    </div>
 
     <div class="page-actions">
       <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
@@ -145,3 +163,21 @@
     </div>
   <% end %>
 </section>
+
+<script>
+  (function () {
+    var FORFEIT_DECISIONS = <%= MatchResult::PENALTY_REQUIRED_DECISIONS.to_json.html_safe %>;
+    var decisionSelect = document.getElementById("result_entry_decision_type");
+    var penaltyField = document.querySelector('[data-result-entry-target="penaltySideField"]');
+    var roundsContainer = document.querySelector('[data-result-entry-target="roundsContainer"]');
+    if (!decisionSelect || !penaltyField || !roundsContainer) return;
+
+    function refresh() {
+      var forfeit = FORFEIT_DECISIONS.indexOf(decisionSelect.value) !== -1;
+      penaltyField.style.display = forfeit ? "" : "none";
+      roundsContainer.style.display = forfeit ? "none" : "";
+    }
+    decisionSelect.addEventListener("change", refresh);
+    refresh();
+  })();
+</script>

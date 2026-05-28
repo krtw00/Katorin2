@@ -1,4 +1,9 @@
 class Team < ApplicationRecord
+  DROP_KINDS = {
+    forced: "forced",       # 強制 DROP (運営判断 / 失格 / ルール違反 etc.)
+    voluntary: "voluntary", # 自主 DROP (チーム自身の申告)
+  }.freeze
+
   belongs_to :league
   belongs_to :block, optional: true
 
@@ -18,6 +23,11 @@ class Team < ApplicationRecord
   validates :name, :display_name, presence: true
   validates :name, uniqueness: { scope: :league_id }
   validates :schedule_token, uniqueness: true, allow_nil: true
+  validates :drop_kind, inclusion: { in: DROP_KINDS.values }, allow_nil: true
+
+  def dropped?
+    drop_kind.present?
+  end
 
   def regenerate_schedule_token!
     update!(
