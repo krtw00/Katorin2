@@ -4,13 +4,15 @@ module Standings
       :wins, :round_wins, :round_losses,
       :board_wins, :board_losses,
       :game_wins, :game_losses,
+      :forfeit_count,
       keyword_init: true
     ) do
       def self.zero
         new(
           wins: 0, round_wins: 0, round_losses: 0,
           board_wins: 0, board_losses: 0,
-          game_wins: 0, game_losses: 0
+          game_wins: 0, game_losses: 0,
+          forfeit_count: 0
         )
       end
     end
@@ -65,6 +67,12 @@ module Standings
       else
         stats.round_wins += mr.away_round_wins.to_i
         stats.round_losses += mr.home_round_wins.to_i
+      end
+
+      # KAT-28 延長: penalty_side のチームに forfeit_count を +1 (= ranking で goal_diff -1 のペナルティ)
+      if MatchResult::PENALTY_REQUIRED_DECISIONS.include?(mr.decision_type) && mr.penalty_side.present?
+        penalized_id = (mr.penalty_side == "home") ? match.home_team_id : match.away_team_id
+        stats.forfeit_count += 1 if penalized_id == team_id
       end
 
       match.rounds.each { |round| accumulate_team_round(stats, round, team_id) }

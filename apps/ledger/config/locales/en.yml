@@ -267,6 +267,9 @@ en:
       notes: Notes
       icon: Team icon
       icon_hint: Shown above the team name on the score sheet. A near-square image works best.
+      drop_kind: DROP kind
+      drop_kind_none: None
+      drop_kind_hint: Use when status is "Withdrawn / Dropped". Forced (organizer decision) vs. voluntary (team's own request).
     delete_confirm: Delete this team?
     delete_hint: Only teams that are not used in matches can be deleted.
     back_to_result_entry: Back to result entry
@@ -584,6 +587,10 @@ en:
       manage_team: "Manage %{team}"
       decision_type_label: Decision type
       decision_type_hint: For disqualification, forfeit, or no-game results, member and deck may be left blank to confirm the result.
+      penalty_side_label: Penalized side
+      penalty_side_hint: The selected side is automatically scored 0-2 and receives a -1 goal-diff penalty in standings.
+      penalty_side_home: "%{team} (home)"
+      penalty_side_away: "%{team} (away)"
       md_id_warning:
         heading: Players without a registered MD ID
         body: "%{players} have no registered MD ID. Under rule 4, playing on an account without a registered MD ID results in disqualification. Please verify registration before the match."
@@ -672,6 +679,9 @@ en:
         forfeit_match: Forfeit
         disqualification: Disqualification
         no_game: No game
+      penalty_side:
+        home: Home
+        away: Away
     match_lineup_member:
       role:
         main: Main
@@ -681,6 +691,9 @@ en:
         active: Active
         inactive: Hidden
         withdrawn: Withdrawn / Dropped
+      drop_kind:
+        forced: Forced DROP
+        voluntary: Voluntary DROP
     participant:
       status:
         active: Active

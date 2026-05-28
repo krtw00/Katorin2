@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_111516) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_28_114226) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -149,11 +149,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_111516) do
     t.integer "home_round_wins", default: 0, null: false
     t.uuid "match_id", null: false
     t.text "notes"
+    t.string "penalty_side"
     t.string "result_status", default: "partial", null: false
     t.datetime "updated_at", null: false
     t.uuid "winner_team_id"
     t.index ["match_id"], name: "index_match_results_on_match_id", unique: true
     t.index ["winner_team_id"], name: "index_match_results_on_winner_team_id"
+    t.check_constraint "penalty_side IS NULL OR (penalty_side::text = ANY (ARRAY['home'::character varying, 'away'::character varying]::text[]))", name: "match_results_penalty_side_inclusion"
     t.check_constraint "result_status::text = ANY (ARRAY['partial'::character varying::text, 'confirmed'::character varying::text, 'void'::character varying::text])", name: "match_results_result_status_inclusion"
   end
 
@@ -330,6 +332,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_111516) do
     t.uuid "block_id"
     t.datetime "created_at", null: false
     t.string "display_name", null: false
+    t.string "drop_kind"
     t.uuid "league_id", null: false
     t.string "name", null: false
     t.text "notes"
@@ -342,6 +345,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_111516) do
     t.index ["league_id", "name"], name: "index_teams_on_league_id_and_name", unique: true
     t.index ["league_id"], name: "index_teams_on_league_id"
     t.index ["schedule_token"], name: "index_teams_on_schedule_token", unique: true
+    t.check_constraint "drop_kind IS NULL OR (drop_kind::text = ANY (ARRAY['forced'::character varying, 'voluntary'::character varying]::text[]))", name: "teams_drop_kind_inclusion"
   end
 
   create_table "weeks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
