@@ -596,6 +596,11 @@ ja:
       md_id_warning:
         heading: MD ID 未登録の選手がいます
         body: "%{players} は MD ID が未登録です。ルール4により、MD ID を登録していないアカウントでのプレイは失格対象となります。試合前に登録状況を確認してください。"
+      clear_round: このラウンドをクリア
+      clear_round_confirm: "ラウンド %{number} の入力をクリアします。 保存ボタンを押すとこのラウンドの結果は削除されます。"
+      undo_clear_round: クリアを取り消す
+      cleared_note: クリア予約中。 保存するとこのラウンドの結果が削除されます。
+      unconfirmed_badge: 未確定
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

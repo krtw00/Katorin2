@@ -1090,6 +1090,36 @@ h2 {
   font-weight: 700;
 }
 
+.panel-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.result-entry-form .panel--nested.is-unconfirmed {
+  opacity: 0.65;
+}
+
+.result-entry-form .panel--nested.is-unconfirmed:focus-within,
+.result-entry-form .panel--nested.is-unconfirmed:hover {
+  opacity: 1;
+}
+
+.result-entry-form .panel--nested.is-cleared {
+  opacity: 0.45;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.result-entry-form .panel--nested.is-cleared:focus-within {
+  opacity: 0.45;
+}
+
+.result-entry-cleared-note {
+  font-weight: 600;
+  color: var(--danger, #b42318);
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;

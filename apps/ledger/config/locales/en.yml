@@ -596,6 +596,11 @@ en:
       md_id_warning:
         heading: Players without a registered MD ID
         body: "%{players} have no registered MD ID. Under rule 4, playing on an account without a registered MD ID results in disqualification. Please verify registration before the match."
+      clear_round: Clear this round
+      clear_round_confirm: "Clearing round %{number}. The results for this round will be deleted when you save."
+      undo_clear_round: Undo clear
+      cleared_note: Pending clear. The results for this round will be deleted on save.
+      unconfirmed_badge: Unconfirmed
     form:
       home_team: Home team
       away_team: Away team

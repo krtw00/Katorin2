@@ -160,6 +160,26 @@ class RegularSeasonOperationsFlowTest < ActionDispatch::IntegrationTest
       end
     end
 
+    # KAT-30: 全 round にクリアボタンと article marker が出る (R2/R3 含む)
+    (1..3).each do |round_number|
+      assert_match(
+        %r{data-round-article="#{round_number}"},
+        response.body,
+        "round #{round_number} must be marked with data-round-article for clear UI"
+      )
+      assert_match(
+        %r{data-clear-round="#{round_number}"},
+        response.body,
+        "round #{round_number} must expose a clear button"
+      )
+    end
+    # KAT-30: 未確定 round (= partial / nil) は grey out 用 class を持つ
+    assert_match(
+      %r{class="panel panel--nested is-unconfirmed"[^>]*data-round-article="1"},
+      response.body,
+      "unconfirmed round 1 must carry the is-unconfirmed class"
+    )
+
     assert_enqueued_with(job: MatchExports::GenerateResultCardJob, args: [match.id]) do
       patch match_result_entry_path(locale: :ja, match_id: match), params: {
         result_entry: {
