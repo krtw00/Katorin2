@@ -95,11 +95,27 @@
     <div data-result-entry-target="roundsContainer" style="<%= (@match_result && MatchResult::PENALTY_REQUIRED_DECISIONS.include?(@match_result.decision_type)) ? "display: none" : "" %>">
     <% @round_entries.each do |entry| %>
       <% round = entry[:round] %>
-      <article class="panel panel--nested">
+      <% unconfirmed = round.result_status != "confirmed" %>
+      <article class="panel panel--nested<%= " is-unconfirmed" if unconfirmed %>" data-round-article="<%= round.number %>">
         <div class="panel-header">
           <div>
             <h2><%= t("matches.result_entry.round_title", number: round.number) %></h2>
             <p class="muted"><%= translated_enum("enums.match_result.result_status", round.result_status || "partial") %></p>
+          </div>
+          <div class="panel-header__actions">
+            <button type="button"
+                    class="button button--ghost"
+                    data-clear-round="<%= round.number %>"
+                    data-confirm-message="<%= t("matches.result_entry.clear_round_confirm", number: round.number) %>">
+              <%= t("matches.result_entry.clear_round") %>
+            </button>
+            <button type="button"
+                    class="button button--ghost"
+                    data-undo-clear-round="<%= round.number %>"
+                    hidden>
+              <%= t("matches.result_entry.undo_clear_round") %>
+            </button>
+            <span class="muted result-entry-cleared-note" data-cleared-note="<%= round.number %>" hidden><%= t("matches.result_entry.cleared_note") %></span>
           </div>
         </div>
 
@@ -189,5 +205,50 @@
     }
     decisionSelect.addEventListener("change", refresh);
     refresh();
+  })();
+
+  // KAT-30: ラウンド単位のクリア (= disabled 化で submit 時に round payload を空にし、 recorder の board 全 blank → destroy ロジックに乗せる)
+  (function () {
+    function inputsIn(article) {
+      return article.querySelectorAll('select, input[type="text"]');
+    }
+    document.querySelectorAll('[data-clear-round]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var number = button.getAttribute('data-clear-round');
+        var msg = button.getAttribute('data-confirm-message');
+        if (msg && !confirm(msg)) return;
+        var article = document.querySelector('[data-round-article="' + number + '"]');
+        if (!article) return;
+        inputsIn(article).forEach(function (el) {
+          el.disabled = true;
+          if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+          } else {
+            el.value = '';
+          }
+        });
+        article.classList.add('is-cleared');
+        button.hidden = true;
+        var undo = article.querySelector('[data-undo-clear-round="' + number + '"]');
+        var note = article.querySelector('[data-cleared-note="' + number + '"]');
+        if (undo) undo.hidden = false;
+        if (note) note.hidden = false;
+      });
+    });
+
+    document.querySelectorAll('[data-undo-clear-round]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var number = button.getAttribute('data-undo-clear-round');
+        var article = document.querySelector('[data-round-article="' + number + '"]');
+        if (!article) return;
+        inputsIn(article).forEach(function (el) { el.disabled = false; });
+        article.classList.remove('is-cleared');
+        button.hidden = true;
+        var clearBtn = article.querySelector('[data-clear-round="' + number + '"]');
+        var note = article.querySelector('[data-cleared-note="' + number + '"]');
+        if (clearBtn) clearBtn.hidden = false;
+        if (note) note.hidden = true;
+      });
+    });
   })();
 </script>
