@@ -601,6 +601,9 @@ ja:
       undo_clear_round: クリアを取り消す
       cleared_note: クリア予約中。 保存するとこのラウンドの結果が削除されます。
       unconfirmed_badge: 未確定
+      stale_conflict_banner: "別の運営が結果を更新したため保存できませんでした。 入力内容はそのまま残しています。 最新の値を確認したうえで通常保存するか、 強制上書き保存してください。"
+      force_overwrite: 他者の更新を破棄して上書き保存
+      force_overwrite_confirm: "他の運営が直前に保存した内容を破棄してあなたの入力で上書きします。 本当に進めますか?"
     form:
       home_team: ホームチーム
       away_team: アウェイチーム

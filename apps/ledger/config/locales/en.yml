@@ -601,6 +601,9 @@ en:
       undo_clear_round: Undo clear
       cleared_note: Pending clear. The results for this round will be deleted on save.
       unconfirmed_badge: Unconfirmed
+      stale_conflict_banner: "Another organizer saved an update before you. Your input has been preserved. Review the latest values and either save normally or force overwrite."
+      force_overwrite: Discard their update and overwrite
+      force_overwrite_confirm: "This will discard the update another organizer just saved and overwrite it with your input. Continue?"
     form:
       home_team: Home team
       away_team: Away team
