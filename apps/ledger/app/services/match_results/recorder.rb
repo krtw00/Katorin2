@@ -3,9 +3,10 @@ module MatchResults
     ROUND_COUNT = 3
     BOARD_COUNT = 3
 
-    def initialize(match, payload)
+    def initialize(match, payload, force_overwrite: false)
       @match = match
       @payload = payload.deep_stringify_keys
+      @force_overwrite = force_overwrite
     end
 
     def save!
@@ -92,6 +93,9 @@ module MatchResults
     end
 
     def persist_match_result!(round_summaries)
+      # KAT-31: force_overwrite 時は match_result を DB 最新で reload (= destroy! / save! 双方の楽観ロックを最新 lock_version で通す)
+      match.match_result.reload if @force_overwrite && match.match_result&.persisted?
+
       confirmed_rounds = round_summaries.select { |summary| summary[:confirmed] && summary[:winner_team_id].present? }
       confirmed_round_count = round_summaries.count { |summary| summary[:confirmed] }
       home_round_wins = confirmed_rounds.count { |summary| summary[:winner_team_id] == match.home_team_id }
@@ -110,7 +114,8 @@ module MatchResults
       result = match.match_result || match.build_match_result
       # KAT-31: form が submit した lock_version を in-memory record に上書きし、 楽観ロック条件を成立させる。
       # 他 judge が間に save していたら save! 時に ActiveRecord::StaleObjectError が raise する。
-      if result.persisted? && payload["lock_version"].present?
+      # force_overwrite 時は冒頭で reload 済み (= DB 最新 lock_version) なので、 form 由来の lock_version は無視する。
+      if result.persisted? && payload["lock_version"].present? && !@force_overwrite
         result.lock_version = payload["lock_version"].to_i
       end
       result.decision_type = decision_type
