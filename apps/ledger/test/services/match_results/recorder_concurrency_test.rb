@@ -44,6 +44,29 @@ class MatchResults::RecorderConcurrencyTest < ActiveSupport::TestCase
     end
   end
 
+  test "Recorder with force_overwrite saves successfully even with stale form lock_version" do
+    match = create_match!
+
+    # 1st save: lock_version=0 → 0 のまま (forfeit で away ペナ → home 2-0)
+    MatchResults::Recorder.new(match, payload_with_lock(0, decision_type: :forfeit_match, penalty_side: "away")).save!
+    assert_equal 0, match.reload.match_result.lock_version
+    assert_equal 2, match.match_result.home_round_wins
+
+    # 2nd save: lock_version=0 → 1 (penalty_side 切替で UPDATE)
+    MatchResults::Recorder.new(match, payload_with_lock(0, decision_type: :forfeit_match, penalty_side: "home")).save!
+    assert_equal 1, match.reload.match_result.lock_version
+    assert_equal 0, match.match_result.home_round_wins
+
+    # 3rd save: form lock_version=0 (stale) でも force_overwrite=true なら reload で DB 最新 (=1) を取り直して save 成功
+    MatchResults::Recorder.new(
+      match,
+      payload_with_lock(0, decision_type: :forfeit_match, penalty_side: "away"),
+      force_overwrite: true
+    ).save!
+    assert_equal 2, match.reload.match_result.lock_version
+    assert_equal 2, match.match_result.home_round_wins # away ペナで home が勝ちに戻る
+  end
+
   private
 
   def payload_with_lock(version, decision_type: :normal, penalty_side: nil)

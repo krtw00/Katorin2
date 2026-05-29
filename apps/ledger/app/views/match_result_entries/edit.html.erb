@@ -64,6 +64,12 @@
       </p>
     <% end %>
 
+    <% if @stale_conflict %>
+      <div class="flash flash--warning" role="alert">
+        <strong><%= t("matches.result_entry.stale_conflict_banner") %></strong>
+      </div>
+    <% end %>
+
     <div class="field">
       <label for="result_entry_decision_type"><%= t("matches.result_entry.decision_type_label") %></label>
       <%= select_tag "result_entry[decision_type]",
@@ -186,6 +192,16 @@
     <div class="page-actions">
       <%= link_to t("actions.back"), match_path(id: @match), class: "button" %>
       <%= form.submit t("matches.result_entry.submit"), class: "button button--primary" %>
+      <% if @stale_conflict %>
+        <button type="submit"
+                name="result_entry[force_overwrite]"
+                value="1"
+                class="button button--danger"
+                data-confirm-message="<%= t("matches.result_entry.force_overwrite_confirm") %>"
+                onclick="return confirm(this.dataset.confirmMessage);">
+          <%= t("matches.result_entry.force_overwrite") %>
+        </button>
+      <% end %>
     </div>
   <% end %>
 </section>
