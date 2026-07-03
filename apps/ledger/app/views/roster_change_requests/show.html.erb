@@ -1,0 +1,90 @@
+<% page_title t("roster_change_requests.title_show") %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(t("teams.eyebrow"), league_teams_path(league_id: @league)),
+  breadcrumb_item(@team.display_name, league_team_path(league_id: @league, id: @team)),
+  breadcrumb_item(t("roster_change_requests.eyebrow"), league_team_roster_change_requests_path(league_id: @league, team_id: @team)),
+  breadcrumb_item(t("roster_change_requests.title_show"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("roster_change_requests.eyebrow") %></p>
+    <h1><%= translated_enum("enums.roster_change_request.kind", @roster_change_request.kind) %></h1>
+    <p class="muted"><%= roster_change_request_status_badge(@roster_change_request) %></p>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_team_roster_change_requests_path(league_id: @league, team_id: @team), class: "button" %>
+  </div>
+</section>
+
+<article class="panel">
+  <div class="kv-list">
+    <div>
+      <span><%= t("roster_change_requests.fields.submitter_display_name") %></span>
+      <strong><%= @roster_change_request.submitter_display_name %></strong>
+    </div>
+    <div>
+      <span><%= t("roster_change_requests.fields.target_participant") %></span>
+      <strong><%= @roster_change_request.target_participant&.display_name || t("roster_change_requests.empty_target") %></strong>
+    </div>
+    <div>
+      <span><%= t("roster_change_requests.fields.proposed_display_name") %></span>
+      <strong><%= @roster_change_request.proposed_display_name.presence || t("labels.none") %></strong>
+    </div>
+    <div>
+      <span><%= t("roster_change_requests.fields.proposed_member_ids") %></span>
+      <strong><%= Array(@roster_change_request.proposed_member_ids).reject(&:blank?).presence&.join(", ") || t("labels.none") %></strong>
+    </div>
+    <div>
+      <span><%= t("roster_change_requests.fields.note") %></span>
+      <strong><%= @roster_change_request.note.presence || t("labels.none") %></strong>
+    </div>
+    <% if @roster_change_request.reviewed? %>
+      <div>
+        <span><%= t("roster_change_requests.fields.organizer_note") %></span>
+        <strong><%= @roster_change_request.organizer_note.presence || t("labels.none") %></strong>
+      </div>
+      <div>
+        <span><%= t("roster_change_requests.fields.reviewed_by") %></span>
+        <strong><%= @roster_change_request.reviewed_by&.display_name || t("labels.none") %></strong>
+      </div>
+      <div>
+        <span><%= t("roster_change_requests.fields.reviewed_at") %></span>
+        <strong><%= l(@roster_change_request.reviewed_at.in_time_zone("Asia/Tokyo"), format: :long) if @roster_change_request.reviewed_at %></strong>
+      </div>
+    <% end %>
+  </div>
+</article>
+
+<% if @roster_change_request.pending? %>
+  <section class="dashboard-grid">
+    <article class="panel">
+      <h2><%= t("roster_change_requests.actions.approve") %></h2>
+      <%= form_with url: approve_league_team_roster_change_request_path(league_id: @league, team_id: @team, id: @roster_change_request),
+            scope: nil, method: :post, class: "stack" do |form| %>
+        <div class="field">
+          <%= form.label :organizer_note, t("roster_change_requests.actions.organizer_note_label") %>
+          <%= form.text_area :organizer_note, rows: 2 %>
+        </div>
+        <%= form.submit t("roster_change_requests.actions.approve"), class: "button button--primary",
+              data: { turbo_confirm: t("roster_change_requests.actions.approve_confirm") } %>
+      <% end %>
+    </article>
+
+    <article class="panel">
+      <h2><%= t("roster_change_requests.actions.reject") %></h2>
+      <%= form_with url: reject_league_team_roster_change_request_path(league_id: @league, team_id: @team, id: @roster_change_request),
+            scope: nil, method: :post, class: "stack" do |form| %>
+        <div class="field">
+          <%= form.label :organizer_note, t("roster_change_requests.actions.organizer_note_label") %>
+          <%= form.text_area :organizer_note, rows: 2 %>
+        </div>
+        <%= form.submit t("roster_change_requests.actions.reject"), class: "button button--danger",
+              data: { turbo_confirm: t("roster_change_requests.actions.reject_confirm") } %>
+      <% end %>
+    </article>
+  </section>
+<% end %>
