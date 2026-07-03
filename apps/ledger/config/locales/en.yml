@@ -101,11 +101,22 @@ en:
       schedule_token:
         created: Schedule token issued. Share the URL with the team.
         revoked: Schedule token revoked.
+      roster_change_token:
+        created: Roster change token issued. Share the URL with the team.
+        revoked: Roster change token revoked.
     team_schedule_portal:
       candidate_created: Candidate slot submitted.
       candidate_withdrawn: Candidate slot withdrawn.
       cannot_withdraw_other_team: You cannot withdraw another team's candidate.
       cannot_withdraw_accepted: Confirmed candidates cannot be withdrawn.
+    team_roster_change_portal:
+      request_created: Request submitted. Please wait for organizer review.
+      request_invalid: Please review the request details.
+    roster_change_requests:
+      approved: Request approved and applied to the roster.
+      approve_failed: "Failed to apply the request: %{errors}"
+      rejected: Request rejected.
+      already_reviewed: This request has already been reviewed.
     match_schedule_candidates:
       accepted: Candidate confirmed and written back to match schedule.
       delete_blocked: This team cannot be deleted because it is already used in matches. Use the dropped status after publishing.
@@ -285,6 +296,18 @@ en:
       regenerate_confirm: The previous URL will stop working. Continue?
       revoke: Revoke
       revoke_confirm: Revoking the token disables the shared URL. Continue?
+    roster_change_token:
+      title: Roster change request token
+      lede: Issue a shareable URL for this team. Holders can request roster changes without authentication.
+      share_url: Share URL
+      generated_at: Generated at
+      empty: No token issued yet.
+      generate: Issue token
+      regenerate: Regenerate
+      regenerate_confirm: The previous URL will stop working. Continue?
+      revoke: Revoke
+      revoke_confirm: Revoking the token disables the shared URL. Continue?
+      requests_link: "View requests (%{count} pending)"
   team_schedule_portal:
     eyebrow: Schedule submission
     show:
@@ -304,6 +327,56 @@ en:
       submitter_tz: Timezone
       notes: Notes (optional)
       submit: Submit candidate
+  team_roster_change_portal:
+    eyebrow: Roster change request
+    show:
+      title: "%{team} roster change requests"
+      lede: "Current roster for %{league}. Use the form below to request a change."
+      roster_heading: Current roster
+      roster_empty: No members registered yet.
+      request_heading: Submit a change
+      history_heading: Request history
+      history_empty: No requests submitted yet.
+      submitted_by: Submitted by %{submitter}
+      target_participant_label: "Target member: %{participant}"
+      proposed_display_name_label: "New member name: %{name}"
+      proposed_member_ids_label: "Member IDs: %{member_ids}"
+      reviewed_note: "Organizer note: %{note}"
+    form:
+      kind: Request type
+      submitter_display_name: Submitter name
+      target_participant: "Target member (for remove / update member ID)"
+      target_participant_prompt: Select a member
+      proposed_display_name: "New member name (for add)"
+      proposed_member_ids: "Member IDs (up to 3, for update member ID)"
+      proposed_member_ids_nth: "Member ID %{number}"
+      note: Notes (optional)
+      submit: Submit request
+  roster_change_requests:
+    eyebrow: Roster change requests
+    title_index: "%{team} roster change requests"
+    title_show: Request details
+    empty: No requests yet.
+    empty_target: (no target member)
+    sections:
+      pending: Pending
+      reviewed: Reviewed
+    fields:
+      submitter_display_name: Submitter name
+      target_participant: Target member
+      proposed_display_name: New member name
+      proposed_member_ids: Member IDs
+      note: Notes
+      organizer_note: Organizer note
+      reviewed_by: Reviewed by
+      reviewed_at: Reviewed at
+    actions:
+      view: Details
+      approve: Approve
+      reject: Reject
+      approve_confirm: Approve this request and apply it to the roster?
+      reject_confirm: Reject this request?
+      organizer_note_label: Organizer note (optional)
   participants:
     eyebrow: Members
     title_new: "Add member to %{team}"
@@ -713,6 +786,15 @@ en:
         leader: Leader
         sub_leader: Sub-leader
         member: Member
+    roster_change_request:
+      kind:
+        add: Add
+        remove: Remove
+        update_md_id: Update member ID
+      status:
+        pending: Pending
+        approved: Approved
+        rejected: Rejected
   activerecord:
     models:
       league: League
@@ -721,6 +803,7 @@ en:
       stage_asset: Stage asset
       week: Week
       match: Match
+      roster_change_request: Roster change request
     attributes:
       league:
         name: League name
@@ -786,6 +869,17 @@ en:
         home_game_wins: Home game wins
         away_game_wins: Away game wins
         winner_side: Winner side
+      roster_change_request:
+        kind: Kind
+        status: Status
+        submitter_display_name: Submitter name
+        target_participant_id: Target member
+        proposed_display_name: New member name
+        proposed_member_ids: Member IDs
+        note: Notes
+        organizer_note: Organizer note
+        reviewed_by: Reviewed by
+        reviewed_at: Reviewed at
     errors:
       messages:
         blank: can't be blank.
@@ -807,6 +901,12 @@ en:
             member_ids:
               too_many: allows up to %{count} entries.
               duplicate: "`%{value}` is already used within the same league."
+        roster_change_request:
+          attributes:
+            target_participant_id:
+              not_in_team: must be a member of the same team.
+            proposed_member_ids:
+              too_many: allows up to %{count} entries.
   helpers:
     submit:
       create: "Create %{model}"

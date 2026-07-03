@@ -1,0 +1,107 @@
+<% page_title t("team_roster_change_portal.show.title", team: @team.display_name) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("team_roster_change_portal.eyebrow") %></p>
+    <h1><%= t("team_roster_change_portal.show.title", team: @team.display_name) %></h1>
+    <p class="muted"><%= t("team_roster_change_portal.show.lede", league: @team.league.name) %></p>
+  </div>
+</section>
+
+<article class="panel">
+  <h2><%= t("team_roster_change_portal.show.roster_heading") %></h2>
+  <% if @participants.empty? %>
+    <p class="empty-copy"><%= t("team_roster_change_portal.show.roster_empty") %></p>
+  <% else %>
+    <ul class="compact-list">
+      <% @participants.each do |participant| %>
+        <li>
+          <strong><%= participant.display_name %></strong>
+          <span class="muted">
+            / <%= t("labels.member_id") %>: <%= Array(participant.member_ids).reject(&:blank?).presence&.join(", ") || t("labels.none") %>
+            / <%= translated_enum("enums.participant.status", participant.status) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</article>
+
+<article class="panel">
+  <h2><%= t("team_roster_change_portal.show.request_heading") %></h2>
+  <%= render "shared/errors", record: @roster_change_request %>
+
+  <%= form_with model: @roster_change_request,
+        url: team_roster_change_portal_create_request_path(token: @team.roster_change_token),
+        class: "stack" do |form| %>
+    <div class="field">
+      <%= form.label :kind, t("team_roster_change_portal.form.kind") %>
+      <%= form.select :kind, enum_options("enums.roster_change_request.kind", RosterChangeRequest::KINDS.values) %>
+    </div>
+
+    <div class="field">
+      <%= form.label :submitter_display_name, t("team_roster_change_portal.form.submitter_display_name") %>
+      <%= form.text_field :submitter_display_name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= form.label :target_participant_id, t("team_roster_change_portal.form.target_participant") %>
+      <%= form.collection_select :target_participant_id, @active_participants, :id, :display_name,
+            include_blank: t("team_roster_change_portal.form.target_participant_prompt") %>
+    </div>
+
+    <div class="field">
+      <%= form.label :proposed_display_name, t("team_roster_change_portal.form.proposed_display_name") %>
+      <%= form.text_field :proposed_display_name %>
+    </div>
+
+    <% proposed_member_ids = Array(@roster_change_request.proposed_member_ids).reject(&:blank?) %>
+    <div class="field">
+      <%= form.label :proposed_member_ids, t("team_roster_change_portal.form.proposed_member_ids") %>
+      <% Participant::MAX_MEMBER_IDS.times do |index| %>
+        <%= text_field_tag "roster_change_request[proposed_member_ids][]", proposed_member_ids[index],
+              id: "roster_change_request_proposed_member_ids_#{index}",
+              aria: { label: t("team_roster_change_portal.form.proposed_member_ids_nth", number: index + 1) } %>
+      <% end %>
+    </div>
+
+    <div class="field">
+      <%= form.label :note, t("team_roster_change_portal.form.note") %>
+      <%= form.text_area :note, rows: 2 %>
+    </div>
+
+    <%= form.submit t("team_roster_change_portal.form.submit"), class: "button button--primary" %>
+  <% end %>
+</article>
+
+<article class="panel">
+  <h2><%= t("team_roster_change_portal.show.history_heading") %></h2>
+  <% if @requests.empty? %>
+    <p class="empty-copy"><%= t("team_roster_change_portal.show.history_empty") %></p>
+  <% else %>
+    <ul class="compact-list">
+      <% @requests.each do |request| %>
+        <li>
+          <strong><%= translated_enum("enums.roster_change_request.kind", request.kind) %></strong>
+          <%= roster_change_request_status_badge(request) %>
+          <span class="muted">/ <%= t("team_roster_change_portal.show.submitted_by", submitter: request.submitter_display_name) %></span>
+          <% if request.target_participant.present? %>
+            <p class="muted"><%= t("team_roster_change_portal.show.target_participant_label", participant: request.target_participant.display_name) %></p>
+          <% end %>
+          <% if request.proposed_display_name.present? %>
+            <p class="muted"><%= t("team_roster_change_portal.show.proposed_display_name_label", name: request.proposed_display_name) %></p>
+          <% end %>
+          <% if Array(request.proposed_member_ids).reject(&:blank?).any? %>
+            <p class="muted"><%= t("team_roster_change_portal.show.proposed_member_ids_label", member_ids: request.proposed_member_ids.join(", ")) %></p>
+          <% end %>
+          <% if request.note.present? %>
+            <p class="muted"><%= request.note %></p>
+          <% end %>
+          <% if request.reviewed? %>
+            <p class="muted"><%= t("team_roster_change_portal.show.reviewed_note", note: request.organizer_note.presence || t("labels.none")) %></p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</article>
