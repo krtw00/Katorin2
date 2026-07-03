@@ -43,6 +43,11 @@ Rails.application.routes.draw do
     delete "schedule/:token/matches/:match_id/candidates/:id",
       to: "team_schedule_portal#withdraw_candidate", as: :team_schedule_portal_withdraw_candidate
 
+    # KAT-27: 公開 (認証不要) の roster change portal。 token-based access
+    get "roster/:token", to: "team_roster_change_portal#show", as: :team_roster_change_portal
+    post "roster/:token/requests",
+      to: "team_roster_change_portal#create_request", as: :team_roster_change_portal_create_request
+
     resources :leagues, only: %i[index show new create edit update destroy] do
       resource :team_import, only: %i[new create], controller: "team_imports" do
         get :template
@@ -50,6 +55,13 @@ Rails.application.routes.draw do
       resources :teams, only: %i[index show new create edit update destroy] do
         resources :participants, only: %i[new create edit update destroy]
         resource :schedule_token, only: %i[create destroy], controller: "team_schedule_tokens"
+        resource :roster_change_token, only: %i[create destroy], controller: "team_roster_change_tokens"
+        resources :roster_change_requests, only: %i[index show] do
+          member do
+            post :approve
+            post :reject
+          end
+        end
       end
       resources :phases, only: %i[show new create edit update destroy] do
         member do

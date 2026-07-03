@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_120001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -286,6 +286,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
     t.index ["stage_asset_id"], name: "index_phases_on_stage_asset_id"
   end
 
+  create_table "roster_change_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.text "note"
+    t.string "organizer_note"
+    t.string "proposed_display_name"
+    t.string "proposed_member_ids", default: [], array: true
+    t.datetime "reviewed_at"
+    t.uuid "reviewed_by_id"
+    t.string "status", default: "pending", null: false
+    t.string "submitter_display_name"
+    t.uuid "target_participant_id"
+    t.uuid "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reviewed_by_id"], name: "index_roster_change_requests_on_reviewed_by_id"
+    t.index ["target_participant_id"], name: "index_roster_change_requests_on_target_participant_id"
+    t.index ["team_id", "status"], name: "index_roster_change_requests_on_team_id_and_status"
+    t.index ["team_id"], name: "index_roster_change_requests_on_team_id"
+    t.check_constraint "kind::text = ANY (ARRAY['add'::character varying, 'remove'::character varying, 'update_md_id'::character varying]::text[])", name: "roster_change_requests_kind_inclusion"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying]::text[])", name: "roster_change_requests_status_inclusion"
+  end
+
   create_table "rounds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "away_team_id"
     t.datetime "created_at", null: false
@@ -337,6 +359,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
     t.uuid "league_id", null: false
     t.string "name", null: false
     t.text "notes"
+    t.string "roster_change_token"
+    t.datetime "roster_change_token_generated_at"
     t.string "schedule_token"
     t.datetime "schedule_token_generated_at"
     t.string "short_name"
@@ -345,6 +369,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
     t.index ["block_id"], name: "index_teams_on_block_id"
     t.index ["league_id", "name"], name: "index_teams_on_league_id_and_name", unique: true
     t.index ["league_id"], name: "index_teams_on_league_id"
+    t.index ["roster_change_token"], name: "index_teams_on_roster_change_token", unique: true
     t.index ["schedule_token"], name: "index_teams_on_schedule_token", unique: true
     t.check_constraint "drop_kind IS NULL OR (drop_kind::text = ANY (ARRAY['forced'::character varying, 'voluntary'::character varying]::text[]))", name: "teams_drop_kind_inclusion"
   end
@@ -400,6 +425,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_121904) do
   add_foreign_key "participants", "teams"
   add_foreign_key "phases", "leagues"
   add_foreign_key "phases", "stage_assets"
+  add_foreign_key "roster_change_requests", "organizer_members", column: "reviewed_by_id"
+  add_foreign_key "roster_change_requests", "participants", column: "target_participant_id"
+  add_foreign_key "roster_change_requests", "teams"
   add_foreign_key "rounds", "matches"
   add_foreign_key "rounds", "teams", column: "away_team_id"
   add_foreign_key "rounds", "teams", column: "home_team_id"
