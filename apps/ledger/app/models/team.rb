@@ -16,6 +16,7 @@ class Team < ApplicationRecord
     class_name: "MatchScheduleCandidate",
     foreign_key: :submitter_team_id,
     dependent: :destroy
+  has_many :roster_change_requests, dependent: :destroy
 
   before_validation :assign_name
   before_validation :assign_short_name
@@ -23,6 +24,7 @@ class Team < ApplicationRecord
   validates :name, :display_name, presence: true
   validates :name, uniqueness: { scope: :league_id }
   validates :schedule_token, uniqueness: true, allow_nil: true
+  validates :roster_change_token, uniqueness: true, allow_nil: true
   validates :drop_kind, inclusion: { in: DROP_KINDS.values }, allow_nil: true
 
   def dropped?
@@ -38,6 +40,17 @@ class Team < ApplicationRecord
 
   def revoke_schedule_token!
     update!(schedule_token: nil, schedule_token_generated_at: nil)
+  end
+
+  def regenerate_roster_change_token!
+    update!(
+      roster_change_token: SecureRandom.urlsafe_base64(24),
+      roster_change_token_generated_at: Time.current
+    )
+  end
+
+  def revoke_roster_change_token!
+    update!(roster_change_token: nil, roster_change_token_generated_at: nil)
   end
 
   # 自 team が関わるすべての match (home/away 問わず)。 公開 portal の表示用。
