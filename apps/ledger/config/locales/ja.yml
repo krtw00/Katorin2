@@ -102,11 +102,22 @@ ja:
       schedule_token:
         created: スケジュール token を発行しました。共有 URL をチームに渡してください。
         revoked: スケジュール token を取消しました。
+      roster_change_token:
+        created: ロスター変更申請 token を発行しました。共有 URL をチームに渡してください。
+        revoked: ロスター変更申請 token を取消しました。
     team_schedule_portal:
       candidate_created: 候補日時を提出しました。
       candidate_withdrawn: 候補日時を取下げました。
       cannot_withdraw_other_team: 他チームの候補は取下げできません。
       cannot_withdraw_accepted: 確定済みの候補は取下げできません。
+    team_roster_change_portal:
+      request_created: 申請を送信しました。運営の確認をお待ちください。
+      request_invalid: 入力内容を確認してください。
+    roster_change_requests:
+      approved: 申請を承認しました。ロスターに反映しました。
+      approve_failed: "申請の反映に失敗しました: %{errors}"
+      rejected: 申請を却下しました。
+      already_reviewed: この申請はすでに審査済みです。
     match_schedule_candidates:
       accepted: 候補日時を確定しました。試合日時に反映しました。
     team_imports:
@@ -285,6 +296,18 @@ ja:
       regenerate_confirm: 古い URL は無効になります。再発行しますか？
       revoke: 取消
       revoke_confirm: token を取消すると共有 URL は無効になります。よろしいですか？
+    roster_change_token:
+      title: ロスター変更申請 token
+      lede: チームに渡す共有 URL を発行します。受け取った人は認証なしでロスター変更を申請できます。
+      share_url: 共有 URL
+      generated_at: 発行日時
+      empty: まだ token は発行されていません。
+      generate: token を発行
+      regenerate: 再発行
+      regenerate_confirm: 古い URL は無効になります。再発行しますか？
+      revoke: 取消
+      revoke_confirm: token を取消すると共有 URL は無効になります。よろしいですか？
+      requests_link: "申請一覧 (未対応 %{count}件)"
   team_schedule_portal:
     eyebrow: スケジュール提出
     show:
@@ -304,6 +327,56 @@ ja:
       submitter_tz: タイムゾーン
       notes: 補足 (任意)
       submit: 候補を提出
+  team_roster_change_portal:
+    eyebrow: ロスター変更申請
+    show:
+      title: "%{team} のロスター変更申請"
+      lede: "%{league} のロスターです。変更が必要な場合は下のフォームから申請してください。"
+      roster_heading: 現在のロスター
+      roster_empty: メンバーがまだ登録されていません。
+      request_heading: 変更を申請する
+      history_heading: 申請履歴
+      history_empty: 申請はまだありません。
+      submitted_by: 申請者 %{submitter}
+      target_participant_label: "対象メンバー: %{participant}"
+      proposed_display_name_label: "新メンバー名: %{name}"
+      proposed_member_ids_label: "MD ID: %{member_ids}"
+      reviewed_note: "運営コメント: %{note}"
+    form:
+      kind: 申請種別
+      submitter_display_name: 申請者名
+      target_participant: "対象メンバー (除外 / MD ID 変更で使用)"
+      target_participant_prompt: メンバーを選択
+      proposed_display_name: "新メンバー名 (追加で使用)"
+      proposed_member_ids: "MD ID（最大3件、MD ID 変更で使用）"
+      proposed_member_ids_nth: "MD ID %{number}"
+      note: 補足 (任意)
+      submit: 申請を送信
+  roster_change_requests:
+    eyebrow: ロスター変更申請
+    title_index: "%{team} のロスター変更申請"
+    title_show: 申請詳細
+    empty: 申請はまだありません。
+    empty_target: (対象メンバーなし)
+    sections:
+      pending: 未対応
+      reviewed: 対応済み
+    fields:
+      submitter_display_name: 申請者名
+      target_participant: 対象メンバー
+      proposed_display_name: 新メンバー名
+      proposed_member_ids: MD ID
+      note: 補足
+      organizer_note: 運営コメント
+      reviewed_by: 対応者
+      reviewed_at: 対応日時
+    actions:
+      view: 詳細
+      approve: 承認
+      reject: 却下
+      approve_confirm: この申請を承認してロスターに反映しますか？
+      reject_confirm: この申請を却下しますか？
+      organizer_note_label: 運営コメント (任意)
   participants:
     eyebrow: メンバー
     title_new: "%{team} にメンバー追加"
@@ -713,6 +786,15 @@ ja:
         leader: リーダー
         sub_leader: サブリーダー
         member: メンバー
+    roster_change_request:
+      kind:
+        add: 追加
+        remove: 除外
+        update_md_id: MD ID 変更
+      status:
+        pending: 未対応
+        approved: 承認
+        rejected: 却下
   activerecord:
     models:
       league: リーグ
@@ -721,6 +803,7 @@ ja:
       stage_asset: ステージアセット
       week: 週
       match: 対戦カード
+      roster_change_request: ロスター変更申請
     attributes:
       league:
         name: リーグ名
@@ -786,6 +869,17 @@ ja:
         home_game_wins: ホームゲーム勝数
         away_game_wins: アウェイゲーム勝数
         winner_side: 勝者サイド
+      roster_change_request:
+        kind: 種別
+        status: 状態
+        submitter_display_name: 申請者名
+        target_participant_id: 対象メンバー
+        proposed_display_name: 新メンバー名
+        proposed_member_ids: MD ID
+        note: 補足
+        organizer_note: 運営コメント
+        reviewed_by: 対応者
+        reviewed_at: 対応日時
     errors:
       messages:
         blank: を入力してください。
@@ -807,6 +901,12 @@ ja:
             member_ids:
               too_many: は最大 %{count} 件までです。
               duplicate: "`%{value}` は同じリーグ内ですでに使われています。"
+        roster_change_request:
+          attributes:
+            target_participant_id:
+              not_in_team: は同じチームのメンバーを選択してください。
+            proposed_member_ids:
+              too_many: は最大 %{count} 件までです。
   helpers:
     submit:
       create: "%{model}を作成"
