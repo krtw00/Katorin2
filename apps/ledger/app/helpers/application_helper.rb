@@ -59,6 +59,21 @@ module ApplicationHelper
     status_badge(translated_enum("enums.match.status", match.status), tone)
   end
 
+  def roster_change_request_status_badge(request)
+    return if request.blank?
+
+    tone = case request.status
+           when "approved"
+             "success"
+           when "rejected"
+             "danger"
+           else
+             "warning"
+           end
+
+    status_badge(translated_enum("enums.roster_change_request.status", request.status), tone)
+  end
+
   def enum_options(scope, values)
     values.map { |value| [translated_enum(scope, value), value] }
   end

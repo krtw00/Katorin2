@@ -1,0 +1,65 @@
+<% page_title t("roster_change_requests.title_index", team: @team.display_name) %>
+<% set_breadcrumbs([
+  breadcrumb_item(t("nav.home"), dashboard_path),
+  breadcrumb_item(t("leagues.title_index"), leagues_path),
+  breadcrumb_item(@league.name, league_path(id: @league)),
+  breadcrumb_item(t("teams.eyebrow"), league_teams_path(league_id: @league)),
+  breadcrumb_item(@team.display_name, league_team_path(league_id: @league, id: @team)),
+  breadcrumb_item(t("roster_change_requests.eyebrow"))
+]) %>
+
+<section class="page-header">
+  <div>
+    <p class="eyebrow"><%= t("roster_change_requests.eyebrow") %></p>
+    <h1><%= t("roster_change_requests.title_index", team: @team.display_name) %></h1>
+  </div>
+  <div class="page-actions">
+    <%= link_to t("actions.back"), league_team_path(league_id: @league, id: @team), class: "button" %>
+  </div>
+</section>
+
+<% if @requests.empty? %>
+  <p class="empty-copy"><%= t("roster_change_requests.empty") %></p>
+<% else %>
+  <% pending_requests, reviewed_requests = @requests.partition(&:pending?) %>
+
+  <section class="dashboard-grid">
+    <article class="panel">
+      <h2><%= t("roster_change_requests.sections.pending") %></h2>
+      <% if pending_requests.empty? %>
+        <p class="empty-copy"><%= t("roster_change_requests.empty") %></p>
+      <% else %>
+        <ul class="compact-list">
+          <% pending_requests.each do |request| %>
+            <li>
+              <strong><%= translated_enum("enums.roster_change_request.kind", request.kind) %></strong>
+              <%= roster_change_request_status_badge(request) %>
+              <span class="muted">/ <%= request.submitter_display_name %></span>
+              <%= link_to t("roster_change_requests.actions.view"),
+                league_team_roster_change_request_path(league_id: @league, team_id: @team, id: request), class: "inline-link" %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </article>
+
+    <article class="panel">
+      <h2><%= t("roster_change_requests.sections.reviewed") %></h2>
+      <% if reviewed_requests.empty? %>
+        <p class="empty-copy"><%= t("roster_change_requests.empty") %></p>
+      <% else %>
+        <ul class="compact-list">
+          <% reviewed_requests.each do |request| %>
+            <li>
+              <strong><%= translated_enum("enums.roster_change_request.kind", request.kind) %></strong>
+              <%= roster_change_request_status_badge(request) %>
+              <span class="muted">/ <%= request.submitter_display_name %></span>
+              <%= link_to t("roster_change_requests.actions.view"),
+                league_team_roster_change_request_path(league_id: @league, team_id: @team, id: request), class: "inline-link" %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </article>
+  </section>
+<% end %>
