@@ -7,6 +7,6 @@
     "render:tex": "node render-ledger-manual.mjs"
   },
   "dependencies": {
-    "playwright": "^1.58.2"
+    "playwright": "^1.61.1"
   }
 }
