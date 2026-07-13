@@ -31,22 +31,13 @@ service ごとに DB ログインユーザーを分離して運用する。 kato
 
 切替の影響:
 
-- DB ユーザー切替では Cloud Run service ごとに新 revision が作られる
-- アプリコードの再ビルドは不要でも、設定更新だけで revision rollout は発生する
-- `katorin2` 系 job は job definition 更新が必要
-- `scripts/deploy-cloudrun-ledger.sh`, `scripts/run-ledger-job.sh`, `scripts/push-ledger-runtime-secret.sh` は `app-user` を拒否する
+- katorin2 の DB ユーザー切替では、VPS 上の既存 `secrets.enc.env` を更新して Compose service を再作成する
+- secret の値は取得・表示・ローカルコピーせず、VPS 内の承認済み作業として扱う
+- production / staging とも `/up` と Rails からの `SELECT 1` を確認する
+- 旧 Cloud Run service / job / Secret Manager は現行 consumer ではなく、GCP 離脱時の削除対象として別管理する
 
-最小手順:
+Cloud SQL について:
 
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-GOOGLE_CLOUD_REGION=asia-northeast1 \
-SERVICE_DB_USER=my_service_app \
-OWNER_ROLE=app-user \
-SECRET_NAME=my-service-database-url \
-SECRET_PAYLOAD_KIND=database_url \
-DB_NAME=my_database \
-bash scripts/provision-cloudsql-service-user.sh
-```
-
-その後、Cloud Run service / job の env を新しい secret かユーザーへ切り替えて検証する。
+- `main-pg` は `konbu` が継続利用しているため削除しない
+- Cloud SQL のユーザー・DB・管理 secret は、全 consumer とデータ保持方針を確認するまで変更・削除しない
+- konbu の Cloud SQL 運用は konbu repo を正本とする
