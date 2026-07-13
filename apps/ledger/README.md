@@ -6,7 +6,7 @@ Rails 8 ベースの WMGP 運営台帳アプリ。
 
 - Ruby 3.4
 - PostgreSQL
-- Cloud Run
+- Docker Compose (codenica-vps)
 
 ## Local Development
 
@@ -29,9 +29,10 @@ bin/dev
 ## Environment Split
 
 - `production`
-  - Cloud Run: `katorin2`
-  - Cloud SQL: `katorin2` @ `main-pg`
+  - codenica-vps docker (`/opt/katorin2/`)
+  - codenica-vps Postgres docker: `katorin2`
   - DB user: `katorin2_prod_app`
+  - URL: <https://katorin2.codenica.dev>
 - `staging`
   - codenica-vps docker (`/opt/katorin2-staging/`)
   - codenica-vps Postgres docker: `katorin2_staging`
@@ -69,13 +70,9 @@ bin/dev
 
 ## Deploy
 
-production (Cloud Run):
+`main` への push で GitHub Actions が Buildx を使って `ghcr.io/krtw00/katorin2` へ image を push し、 production と staging の codenica-vps Compose を digest 固定で更新する。手動実行は各 workflow の `workflow_dispatch` を `main` branch に対して使う。
 
-```bash
-GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-APP_ENV=production \
-RUNTIME_ENV_FILE=/path/to/ledger.runtime.production.yaml \
-bash scripts/deploy-cloudrun-ledger.sh
-```
+- production: `.github/workflows/deploy.yml`
+- staging: `.github/workflows/deploy-staging.yml`
 
-staging (codenica-vps): `../../docs/deployment-environments.md` を参照。 image push は Cloud Build、 反映は VPS 上で `docker compose pull && /opt/katorin2-staging/up.sh`。
+詳細は `../../docs/deployment-environments.md` を参照。

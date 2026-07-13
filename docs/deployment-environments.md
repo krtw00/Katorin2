@@ -29,18 +29,12 @@ Katorin2 Ledger は `production` と `staging` を別環境として運用する
 
 `main` branch への push で `.github/workflows/deploy.yml` が走る。 流れ:
 
-1. Cloud Build で `Dockerfile.cloudrun` (image 名は歴史的、 中身は VPS でも動く Rails 本番 image) を `production-ledger-<short_sha>` tag で AR に push
-2. SSH (`ubuntu@codenica-vps`) で `/opt/katorin2/docker-compose.yml` の image digest を sed 置換
+1. GitHub Actions の Buildx で `apps/ledger/Dockerfile.cloudrun` (image 名は歴史的、 中身は VPS でも動く Rails 本番 image) を build し、 `ghcr.io/krtw00/katorin2:production-<full_sha>` として GHCR に push
+2. SSH (`ubuntu@codenica-vps`) で `/opt/katorin2/docker-compose.yml` の image を `ghcr.io/krtw00/katorin2@sha256:<digest>` に置換
 3. `docker compose pull && ./up.sh` で再起動 (entrypoint で `db:prepare` = migration 自動実行)
-4. `http://127.0.0.1:8012/up` の health check で deploy 完了確認
+4. container が指定 digest を使っていること、 `http://127.0.0.1:8012/up`、 Rails からの DB `SELECT 1` を確認
 
-VPS 上の構成: `/opt/katorin2/{docker-compose.yml, secrets.enc.env, up.sh}`、 image SHA pin あり、 sops/age 暗号化。 secret 編集は Mac で:
-
-```bash
-SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt \
-  sops /opt/katorin2/secrets.enc.env
-# 編集後 scp で VPS に上書き
-```
+VPS 上の構成: `/opt/katorin2/{docker-compose.yml, secrets.enc.env, up.sh}`、 image digest pin あり、 sops/age 暗号化。 deploy workflow は secret の値を取得・表示・ローカルへコピーせず、 VPS 上の既存 `secrets.enc.env` と `up.sh` を使う。 secret 変更は deploy と分離した承認済みの VPS 内作業として扱う。
 
 migration は entrypoint で自動実行されるので明示 job 不要。 任意で手動実行する場合:
 
@@ -63,38 +57,20 @@ staging は常時起動せず on-demand 運用に変更した。 起動 / 停止
 
 `main` への push (= PR merge 経由) で `.github/workflows/deploy-staging.yml` が走り、 staging image の更新と app 再起動が自動化される。 production の `deploy.yml` と並列に独立した job として動く。 流れ:
 
-1. Cloud Build で `apps/ledger/Dockerfile.cloudrun` を `staging-<short_sha>` tag で AR (`katorin2-staging`) に push
-2. SSH (`ubuntu@codenica-vps`) で `/opt/katorin2-staging/docker-compose.yml` の image digest を sed 置換 (= `katorin2-staging@sha256:...` 形式の pin 前提)
+1. GitHub Actions の Buildx で `apps/ledger/Dockerfile.cloudrun` を build し、 `ghcr.io/krtw00/katorin2:staging-<full_sha>` として GHCR に push
+2. SSH (`ubuntu@codenica-vps`) で `/opt/katorin2-staging/docker-compose.yml` の image を `ghcr.io/krtw00/katorin2@sha256:<digest>` に置換
 3. `docker compose pull && ./up.sh` で再起動 (= entrypoint で `db:prepare` = migration 自動実行)
-4. `http://127.0.0.1:8002/up` の health check で deploy 完了確認
+4. container が指定 digest を使っていること、 `http://127.0.0.1:8002/up`、 Rails からの DB `SELECT 1` を確認
 
 deploy のたびに staging app は起動状態になる。 DB は触らない (= `katorin2_staging` の中身はそのまま)。 本番 snapshot を当て直したい時は別途 [`scripts/staging-up.sh`](../scripts/staging-up.sh) を手動で流す ([`docs/staging-on-demand.md`](staging-on-demand.md) 参照)。
 
-手動 deploy (= 緊急時 / CI 不通時) の fallback:
-
-1. Cloud Build を手で投げる:
-   ```bash
-   GOOGLE_CLOUD_PROJECT=oauthsetting-484201 \
-   gcloud builds submit --config deploy/google/cloudbuild.ledger.yaml \
-     --substitutions=_IMAGE=asia-northeast1-docker.pkg.dev/oauthsetting-484201/apps/katorin2-staging:staging-<short_sha>
-   ```
-2. digest を控え、 `/opt/katorin2-staging/docker-compose.yml` の `image` を更新
-3. VPS で `gcloud auth print-access-token` (Mac 側で生成して scp) → `docker login asia-northeast1-docker.pkg.dev`
-4. `cd /opt/katorin2-staging && docker compose pull && ./up.sh`
-
-または GitHub Actions の `Deploy Staging` workflow を `workflow_dispatch` で手動実行する。
+手動 deploy は GitHub Actions の `Deploy Staging` workflow を `workflow_dispatch` で `main` branch に対して実行する。 production は同様に `Deploy` workflow を使う。
 
 VPS 上で再起動だけしたい時: `cd /opt/katorin2-staging && ./up.sh`
 
 完全停止: `cd /opt/katorin2-staging && docker compose down && rm -f .env`
 
-secret 編集 (Mac で実施):
-
-```bash
-SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt \
-  sops /opt/katorin2-staging/secrets.enc.env
-# 編集後 scp で VPS に上書き
-```
+staging も deploy workflow は secret の値を取得・表示・ローカルへコピーせず、 VPS 上の既存 `secrets.enc.env` と `up.sh` を使う。 secret 変更は deploy と分離した承認済みの VPS 内作業として扱う。
 
 seed profile:
 

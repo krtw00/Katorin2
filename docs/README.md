@@ -34,7 +34,7 @@
 
 補足:
 
-- アプリ実装は `Rails 8 + Hotwire + Cloud SQL + Cloud Run`
+- アプリ実装は `Rails 8 + Hotwire + PostgreSQL + Docker Compose (codenica-vps)`
 - ルート URL は宣伝 LP ではなく、`関係者向けの薄い案内トップ` として扱う
 - 画像出力の正本は `/home/iguchi/Downloads/WMGP/image1.png` を基準にする
 - 決勝系の見え方は `/home/iguchi/Downloads/WMGP/決勝.webp` を参照する
