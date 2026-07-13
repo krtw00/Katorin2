@@ -11,75 +11,68 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write
+  packages: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT || 'oauthsetting-484201' }}
-      GOOGLE_CLOUD_REGION: asia-northeast1
-      ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}
-      IMAGE_NAME: katorin2
+      IMAGE_REPOSITORY: ghcr.io/krtw00/katorin2
 
     steps:
       - uses: actions/checkout@v5
 
-      - id: auth
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          token_format: access_token
-          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: google-github-actions/setup-gcloud@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
         with:
-          project_id: ${{ env.GOOGLE_CLOUD_PROJECT }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push image to Artifact Registry
+      - name: Build & push image to GHCR
         id: build
-        run: |
-          set -euo pipefail
-          SHORT_SHA="${GITHUB_SHA:0:7}"
-          IMAGE_TAG="${GOOGLE_CLOUD_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REGISTRY_REPOSITORY}/${IMAGE_NAME}:production-ledger-${SHORT_SHA}"
-          gcloud builds submit \
-            --project "$GOOGLE_CLOUD_PROJECT" \
-            --config deploy/google/cloudbuild.ledger.yaml \
-            --substitutions=_IMAGE="$IMAGE_TAG"
-          DIGEST=$(gcloud artifacts docker images describe "$IMAGE_TAG" --format='value(image_summary.digest)')
-          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-          echo "Built: $IMAGE_TAG @ $DIGEST"
+        uses: docker/build-push-action@v7
+        with:
+          context: ./apps/ledger
+          file: ./apps/ledger/Dockerfile.cloudrun
+          push: true
+          tags: ${{ env.IMAGE_REPOSITORY }}:production-${{ github.sha }}
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
       - name: Deploy to codenica-vps
         uses: appleboy/ssh-action@v1.2.0
         env:
-          GCLOUD_TOKEN: ${{ steps.auth.outputs.access_token }}
-          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
+          IMAGE_REFERENCE: ${{ env.IMAGE_REPOSITORY }}@${{ steps.build.outputs.digest }}
         with:
           host: ${{ vars.VPS_HOST }}
           username: ${{ vars.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: GCLOUD_TOKEN,IMAGE_DIGEST
+          envs: GHCR_TOKEN,GHCR_USERNAME,IMAGE_REFERENCE
           script: |
             set -euo pipefail
             cd /opt/katorin2
-
-            echo "$GCLOUD_TOKEN" | docker login -u oauth2accesstoken --password-stdin https://asia-northeast1-docker.pkg.dev
-
-            sed -i.bak -E "s|katorin2@sha256:[a-f0-9]+|katorin2@${IMAGE_DIGEST}|" docker-compose.yml
-
+            DOCKER_CONFIG="$(mktemp -d)"
+            export DOCKER_CONFIG
+            trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin >/dev/null
+            test "$(grep -cE '^[[:space:]]+image:' docker-compose.yml)" -eq 1
+            sed -i.bak -E "s|^([[:space:]]*image:[[:space:]]*).*$|\1${IMAGE_REFERENCE}|" docker-compose.yml
+            grep -qF "image: ${IMAGE_REFERENCE}" docker-compose.yml
             docker compose pull
             ./up.sh
-
+            test "$(docker inspect --format '{{.Config.Image}}' katorin2)" = "$IMAGE_REFERENCE"
             for i in 1 2 3 4 5 6 7 8 9 10; do
-              if curl -fsS http://127.0.0.1:8012/up >/dev/null 2>&1; then
+              if curl -fsS http://127.0.0.1:8012/up >/dev/null 2>&1 && \
+                 docker exec katorin2 ./bin/rails runner 'ActiveRecord::Base.connection.execute("SELECT 1")' >/dev/null 2>&1; then
                 echo "deploy OK (attempt $i)"
                 exit 0
               fi
               sleep 3
             done
             echo "health check failed after 30s"
-            docker logs katorin2 --tail 50
+            docker inspect --format 'status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' katorin2
             exit 1
