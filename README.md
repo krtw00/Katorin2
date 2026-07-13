@@ -11,10 +11,10 @@ Supporting paths:
 
 - `docs`
   - product, domain, and deployment notes for the Rails rebuild
-- `deploy/google`
-  - Cloud Build and runtime env templates for the Rails app
+- `.github/workflows`
+  - Buildx + GHCR image publishing and codenica-vps deployment
 - `scripts`
-  - deploy and operational helpers for the Rails app
+  - operational helpers for the Rails app
 
 ## Development
 
@@ -33,12 +33,9 @@ bin/rails test
 
 ## Deploy
 
-Use the Rails deploy helper from the repository root:
+Pushing `main` runs the independent production and staging deploy workflows. Both publish the Rails image to `ghcr.io/krtw00/katorin2` and update the corresponding codenica-vps Compose service by digest.
 
-```bash
-bash scripts/deploy-cloudrun-ledger.sh
-```
+- production: `.github/workflows/deploy.yml`
+- staging: `.github/workflows/deploy-staging.yml`
 
-Runtime env template:
-
-- `deploy/google/ledger.runtime.example.yaml`
+Use `workflow_dispatch` on `main` for a manual deploy. See `docs/deployment-environments.md` for the runtime paths and health checks.
